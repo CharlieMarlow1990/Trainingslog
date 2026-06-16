@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trainingslog</title>
+<style>
+  :root {
+    --bg: #fafaf7; --surface: #ffffff; --border: #e4e2db; --border-strong: #cfccc2;
+    --text: #1f1e1a; --text-muted: #6f6c62; --text-faint: #a8a59a;
+    --accent: #2f5d4f; --accent-light: #e3ece8; --accent-text: #1d3a31;
+    --z1: #b8d4e8; --z2: #5b9bd5; --z3: #f0c674; --z4: #e8975c; --z5: #c4544a; --zNone: #c9c6bc;
+    --rad: #5b9bd5; --lauf: #6fa86f; --kraft: #c4544a; --kampf: #b07cc6; --sonstiges: #a8a59a;
+    --cal-cell-min: 92px;
+    --radius: 10px; --radius-lg: 14px;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: "SF Mono", "Roboto Mono", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--bg); color: var(--text); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+  /* Auth */
+  #auth-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg); }
+  .auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2.5rem 2rem; text-align: center; max-width: 360px; width: 100%; }
+  .auth-box h1 { font-size: 1.4rem; font-weight: 600; margin: 0 0 0.5rem; }
+  .auth-box p { font-size: 0.88rem; color: var(--text-muted); margin: 0 0 1.75rem; }
+  .btn-github { display: inline-flex; align-items: center; gap: 0.6rem; background: #24292e; color: #fff; border: none; border-radius: var(--radius); padding: 0.65rem 1.4rem; font-size: 0.95rem; font-weight: 500; cursor: pointer; font-family: var(--font-sans); transition: background 0.15s; }
+  .btn-github:hover { background: #1a1e22; }
+
+  /* Header */
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 0.75rem; }
+  header h1 { font-size: 1.5rem; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .header-right { display: flex; align-items: center; gap: 1rem; }
+  .user-chip { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; color: var(--text-muted); }
+  .user-chip img { width: 26px; height: 26px; border-radius: 50%; }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #6fa86f; flex-shrink: 0; transition: background 0.3s; }
+  .sync-dot.syncing { background: #f0c674; animation: pulse 1s infinite; }
+  .sync-dot.error { background: #c4544a; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* Cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
+  .card h2 { font-size: 0.95rem; font-weight: 600; margin: 0 0 1rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .card h2 .badge { font-size: 0.7rem; font-weight: 500; font-family: var(--font-mono); color: var(--text-muted); background: var(--bg); border: 1px solid var(--border); border-radius: 100px; padding: 0.15rem 0.55rem; }
+
+  /* Form */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.85rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.85rem; }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  label { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; }
+  input, select, textarea, button { font-family: var(--font-sans); font-size: 0.92rem; }
+  input, select, textarea { border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 0.5rem 0.65rem; background: var(--surface); color: var(--text); width: 100%; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+  textarea { resize: vertical; min-height: 4.5rem; }
+  .row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+  .row-end { margin-left: auto; }
+  button { background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 0.5rem 1rem; cursor: pointer; color: var(--text); font-weight: 500; transition: background 0.12s, border-color 0.12s; }
+  button:hover { background: var(--bg); border-color: var(--text-muted); }
+  button:active { transform: scale(0.98); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover { background: var(--accent-text); border-color: var(--accent-text); }
+  button.icon { padding: 0.35rem 0.5rem; line-height: 1; }
+  button.ghost { background: transparent; border-color: transparent; color: var(--text-muted); font-size: 0.85rem; }
+  button.ghost:hover { color: var(--text); background: var(--bg); border-color: var(--border); }
+  .status { font-size: 0.82rem; color: var(--text-muted); }
+
+  /* GPX Upload Zone */
+  .upload-zone {
+    border: 2px dashed var(--border-strong); border-radius: var(--radius-lg);
+    padding: 1.5rem; text-align: center; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s; margin-bottom: 1rem;
+  }
+  .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: var(--accent-light); }
+  .upload-zone .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .upload-zone p { margin: 0; font-size: 0.88rem; color: var(--text-muted); }
+  .upload-zone strong { color: var(--text); }
+
+  /* GPX Preview */
+  .gpx-preview {
+    background: var(--accent-light); border: 1px solid var(--accent);
+    border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1rem;
+  }
+  .gpx-preview h3 { font-size: 0.88rem; font-weight: 600; margin: 0 0 0.75rem; color: var(--accent-text); }
+  .gpx-stats { display: flex; flex-wrap: wrap; gap: 1rem; }
+  .gpx-stat { font-size: 0.82rem; color: var(--text-muted); }
+  .gpx-stat strong { display: block; font-size: 1.05rem; font-weight: 600; color: var(--text); font-family: var(--font-mono); }
+
+  /* Week nav */
+  .week-nav { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1.25rem; }
+  .week-nav .label { font-family: var(--font-mono); font-size: 0.9rem; font-weight: 500; min-width: 220px; text-align: center; }
+  .current-tag { font-size: 0.7rem; color: var(--accent-text); background: var(--accent-light); border-radius: 100px; padding: 0.1rem 0.5rem; margin-left: 0.4rem; font-family: var(--font-sans); }
+
+  /* Metrics */
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 0.85rem; margin-bottom: 1.5rem; }
+  .metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0.9rem 1.1rem; }
+  .metric .m-label { font-size: 0.75rem; color: var(--text-muted); margin: 0 0 0.3rem; }
+  .metric .m-value { font-size: 1.4rem; font-weight: 600; font-family: var(--font-mono); letter-spacing: -0.02em; }
+
+  /* Charts */
+  .charts { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  @media (max-width: 680px) { .charts { grid-template-columns: 1fr; } }
+  .chart-box { position: relative; height: 200px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.6rem; font-size: 0.78rem; color: var(--text-muted); }
+  .legend .dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+
+  /* Entry list */
+  .entry { border-bottom: 1px solid var(--border); padding: 0.85rem 0; }
+  .entry:last-child { border-bottom: none; }
+  .entry-top { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+  .entry-date { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); min-width: 70px; }
+  .entry-sport { font-weight: 600; min-width: 80px; }
+  .pill { font-size: 0.72rem; font-weight: 500; padding: 0.12rem 0.55rem; border-radius: 100px; display: inline-block; }
+  .entry-duration { font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); }
+  .entry-meta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.35rem; }
+  .entry-meta span { font-size: 0.78rem; color: var(--text-muted); }
+  .entry-note { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.35rem; white-space: pre-wrap; }
+  .empty { color: var(--text-faint); font-size: 0.88rem; text-align: center; padding: 1.5rem 0; }
+  .import-hint { font-size: 0.8rem; color: var(--text-muted); margin: 0 0 0.85rem; }
+  code { font-family: var(--font-mono); font-size: 0.85em; background: var(--bg); padding: 0.1rem 0.3rem; border-radius: 4px; }
+
+  /* Calendar */
+  .cal-tabs { display: inline-flex; background: var(--bg); border: 1px solid var(--border); border-radius: 100px; padding: 0.2rem; }
+  .cal-tabs button { border: none; background: transparent; border-radius: 100px; padding: 0.35rem 1rem; font-size: 0.85rem; color: var(--text-muted); }
+  .cal-tabs button.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,0.06); font-weight: 600; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; }
+  .cal-weekday { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-align: center; padding-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .cal-cell { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); min-height: var(--cal-cell-min); padding: 0.4rem; display: flex; flex-direction: column; gap: 0.3rem; }
+  .cal-cell.outside { background: var(--bg); opacity: 0.45; }
+  .cal-cell.today { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .cal-daynum { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); }
+  .cal-cell.today .cal-daynum { color: var(--accent-text); font-weight: 700; }
+  .cal-entries { display: flex; flex-direction: column; gap: 0.2rem; flex: 1; }
+  .cal-chip { display: flex; align-items: center; gap: 0.3rem; font-size: 0.7rem; font-weight: 600; border-radius: 6px; padding: 0.12rem 0.35rem; line-height: 1.3; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .cal-chip .cal-icon { flex-shrink: 0; line-height: 1; }
+  .cal-chip .cal-dur { margin-left: auto; font-family: var(--font-mono); font-weight: 500; opacity: 0.75; flex-shrink: 0; }
+  .cal-grid.week .cal-cell { min-height: 160px; }
+  .cal-grid.week .cal-chip { font-size: 0.75rem; padding: 0.25rem 0.4rem; white-space: normal; }
+  .cal-legend { display: flex; flex-wrap: wrap; gap: 0.9rem; margin-top: 1rem; font-size: 0.78rem; color: var(--text-muted); }
+  @media (max-width: 680px) {
+    .cal-grid { gap: 0.25rem; }
+    .cal-cell { padding: 0.2rem; min-height: 60px; }
+    .cal-grid.week .cal-cell { min-height: 100px; }
+    .cal-weekday { font-size: 0.62rem; }
+    .cal-chip { font-size: 0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="auth-screen" style="display:none;">
+  <div class="auth-box">
+    <h1>Trainingslog</h1>
+    <p>Melde dich an, um deine Trainingsdaten geräteübergreifend zu speichern.</p>
+    <button class="btn-github" id="btn-login">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      Mit GitHub anmelden
+    </button>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+<div class="wrap">
+
+  <header>
+    <h1>Trainingslog</h1>
+    <div class="header-right">
+      <span class="sync-dot" id="sync-dot"></span>
+      <div class="user-chip">
+        <img id="user-avatar" src="" alt="" style="display:none;">
+        <span id="user-name"></span>
+      </div>
+      <button class="ghost" id="btn-logout">Abmelden</button>
+    </div>
+  </header>
+
+  <!-- Manuell erfassen -->
+  <div class="card">
+    <h2>Neue Einheit erfassen</h2>
+    <div class="grid" style="margin-bottom:0.85rem;">
+      <div class="field"><label for="t-date">Datum</label><input type="date" id="t-date"></div>
+      <div class="field"><label for="t-sport">Sportart</label>
+        <select id="t-sport">
+          <option value="Rad">Rad</option><option value="Lauf">Lauf</option>
+          <option value="Kraft">Kraft</option><option value="Kampfsport">Kampfsport</option>
+          <option value="Sonstiges">Sonstiges</option>
+        </select>
+      </div>
+      <div class="field"><label for="t-zone">Zone</label>
+        <select id="t-zone">
+          <option value="Z1">Zone 1 (locker)</option><option value="Z2">Zone 2 (Grundlage)</option>
+          <option value="Z3">Zone 3 (Tempo)</option><option value="Z4">Zone 4 (Threshold)</option>
+          <option value="Z5">Zone 5 (VO2max)</option><option value="-">Keine Zone</option>
+        </select>
+      </div>
+      <div class="field"><label for="t-duration">Dauer (min)</label><input type="number" id="t-duration" min="1" step="1" value="60"></div>
+    </div>
+    <div class="grid-3" style="margin-bottom:0.85rem;">
+      <div class="field"><label for="t-hravg">Ø-HF</label><input type="number" id="t-hravg" min="0" step="1" placeholder="z.B. 142"></div>
+      <div class="field"><label for="t-hrmax">Max-HF</label><input type="number" id="t-hrmax" min="0" step="1" placeholder="z.B. 168"></div>
+      <div class="field"><label for="t-distance">Distanz (km)</label><input type="number" id="t-distance" min="0" step="0.1" placeholder="z.B. 32.5"></div>
+      <div class="field"><label for="t-elevation">Höhenmeter (m)</label><input type="number" id="t-elevation" min="0" step="1" placeholder="z.B. 420"></div>
+    </div>
+    <div class="field" style="margin-bottom:0.85rem;">
+      <label for="t-note" id="t-note-label">Notiz (optional)</label>
+      <textarea id="t-note" placeholder="z.B. Intervalle 5x4min"></textarea>
+    </div>
+    <div class="row">
+      <button class="primary" id="t-add">Eintragen</button>
+      <span class="status" id="t-status"></span>
+    </div>
+  </div>
+
+  <!-- GPX Import -->
+  <div class="card">
+    <h2>GPX-Import <span class="badge">Garmin / GPS-Datei</span></h2>
+    <div class="upload-zone" id="gpx-zone">
+      <div class="icon">📍</div>
+      <p><strong>GPX-Datei hierher ziehen</strong> oder klicken zum Auswählen</p>
+      <p style="margin-top:0.3rem; font-size:0.75rem;">Liest automatisch: Datum, Dauer, HF, Distanz, Höhenmeter</p>
+      <input type="file" id="t-gpx" accept=".gpx" style="display:none;">
+    </div>
+    <div id="gpx-preview" style="display:none;"></div>
+    <div class="row" id="gpx-actions" style="display:none;">
+      <button class="primary" id="gpx-save">Einheit speichern</button>
+      <button class="ghost" id="gpx-discard">Verwerfen</button>
+      <span class="status" id="gpx-status"></span>
+    </div>
+
+    <!-- CSV Import -->
+    <div style="margin-top:1.25rem; padding-top:1.25rem; border-top: 1px solid var(--border);">
+      <p class="import-hint" style="margin-bottom:0.5rem; font-weight:500;">CSV-Import <span style="font-weight:400; color:var(--text-faint);">(z.B. Garmin Connect Aktivitätsliste)</span></p>
+      <p class="import-hint">Spalten: <code>Date</code>, <code>Activity</code>, <code>Duration</code>, <code>Avg HR</code>, <code>Max HR</code></p>
+      <div class="row">
+        <input type="file" id="t-csv" accept=".csv" style="max-width:280px;">
+        <span class="status" id="t-csv-status"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wochenauswahl -->
+  <div class="week-nav">
+    <button class="icon" id="t-prev">←</button>
+    <span class="label" id="t-weeklabel"></span>
+    <button class="icon" id="t-next">→</button>
+  </div>
+
+  <!-- Metrics -->
+  <div class="metrics">
+    <div class="metric"><p class="m-label">Gesamtzeit</p><p class="m-value" id="m-total">0:00</p></div>
+    <div class="metric"><p class="m-label">Einheiten</p><p class="m-value" id="m-count">0</p></div>
+    <div class="metric"><p class="m-label">Z1+Z2</p><p class="m-value" id="m-low">0%</p></div>
+    <div class="metric"><p class="m-label">Z4+Z5</p><p class="m-value" id="m-high">0%</p></div>
+    <div class="metric"><p class="m-label">Ø-HF</p><p class="m-value" id="m-hravg">–</p></div>
+    <div class="metric"><p class="m-label">Distanz (km)</p><p class="m-value" id="m-dist">–</p></div>
+    <div class="metric"><p class="m-label">Höhenmeter</p><p class="m-value" id="m-elev">–</p></div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts">
+    <div>
+      <div class="legend" id="t-legend"><span style="font-weight:600;">Zeit pro Zone (min)</span></div>
+      <div class="chart-box"><canvas id="t-chart"></canvas></div>
+    </div>
+    <div>
+      <div class="legend" id="t-legend2"><span style="font-weight:600;">Zeit pro Sportart</span></div>
+      <div class="chart-box"><canvas id="t-chart2"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Kalender -->
+  <div class="card">
+    <h2>Kalender</h2>
+    <div class="row" style="margin-bottom:1.25rem; justify-content:space-between;">
+      <div class="cal-tabs">
+        <button id="cal-tab-week" class="active">Woche</button>
+        <button id="cal-tab-month">Monat</button>
+      </div>
+      <div class="row" style="gap:0.75rem;">
+        <button class="icon" id="cal-prev">←</button>
+        <span id="cal-label" style="font-family:var(--font-mono); font-size:0.9rem; font-weight:500; min-width:160px; text-align:center;"></span>
+        <button class="icon" id="cal-next">→</button>
+      </div>
+    </div>
+    <div id="cal-container"></div>
+    <div class="cal-legend">
+      <span>🚴 Rad</span><span>🏃 Lauf</span><span>🏋️ Kraft</span><span>🥋 Kampfsport</span><span>⚡ Sonstiges</span>
+    </div>
+  </div>
+
+  <!-- Einheitenliste -->
+  <div class="card">
+    <h2>Einheiten dieser Woche</h2>
+    <div id="t-list"></div>
+  </div>
+
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ─── KONFIGURATION ────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://yjvdjswypyrmtqsohajk.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_VP4lHYt_uFGvZhTElmuXXA_D87DHTCM';
+
+// ─── DATEN-LAYER ──────────────────────────────────────────────────────────────
+// Für Migration auf Option B (eigener Server): nur diese Funktionen austauschen.
+const DB = {
+  async getSessions() {
+    const { data, error } = await sb.from('sessions').select('*').order('date', { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+  async addSession(session) {
+    const { data, error } = await sb.from('sessions').insert([session]).select().single();
+    if (error) throw error;
+    return data;
+  },
+  async deleteSession(id) {
+    const { error } = await sb.from('sessions').delete().eq('id', id);
+    if (error) throw error;
+  },
+  async addSessions(arr) {
+    const { data, error } = await sb.from('sessions').insert(arr).select();
+    if (error) throw error;
+    return data;
+  }
+};
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ─── KONSTANTEN ──────────────────────────────────────────────────────────────
+const ZONE_LABELS = {Z1:'Zone 1',Z2:'Zone 2',Z3:'Zone 3',Z4:'Zone 4',Z5:'Zone 5','-':'Keine Zone'};
+const ZONE_COLORS = {Z1:'#b8d4e8',Z2:'#5b9bd5',Z3:'#f0c674',Z4:'#e8975c',Z5:'#c4544a','-':'#c9c6bc'};
+const SPORT_COLORS = {'Rad':'#5b9bd5','Lauf':'#6fa86f','Kraft':'#c4544a','Kampfsport':'#b07cc6','Sonstiges':'#a8a59a'};
+const SPORT_ICONS = {'Rad':'🚴','Lauf':'🏃','Kraft':'🏋️','Kampfsport':'🥋','Sonstiges':'⚡'};
+const FREITEXT_SPORTS = ['Kraft','Kampfsport','Sonstiges'];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let sessions = [], chart1 = null, chart2 = null;
+let weekOffset = 0, calMode = 'week', monthOffset = 0;
+let currentUser = null, pendingGpx = null;
+
+// ─── HILFS ───────────────────────────────────────────────────────────────────
+function toISODate(d) {
+  const off = d.getTimezoneOffset();
+  return new Date(d.getTime() - off*60000).toISOString().slice(0,10);
+}
+function startOfWeek(d) {
+  const date = new Date(d), day = (date.getDay()+6)%7;
+  date.setDate(date.getDate()-day); date.setHours(0,0,0,0); return date;
+}
+function fmtDate(d) { return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}); }
+function fmtMinutes(min) { return Math.floor(min/60)+':'+String(Math.round(min%60)).padStart(2,'0'); }
+function getWeekRange() {
+  const base = startOfWeek(new Date());
+  base.setDate(base.getDate()+weekOffset*7);
+  const end = new Date(base); end.setDate(end.getDate()+6);
+  return {start:base, end};
+}
+function getMonthRange() {
+  const now = new Date();
+  const first = new Date(now.getFullYear(), now.getMonth()+monthOffset, 1);
+  const last = new Date(first.getFullYear(), first.getMonth()+1, 0);
+  last.setHours(23,59,59,999);
+  return {start:first, end:last, year:first.getFullYear(), month:first.getMonth()};
+}
+function inRange(dateStr, range) {
+  const d = new Date(dateStr+'T00:00:00'); return d >= range.start && d <= range.end;
+}
+function isSameDate(a,b) { return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
+function sessionsByDate(iso) { return sessions.filter(s=>s.date===iso); }
+function escapeHTML(str) { return String(str||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function setSyncState(state) {
+  const dot = document.getElementById('sync-dot');
+  dot.className = 'sync-dot'+(state==='syncing'?' syncing':state==='error'?' error':'');
+}
+
+// ─── GPX PARSER ──────────────────────────────────────────────────────────────
+function parseGPX(xmlText) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xmlText, 'application/xml');
+  const trkpts = Array.from(doc.querySelectorAll('trkpt'));
+  if (trkpts.length === 0) throw new Error('Keine Trackpunkte gefunden');
+
+  // Datum aus erstem Punkt oder Metadaten
+  const timeTags = doc.querySelectorAll('time');
+  const firstTime = timeTags[0] ? new Date(timeTags[0].textContent.trim()) : null;
+  const lastTime  = timeTags[timeTags.length-1] ? new Date(timeTags[timeTags.length-1].textContent.trim()) : null;
+
+  // Dauer in Minuten
+  const durationMin = (firstTime && lastTime && lastTime > firstTime)
+    ? Math.round((lastTime - firstTime) / 60000) : 0;
+
+  // Datum
+  const date = firstTime ? toISODate(firstTime) : toISODate(new Date());
+
+  // Distanz (Haversine)
+  let distanceKm = 0;
+  for (let i = 1; i < trkpts.length; i++) {
+    const lat1 = parseFloat(trkpts[i-1].getAttribute('lat'));
+    const lon1 = parseFloat(trkpts[i-1].getAttribute('lon'));
+    const lat2 = parseFloat(trkpts[i].getAttribute('lat'));
+    const lon2 = parseFloat(trkpts[i].getAttribute('lon'));
+    const R = 6371;
+    const dLat = (lat2-lat1)*Math.PI/180;
+    const dLon = (lon2-lon1)*Math.PI/180;
+    const a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+              Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+    distanceKm += R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+  distanceKm = Math.round(distanceKm * 100) / 100;
+
+  // Höhenmeter (nur Aufstieg)
+  let elevationM = 0;
+  const eles = trkpts.map(p => { const e = p.querySelector('ele'); return e ? parseFloat(e.textContent) : null; }).filter(e => e !== null);
+  for (let i = 1; i < eles.length; i++) {
+    const diff = eles[i] - eles[i-1];
+    if (diff > 0) elevationM += diff;
+  }
+  elevationM = Math.round(elevationM);
+
+  // Herzfrequenz (Garmin-Extension: gpxtpx:hr oder hr)
+  const hrValues = trkpts.map(p => {
+    const hr = p.querySelector('hr') || p.querySelector('[localName="hr"]');
+    if (hr) return parseInt(hr.textContent);
+    const ns = p.getElementsByTagNameNS('*', 'hr');
+    return ns.length > 0 ? parseInt(ns[0].textContent) : null;
+  }).filter(v => v !== null && v > 0);
+
+  const hrAvg = hrValues.length > 0 ? Math.round(hrValues.reduce((a,b)=>a+b,0)/hrValues.length) : null;
+  const hrMax = hrValues.length > 0 ? Math.max(...hrValues) : null;
+
+  // Sportart aus GPX-Type
+  const typeEl = doc.querySelector('type');
+  const typeRaw = typeEl ? typeEl.textContent.toLowerCase() : '';
+  let sport = 'Sonstiges';
+  if (typeRaw.includes('cycl')||typeRaw.includes('bike')||typeRaw.includes('rad')) sport='Rad';
+  else if (typeRaw.includes('run')||typeRaw.includes('lauf')) sport='Lauf';
+
+  // Aktivitätsname
+  const nameEl = doc.querySelector('trk > name') || doc.querySelector('name');
+  const name = nameEl ? nameEl.textContent.trim() : '';
+
+  return { date, durationMin, distanceKm, elevationM, hrAvg, hrMax, sport, name };
+}
+
+// ─── GPX UI ──────────────────────────────────────────────────────────────────
+function showGpxPreview(parsed) {
+  pendingGpx = parsed;
+  const preview = document.getElementById('gpx-preview');
+  preview.innerHTML = `
+    <h3>📍 ${escapeHTML(parsed.name || 'GPX-Aktivität')} – bereit zum Speichern</h3>
+    <div class="gpx-stats">
+      <div class="gpx-stat"><strong>${parsed.date}</strong>Datum</div>
+      <div class="gpx-stat"><strong>${parsed.sport}</strong>Sportart</div>
+      <div class="gpx-stat"><strong>${fmtMinutes(parsed.durationMin)}</strong>Dauer</div>
+      ${parsed.distanceKm ? `<div class="gpx-stat"><strong>${parsed.distanceKm} km</strong>Distanz</div>` : ''}
+      ${parsed.elevationM ? `<div class="gpx-stat"><strong>${parsed.elevationM} m</strong>Höhenmeter ↑</div>` : ''}
+      ${parsed.hrAvg ? `<div class="gpx-stat"><strong>${parsed.hrAvg}</strong>Ø-HF</div>` : ''}
+      ${parsed.hrMax ? `<div class="gpx-stat"><strong>${parsed.hrMax}</strong>Max-HF</div>` : ''}
+    </div>`;
+  preview.style.display = '';
+  document.getElementById('gpx-actions').style.display = '';
+
+  // Formular vorausfüllen
+  document.getElementById('t-date').value = parsed.date;
+  document.getElementById('t-sport').value = parsed.sport;
+  if (parsed.durationMin) document.getElementById('t-duration').value = parsed.durationMin;
+  if (parsed.hrAvg) document.getElementById('t-hravg').value = parsed.hrAvg;
+  if (parsed.hrMax) document.getElementById('t-hrmax').value = parsed.hrMax;
+  if (parsed.distanceKm) document.getElementById('t-distance').value = parsed.distanceKm;
+  if (parsed.elevationM) document.getElementById('t-elevation').value = parsed.elevationM;
+  if (parsed.name) document.getElementById('t-note').value = parsed.name;
+  updateNoteLabel();
+}
+
+function clearGpxPreview() {
+  pendingGpx = null;
+  document.getElementById('gpx-preview').style.display = 'none';
+  document.getElementById('gpx-actions').style.display = 'none';
+  document.getElementById('gpx-status').textContent = '';
+  document.getElementById('t-gpx').value = '';
+}
+
+// GPX Zone → Drop
+const gpxZone = document.getElementById('gpx-zone');
+gpxZone.addEventListener('click', () => document.getElementById('t-gpx').click());
+gpxZone.addEventListener('dragover', e => { e.preventDefault(); gpxZone.classList.add('dragover'); });
+gpxZone.addEventListener('dragleave', () => gpxZone.classList.remove('dragover'));
+gpxZone.addEventListener('drop', e => {
+  e.preventDefault(); gpxZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) handleGpxFile(file);
+});
+document.getElementById('t-gpx').addEventListener('change', e => {
+  if (e.target.files[0]) handleGpxFile(e.target.files[0]);
+});
+
+function handleGpxFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = parseGPX(reader.result);
+      showGpxPreview(parsed);
+    } catch(err) {
+      document.getElementById('gpx-status').textContent = 'Fehler: ' + err.message;
+      document.getElementById('gpx-actions').style.display = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+document.getElementById('gpx-save').addEventListener('click', async () => {
+  document.getElementById('gpx-save').click = null;
+  // Felder aus Formular nehmen (User kann noch angepasst haben)
+  await saveSession();
+  clearGpxPreview();
+});
+
+document.getElementById('gpx-discard').addEventListener('click', () => {
+  clearGpxPreview();
+  document.getElementById('t-note').value = '';
+  document.getElementById('t-hravg').value = '';
+  document.getElementById('t-hrmax').value = '';
+  document.getElementById('t-distance').value = '';
+  document.getElementById('t-elevation').value = '';
+});
+
+// ─── FORMULAR ────────────────────────────────────────────────────────────────
+document.getElementById('t-date').value = toISODate(new Date());
+
+function updateNoteLabel() {
+  const sport = document.getElementById('t-sport').value;
+  const label = document.getElementById('t-note-label');
+  const ta = document.getElementById('t-note');
+  if (FREITEXT_SPORTS.includes(sport)) {
+    label.textContent = 'Übungen / Training (frei)';
+    ta.placeholder = 'z.B. Kniebeugen 4x8 80kg, Klimmzüge 3x10';
+  } else {
+    label.textContent = 'Notiz (optional)';
+    ta.placeholder = 'z.B. Intervalle 5x4min';
+  }
+  if (FREITEXT_SPORTS.includes(sport)) document.getElementById('t-zone').value = '-';
+}
+document.getElementById('t-sport').addEventListener('change', updateNoteLabel);
+updateNoteLabel();
+
+async function saveSession() {
+  const date = document.getElementById('t-date').value;
+  const duration = parseFloat(document.getElementById('t-duration').value);
+  const statusEl = document.getElementById('t-status');
+  if (!date || !duration || duration <= 0) { statusEl.textContent = 'Bitte Datum und Dauer angeben'; return; }
+
+  const session = {
+    date, duration,
+    sport: document.getElementById('t-sport').value,
+    zone: document.getElementById('t-zone').value,
+    note: document.getElementById('t-note').value || null,
+    hr_avg: parseFloat(document.getElementById('t-hravg').value) || null,
+    hr_max: parseFloat(document.getElementById('t-hrmax').value) || null,
+    distance_km: parseFloat(document.getElementById('t-distance').value) || null,
+    elevation_m: parseFloat(document.getElementById('t-elevation').value) || null,
+    user_id: currentUser.id
+  };
+
+  setSyncState('syncing');
+  try {
+    const saved = await DB.addSession(session);
+    sessions.unshift(saved);
+    setSyncState('ok');
+    ['t-note','t-hravg','t-hrmax','t-distance','t-elevation'].forEach(id => document.getElementById(id).value = '');
+    statusEl.textContent = 'Gespeichert ✓';
+    setTimeout(() => { statusEl.textContent = ''; }, 2000);
+    render();
+  } catch(e) {
+    setSyncState('error');
+    statusEl.textContent = 'Fehler beim Speichern';
+    console.error(e);
+  }
+}
+
+document.getElementById('t-add').addEventListener('click', saveSession);
+document.getElementById('t-prev').addEventListener('click', () => { weekOffset--; render(); });
+document.getElementById('t-next').addEventListener('click', () => { weekOffset++; render(); });
+
+// ─── KALENDER ────────────────────────────────────────────────────────────────
+document.getElementById('cal-tab-week').addEventListener('click', () => {
+  calMode='week';
+  document.getElementById('cal-tab-week').classList.add('active');
+  document.getElementById('cal-tab-month').classList.remove('active');
+  renderCalendar();
+});
+document.getElementById('cal-tab-month').addEventListener('click', () => {
+  calMode='month';
+  document.getElementById('cal-tab-month').classList.add('active');
+  document.getElementById('cal-tab-week').classList.remove('active');
+  renderCalendar();
+});
+document.getElementById('cal-prev').addEventListener('click', () => {
+  if (calMode==='week'){weekOffset--;render();}else{monthOffset--;renderCalendar();}
+});
+document.getElementById('cal-next').addEventListener('click', () => {
+  if (calMode==='week'){weekOffset++;render();}else{monthOffset++;renderCalendar();}
+});
+
+function renderCalCell(cellDate, isOutside, weekMode) {
+  const iso = toISODate(cellDate);
+  const entries = sessionsByDate(iso);
+  const isToday = isSameDate(cellDate, new Date());
+  const cls = 'cal-cell'+(isOutside?' outside':'')+(isToday?' today':'');
+  const dayLabel = weekMode
+    ? cellDate.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})
+    : cellDate.getDate();
+  const chips = entries.map(s => {
+    const color = SPORT_COLORS[s.sport]||'#a8a59a';
+    const icon = SPORT_ICONS[s.sport]||'⚡';
+    const label = weekMode ? (s.sport+(s.zone!=='-'?' · '+ZONE_LABELS[s.zone]:'')) : s.sport;
+    const extra = weekMode && s.distance_km ? ` · ${s.distance_km}km` : '';
+    return `<span class="cal-chip" style="background:${color}22;color:${color};" title="${escapeHTML(s.sport+(s.note?': '+s.note:''))}">
+      <span class="cal-icon">${icon}</span><span>${escapeHTML(label+extra)}</span>
+      <span class="cal-dur">${fmtMinutes(s.duration)}</span></span>`;
+  }).join('');
+  return `<div class="${cls}"><span class="cal-daynum">${dayLabel}</span><div class="cal-entries">${chips}</div></div>`;
+}
+
+function renderCalendar() {
+  const container = document.getElementById('cal-container');
+  const labelEl = document.getElementById('cal-label');
+  const grid = document.createElement('div');
+  grid.className = 'cal-grid'+(calMode==='week'?' week':'');
+  ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(wd => {
+    const el = document.createElement('div');
+    el.className='cal-weekday'; el.textContent=wd; grid.appendChild(el);
+  });
+  if (calMode==='week') {
+    const range = getWeekRange();
+    labelEl.textContent = fmtDate(range.start)+' – '+fmtDate(range.end);
+    for (let i=0;i<7;i++) { const d=new Date(range.start); d.setDate(d.getDate()+i); grid.insertAdjacentHTML('beforeend',renderCalCell(d,false,true)); }
+  } else {
+    const range = getMonthRange();
+    labelEl.textContent = range.start.toLocaleDateString('de-DE',{month:'long',year:'numeric'});
+    const firstDay = new Date(range.year,range.month,1);
+    const gridStart = new Date(firstDay);
+    gridStart.setDate(gridStart.getDate()-(firstDay.getDay()+6)%7);
+    for (let i=0;i<42;i++) { const d=new Date(gridStart); d.setDate(d.getDate()+i); grid.insertAdjacentHTML('beforeend',renderCalCell(d,d.getMonth()!==range.month,false)); }
+  }
+  container.innerHTML=''; container.appendChild(grid);
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function render() {
+  renderCalendar();
+  const range = getWeekRange();
+  const tag = weekOffset===0?'<span class="current-tag">aktuelle Woche</span>':'';
+  document.getElementById('t-weeklabel').innerHTML = fmtDate(range.start)+' – '+fmtDate(range.end)+tag;
+
+  const ws = sessions.filter(s=>inRange(s.date,range)).sort((a,b)=>a.date.localeCompare(b.date));
+  const totalMin = ws.reduce((sum,s)=>sum+s.duration,0);
+  document.getElementById('m-total').textContent = fmtMinutes(totalMin);
+  document.getElementById('m-count').textContent = ws.length;
+
+  const zt={Z1:0,Z2:0,Z3:0,Z4:0,Z5:0,'-':0};
+  ws.forEach(s=>{zt[s.zone]=(zt[s.zone]||0)+s.duration;});
+  const ztotal=zt.Z1+zt.Z2+zt.Z3+zt.Z4+zt.Z5;
+  document.getElementById('m-low').textContent = ztotal>0?Math.round(((zt.Z1+zt.Z2)/ztotal)*100)+'%':'0%';
+  document.getElementById('m-high').textContent = ztotal>0?Math.round(((zt.Z4+zt.Z5)/ztotal)*100)+'%':'0%';
+
+  const hrS=ws.filter(s=>s.hr_avg);
+  document.getElementById('m-hravg').textContent = hrS.length>0
+    ? Math.round(hrS.reduce((sum,s)=>sum+(s.hr_avg*s.duration),0)/hrS.reduce((sum,s)=>sum+s.duration,0)):'–';
+
+  const distS=ws.filter(s=>s.distance_km);
+  document.getElementById('m-dist').textContent = distS.length>0
+    ? Math.round(distS.reduce((sum,s)=>sum+parseFloat(s.distance_km),0)*10)/10:'–';
+
+  const elevS=ws.filter(s=>s.elevation_m);
+  document.getElementById('m-elev').textContent = elevS.length>0
+    ? elevS.reduce((sum,s)=>sum+s.elevation_m,0):'–';
+
+  const st={};
+  ws.forEach(s=>{st[s.sport]=(st[s.sport]||0)+s.duration;});
+  const zkeys=['Z1','Z2','Z3','Z4','Z5','-'];
+
+  if(chart1)chart1.destroy();
+  chart1=new Chart(document.getElementById('t-chart'),{
+    type:'bar',
+    data:{labels:zkeys.map(k=>ZONE_LABELS[k]),datasets:[{label:'Minuten',data:zkeys.map(k=>Math.round(zt[k]||0)),backgroundColor:zkeys.map(k=>ZONE_COLORS[k]),borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0},grid:{color:'#eeece4'}},x:{grid:{display:false}}}}
+  });
+  document.getElementById('t-legend').innerHTML='<span style="font-weight:600;">Zeit pro Zone (min)</span>';
+
+  const skeys=Object.keys(st), scols=skeys.map(k=>SPORT_COLORS[k]||'#a8a59a');
+  if(chart2)chart2.destroy();
+  if(skeys.length>0){
+    chart2=new Chart(document.getElementById('t-chart2'),{
+      type:'doughnut',
+      data:{labels:skeys,datasets:[{data:skeys.map(k=>Math.round(st[k])),backgroundColor:scols,borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{display:false}}}
+    });
+  }
+  document.getElementById('t-legend2').innerHTML='<span style="font-weight:600;width:100%;">Zeit pro Sportart</span>'+
+    skeys.map((k,i)=>'<span><span class="dot" style="background:'+scols[i]+';"></span>'+k+' '+(totalMin>0?Math.round((st[k]/totalMin)*100):0)+'%</span>').join('');
+
+  // Liste
+  const listEl=document.getElementById('t-list');
+  if(ws.length===0){listEl.innerHTML='<p class="empty">Keine Einheiten in dieser Woche.</p>';return;}
+  listEl.innerHTML=ws.map(s=>{
+    const d=new Date(s.date+'T00:00:00');
+    const dateStr=d.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
+    const zcolor=ZONE_COLORS[s.zone]||'#c9c6bc';
+    const meta=[];
+    if(s.hr_avg||s.hr_max) meta.push('♥ '+(s.hr_avg?'Ø '+s.hr_avg:'')+(s.hr_avg&&s.hr_max?' / ':'')+(s.hr_max?'Max '+s.hr_max:''));
+    if(s.distance_km) meta.push('📍 '+s.distance_km+' km');
+    if(s.elevation_m) meta.push('↑ '+s.elevation_m+' m');
+    const metaStr=meta.length?'<div class="entry-meta">'+meta.map(m=>'<span>'+m+'</span>').join('')+'</div>':'';
+    const noteStr=s.note?'<div class="entry-note">'+escapeHTML(s.note)+'</div>':'';
+    return '<div class="entry"><div class="entry-top">'+
+      '<span class="entry-date">'+dateStr+'</span>'+
+      '<span class="entry-sport">'+SPORT_ICONS[s.sport]+' '+s.sport+'</span>'+
+      '<span class="pill" style="background:'+zcolor+'22;color:'+zcolor+';">'+ZONE_LABELS[s.zone]+'</span>'+
+      '<span class="entry-duration">'+fmtMinutes(s.duration)+'</span>'+
+      '<button class="icon row-end t-del" data-id="'+s.id+'" aria-label="Löschen">✕</button>'+
+      '</div>'+metaStr+noteStr+'</div>';
+  }).join('');
+  listEl.querySelectorAll('.t-del').forEach(btn=>{
+    btn.addEventListener('click',async()=>{
+      const id=btn.getAttribute('data-id');
+      setSyncState('syncing');
+      try{await DB.deleteSession(id);sessions=sessions.filter(s=>String(s.id)!==id);setSyncState('ok');render();}
+      catch(e){setSyncState('error');}
+    });
+  });
+}
+
+// ─── CSV IMPORT ──────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  const lines=text.split(/\r?\n/).filter(l=>l.trim().length>0);
+  if(lines.length<2)return[];
+  const headers=lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/"/g,''));
+  function findCol(names){for(const n of names){const idx=headers.findIndex(h=>h.includes(n));if(idx!==-1)return idx;}return -1;}
+  const dateIdx=findCol(['date','datum']),sportIdx=findCol(['activity','sport','type']),durIdx=findCol(['duration','dauer','time']);
+  const hravgIdx=findCol(['avg hr','average hr']),hrmaxIdx=findCol(['max hr']);
+  const results=[];
+  for(let i=1;i<lines.length;i++){
+    const cols=lines[i].split(',').map(c=>c.trim().replace(/^"|"$/g,''));
+    if(cols.length<2)continue;
+    const d=new Date(dateIdx!==-1?cols[dateIdx]:'');
+    if(isNaN(d.getTime()))continue;
+    let durRaw=durIdx!==-1?cols[durIdx]:'', durationMin=0;
+    if(durRaw.includes(':')){const p=durRaw.split(':').map(Number);if(p.length===3)durationMin=p[0]*60+p[1]+p[2]/60;else durationMin=p[0]+p[1]/60;}
+    else durationMin=parseFloat(durRaw)||0;
+    const sportRaw=sportIdx!==-1?cols[sportIdx]:'Sonstiges';
+    const sl=sportRaw.toLowerCase();
+    let sport='Sonstiges';
+    if(sl.includes('cycl')||sl.includes('rad')||sl.includes('bike'))sport='Rad';
+    else if(sl.includes('run')||sl.includes('lauf'))sport='Lauf';
+    else if(sl.includes('strength')||sl.includes('kraft'))sport='Kraft';
+    else if(sl.includes('mma')||sl.includes('boxing')||sl.includes('kampf'))sport='Kampfsport';
+    if(durationMin>0)results.push({date:toISODate(d),sport,zone:'-',duration:Math.round(durationMin),
+      note:sportRaw+' (importiert)',hr_avg:hravgIdx!==-1?(parseFloat(cols[hravgIdx])||null):null,
+      hr_max:hrmaxIdx!==-1?(parseFloat(cols[hrmaxIdx])||null):null,user_id:currentUser.id});
+  }
+  return results;
+}
+document.getElementById('t-csv').addEventListener('change',async(e)=>{
+  const file=e.target.files[0],statusEl=document.getElementById('t-csv-status');
+  if(!file)return;
+  statusEl.textContent='Lese Datei…';
+  const reader=new FileReader();
+  reader.onload=async()=>{
+    try{
+      const imported=parseCSV(reader.result);
+      if(imported.length===0){statusEl.textContent='Keine gültigen Zeilen gefunden';return;}
+      setSyncState('syncing');
+      const saved=await DB.addSessions(imported);
+      sessions=[...sessions,...saved];
+      setSyncState('ok');
+      statusEl.textContent=imported.length+' Einheiten importiert.';
+      render();
+    }catch(err){setSyncState('error');statusEl.textContent='Fehler beim Import';console.error(err);}
+  };
+  reader.readAsText(file);
+});
+
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+async function showApp(user) {
+  currentUser=user;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='';
+  const meta=user.user_metadata||{};
+  document.getElementById('user-name').textContent=meta.user_name||meta.name||user.email||'';
+  const avatar=document.getElementById('user-avatar');
+  if(meta.avatar_url){avatar.src=meta.avatar_url;avatar.style.display='';}
+  setSyncState('syncing');
+  sessions=await DB.getSessions();
+  setSyncState('ok');
+  render();
+}
+document.getElementById('btn-login').addEventListener('click',async()=>{
+  await sb.auth.signInWithOAuth({provider:'github',options:{redirectTo:window.location.href}});
+});
+document.getElementById('btn-logout').addEventListener('click',async()=>{
+  await sb.auth.signOut();
+  currentUser=null;sessions=[];
+  document.getElementById('app').style.display='none';
+  document.getElementById('auth-screen').style.display='';
+});
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+(async()=>{
+  const {data:{session}}=await sb.auth.getSession();
+  if(session?.user){await showApp(session.user);}
+  else{document.getElementById('auth-screen').style.display='';}
+  sb.auth.onAuthStateChange(async(event,session)=>{
+    if(event==='SIGNED_IN'&&session?.user){await showApp(session.user);}
+    else if(event==='SIGNED_OUT'){document.getElementById('auth-screen').style.display='';document.getElementById('app').style.display='none';}
+  });
+})();
+</script>
+</body>
+</html>
