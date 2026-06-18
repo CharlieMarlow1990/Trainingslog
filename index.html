@@ -126,7 +126,7 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
 .analytics-table td{padding:.4rem .5rem;border-bottom:1px solid var(--border);}
 .analytics-table tr:last-child td{border-bottom:none;}
 
-/* ── KI-CHAT ── */
+/* ââ KI-CHAT ââ */
 .ai-analysis-box{background:var(--accent-light);border:1px solid var(--accent);border-radius:var(--radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:.88rem;line-height:1.7;white-space:pre-wrap;}
 .ai-analysis-box h3{font-size:.85rem;font-weight:600;color:var(--accent-text);margin:0 0 .5rem;}
 .chat-messages{display:flex;flex-direction:column;gap:.75rem;margin-bottom:1rem;max-height:400px;overflow-y:auto;padding:.25rem 0;}
@@ -145,7 +145,7 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
 .ai-loading span:nth-child(3){animation-delay:.3s;}
 @keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
 
-/* ── SETTINGS ── */
+/* ââ SETTINGS ââ */
 .sport-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.55rem;flex-wrap:wrap;}
 .sport-row .sport-name{font-weight:500;min-width:80px;font-size:.88rem;}
 .color-pick{width:34px;height:34px;padding:2px;border:1px solid var(--border-strong);border-radius:8px;cursor:pointer;}
@@ -155,7 +155,7 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
 .zone-row input{font-size:.82rem;}
 .zone-color-pick{width:30px;height:30px;padding:2px;border:1px solid var(--border-strong);border-radius:6px;cursor:pointer;}
 
-/* ── PROFIL ── */
+/* ââ PROFIL ââ */
 .profile-textarea{min-height:220px;font-family:var(--font-mono);font-size:.82rem;line-height:1.6;}
 .profile-hint{font-size:.78rem;color:var(--text-muted);margin:0 0 .75rem;line-height:1.6;}
 </style>
@@ -165,7 +165,7 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
 <div id="auth-screen" style="display:none;">
   <div class="auth-box">
     <h1>Trainingslog</h1>
-    <p>Melde dich an, um deine Daten geräteübergreifend zu speichern.</p>
+    <p>Melde dich an, um deine Daten gerÃ¤teÃ¼bergreifend zu speichern.</p>
     <button class="btn-github" id="btn-login">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
       Mit GitHub anmelden
@@ -175,11 +175,11 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
 
 <div id="app" style="display:none;">
 <nav id="bottom-nav">
-  <button class="active" data-page="log"><span class="nav-icon">📋</span>Log</button>
-  <button data-page="calendar"><span class="nav-icon">📅</span>Kalender</button>
-  <button data-page="analytics"><span class="nav-icon">📊</span>Auswertung</button>
-  <button data-page="ai"><span class="nav-icon">🤖</span>KI</button>
-  <button data-page="settings-page"><span class="nav-icon">⚙️</span>Einstellungen</button>
+  <button class="active" data-page="log"><span class="nav-icon">ð</span>Log</button>
+  <button data-page="calendar"><span class="nav-icon">ð</span>Kalender</button>
+  <button data-page="analytics"><span class="nav-icon">ð</span>Auswertung</button>
+  <button data-page="ai"><span class="nav-icon">ð¤</span>KI</button>
+  <button data-page="settings-page"><span class="nav-icon">âï¸</span>Einstellungen</button>
 </nav>
 
 <div class="wrap">
@@ -207,21 +207,21 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
     </div>
     <div id="t-title-wrap" class="field" style="margin-bottom:.75rem;display:none;">
       <label>Name der Einheit</label>
-      <input type="text" id="t-title" placeholder="z.B. Oberkörper A, Leg Day">
+      <input type="text" id="t-title" placeholder="z.B. OberkÃ¶rper A, Leg Day">
     </div>
     <div class="grid" style="margin-bottom:.75rem;">
-      <div class="field"><label>Ø-HF</label><input type="number" id="t-hravg" min="0" step="1" placeholder="142"></div>
+      <div class="field"><label>Ã-HF</label><input type="number" id="t-hravg" min="0" step="1" placeholder="142"></div>
       <div class="field"><label>Max-HF</label><input type="number" id="t-hrmax" min="0" step="1" placeholder="168"></div>
       <div class="field"><label>Distanz (km)</label><input type="number" id="t-distance" min="0" step="0.1" placeholder="32.5"></div>
-      <div class="field"><label>Höhenmeter (m)</label><input type="number" id="t-elevation" min="0" step="1" placeholder="420"></div>
+      <div class="field"><label>HÃ¶henmeter (m)</label><input type="number" id="t-elevation" min="0" step="1" placeholder="420"></div>
     </div>
     <div class="field" style="margin-bottom:.75rem;">
-      <label id="t-note-label">Notiz / Übungen</label>
+      <label id="t-note-label">Notiz / Ãbungen</label>
       <textarea id="t-note" placeholder="z.B. Intervalle 5x4min"></textarea>
     </div>
     <div class="row">
       <button class="primary" id="t-add">Eintragen</button>
-      <button id="btn-analyze-week" style="display:flex;align-items:center;gap:.4rem;">🤖 Woche analysieren</button>
+      <button id="btn-analyze-week" style="display:flex;align-items:center;gap:.4rem;">ð¤ Woche analysieren</button>
       <span class="status" id="t-status"></span>
     </div>
   </div>
@@ -231,9 +231,9 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
   <div class="card">
     <h2>Import <span class="badge">GPX &amp; CSV</span></h2>
     <div class="upload-zone" id="gpx-zone">
-      <div class="icon">📍</div>
+      <div class="icon">ð</div>
       <p><strong>GPX-Datei hierher ziehen</strong> oder tippen</p>
-      <p style="margin-top:.25rem;font-size:.72rem;">Liest: Datum, Dauer, HF, Distanz, Höhenmeter</p>
+      <p style="margin-top:.25rem;font-size:.72rem;">Liest: Datum, Dauer, HF, Distanz, HÃ¶henmeter</p>
       <input type="file" id="t-gpx" accept=".gpx" style="display:none;">
     </div>
     <div id="gpx-preview" style="display:none;"></div>
@@ -253,17 +253,17 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
   </div>
 
   <div class="week-nav">
-    <button class="icon" id="t-prev">←</button>
+    <button class="icon" id="t-prev">â</button>
     <span class="label" id="t-weeklabel"></span>
-    <button class="icon" id="t-next">→</button>
+    <button class="icon" id="t-next">â</button>
   </div>
   <div class="metrics">
     <div class="metric"><p class="m-label">Gesamtzeit</p><p class="m-value" id="m-total">0:00</p></div>
     <div class="metric"><p class="m-label">Einheiten</p><p class="m-value" id="m-count">0</p></div>
     <div class="metric"><p class="m-label">Z1+Z2</p><p class="m-value" id="m-low">0%</p></div>
     <div class="metric"><p class="m-label">Z4+Z5</p><p class="m-value" id="m-high">0%</p></div>
-    <div class="metric"><p class="m-label">Distanz km</p><p class="m-value" id="m-dist">–</p></div>
-    <div class="metric"><p class="m-label">Höhenmeter</p><p class="m-value" id="m-elev">–</p></div>
+    <div class="metric"><p class="m-label">Distanz km</p><p class="m-value" id="m-dist">â</p></div>
+    <div class="metric"><p class="m-label">HÃ¶henmeter</p><p class="m-value" id="m-elev">â</p></div>
   </div>
   <div class="charts">
     <div>
@@ -290,9 +290,9 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
         <button id="cal-tab-month">Monat</button>
       </div>
       <div class="row" style="gap:.6rem;">
-        <button class="icon" id="cal-prev">←</button>
+        <button class="icon" id="cal-prev">â</button>
         <span id="cal-label" style="font-family:var(--font-mono);font-size:.85rem;font-weight:500;min-width:150px;text-align:center;"></span>
-        <button class="icon" id="cal-next">→</button>
+        <button class="icon" id="cal-next">â</button>
       </div>
     </div>
     <div id="cal-container"></div>
@@ -324,10 +324,10 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
 <!-- KI -->
 <div class="page" id="page-ai">
   <div class="card">
-    <h2>🤖 KI-Trainingsassistent</h2>
+    <h2>ð¤ KI-Trainingsassistent</h2>
     <div id="chat-messages" class="chat-messages"></div>
     <div class="chat-input-row">
-      <textarea id="chat-input" placeholder="Frag mich über dein Training… z.B. 'Wie war meine letzte Woche?' oder 'Halte ich die 80/20-Regel ein?'" rows="2"></textarea>
+      <textarea id="chat-input" placeholder="Frag mich Ã¼ber dein Trainingâ¦ z.B. 'Wie war meine letzte Woche?' oder 'Halte ich die 80/20-Regel ein?'" rows="2"></textarea>
       <button class="primary" id="chat-send" style="align-self:flex-end;">Senden</button>
     </div>
     <p style="font-size:.72rem;color:var(--text-faint);margin:.5rem 0 0;">Die KI hat Zugriff auf deine Trainingsdaten und dein Trainingsprofil.</p>
@@ -338,20 +338,20 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
 <div class="page" id="page-settings-page">
   <!-- Trainingsprofil -->
   <div class="card">
-    <h2>🎯 Trainingsprofil &amp; Prinzipien</h2>
+    <h2>ð¯ Trainingsprofil &amp; Prinzipien</h2>
     <p class="profile-hint">Beschreibe hier deine Trainingsmethodik, Ziele, HF-Werte und Vorgaben. Die KI nutzt diese Informationen automatisch bei jeder Analyse.</p>
     <div class="field" style="margin-bottom:.75rem;">
       <textarea id="profile-content" class="profile-textarea" placeholder="Beispiel:
 Methodik: Polarized Training (80% Z1/Z2, 20% Z4/Z5)
 Schwellenpuls: 168 bpm
-Zone 2: 130–148 bpm
+Zone 2: 130â148 bpm
 
 Wochenziele:
-- Rad: 150–200 km, 6–8h
-- Lauf: 30–40 km, 3–4h
+- Rad: 150â200 km, 6â8h
+- Lauf: 30â40 km, 3â4h
 - Kraft: 2x pro Woche
 
-Wettkampfperiode: Oktober–November
+Wettkampfperiode: OktoberâNovember
 Aktueller Fokus: Grundlagenausdauer aufbauen"></textarea>
     </div>
     <div class="row">
@@ -380,7 +380,7 @@ Aktueller Fokus: Grundlagenausdauer aufbauen"></textarea>
 
   <div class="row" style="padding:0 0 1rem;">
     <button class="primary" id="save-settings-inline">Einstellungen speichern</button>
-    <button class="ghost" id="reset-settings-inline">Zurücksetzen</button>
+    <button class="ghost" id="reset-settings-inline">ZurÃ¼cksetzen</button>
     <span class="status" id="settings-status-inline"></span>
   </div>
 </div>
@@ -391,13 +391,13 @@ Aktueller Fokus: Grundlagenausdauer aufbauen"></textarea>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ── KONFIGURATION ─────────────────────────────────────────────────────────────
+// ââ KONFIGURATION âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const SUPABASE_URL='https://yjvdjswypyrmtqsohajk.supabase.co';
 const SUPABASE_KEY='sb_publishable_VP4lHYt_uFGvZhTElmuXXA_D87DHTCM';
 const ANTHROPIC_KEY='DEIN_API_KEY_HIER'; // <-- neuen Key hier eintragen
 const BUCKET='sport-icons';
 
-// ── DATEN-LAYER ───────────────────────────────────────────────────────────────
+// ââ DATEN-LAYER âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const DB={
   async getSessions(){const{data,error}=await sb.from('sessions').select('*').order('date',{ascending:false});if(error)throw error;return data;},
   async addSession(s){const{data,error}=await sb.from('sessions').insert([s]).select().single();if(error)throw error;return data;},
@@ -422,13 +422,13 @@ const DB={
 
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-// ── DEFAULTS ──────────────────────────────────────────────────────────────────
+// ââ DEFAULTS ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const DEFAULT_SPORTS=[
-  {key:'Rad',label:'Rad',color:'#5b9bd5',icon:'🚴',imgUrl:null},
-  {key:'Lauf',label:'Lauf',color:'#6fa86f',icon:'🏃',imgUrl:null},
-  {key:'Kraft',label:'Kraft',color:'#c4544a',icon:'🏋️',imgUrl:null},
-  {key:'Kampfsport',label:'Kampfsport',color:'#b07cc6',icon:'🥋',imgUrl:null},
-  {key:'Sonstiges',label:'Sonstiges',color:'#a8a59a',icon:'⚡',imgUrl:null}
+  {key:'Rad',label:'Rad',color:'#5b9bd5',icon:'ð´',imgUrl:null},
+  {key:'Lauf',label:'Lauf',color:'#6fa86f',icon:'ð',imgUrl:null},
+  {key:'Kraft',label:'Kraft',color:'#c4544a',icon:'ðï¸',imgUrl:null},
+  {key:'Kampfsport',label:'Kampfsport',color:'#b07cc6',icon:'ð¥',imgUrl:null},
+  {key:'Sonstiges',label:'Sonstiges',color:'#a8a59a',icon:'â¡',imgUrl:null}
 ];
 const DEFAULT_ZONES=[
   {key:'Z1',label:'Zone 1',hrMin:null,hrMax:null,color:'#b8d4e8'},
@@ -440,7 +440,7 @@ const DEFAULT_ZONES=[
 ];
 const FREITEXT=['Kraft','Kampfsport','Sonstiges'];
 
-// ── STATE ─────────────────────────────────────────────────────────────────────
+// ââ STATE âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let sessions=[],chart1=null,chart2=null,analyticsChart=null;
 let weekOffset=0,calMode='week',monthOffset=0;
 let currentUser=null,trainingProfile='';
@@ -451,10 +451,10 @@ let chatHistory=[];
 
 function loadCfg(){try{const c=localStorage.getItem('tlog_cfg');if(c){const p=JSON.parse(c);cfg.sports=p.sports||cfg.sports;cfg.zones=p.zones||cfg.zones;}}catch(e){}}
 function saveCfg(){localStorage.setItem('tlog_cfg',JSON.stringify(cfg));}
-function sportCfg(key){return cfg.sports.find(s=>s.key===key)||{color:'#a8a59a',icon:'⚡',label:key,imgUrl:null};}
+function sportCfg(key){return cfg.sports.find(s=>s.key===key)||{color:'#a8a59a',icon:'â¡',label:key,imgUrl:null};}
 function zoneCfg(key){return cfg.zones.find(z=>z.key===key)||{label:key,color:'#c9c6bc'};}
 
-// ── HELPERS ───────────────────────────────────────────────────────────────────
+// ââ HELPERS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function toISODate(d){const off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10);}
 function startOfWeek(d){const date=new Date(d),day=(date.getDay()+6)%7;date.setDate(date.getDate()-day);date.setHours(0,0,0,0);return date;}
 function fmtDate(d){return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});}
@@ -468,7 +468,7 @@ function esc(str){return String(str||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<'
 function setSyncState(state){const dot=document.getElementById('sync-dot');dot.className='sync-dot'+(state==='syncing'?' syncing':state==='error'?' error':'');}
 function sportIconHTML(sport,size=20){const sc=sportCfg(sport);if(sc.imgUrl)return`<img src="${esc(sc.imgUrl)}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:cover;" alt="${esc(sport)}">`;return`<span style="font-size:${size*0.8}px;">${sc.icon}</span>`;}
 
-// ── NAVIGATION ────────────────────────────────────────────────────────────────
+// ââ NAVIGATION ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function showPage(key){
   activePage=key;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -480,34 +480,34 @@ function showPage(key){
 }
 document.querySelectorAll('#bottom-nav button').forEach(btn=>btn.addEventListener('click',()=>showPage(btn.dataset.page)));
 
-// ── SELECTS ───────────────────────────────────────────────────────────────────
+// ââ SELECTS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function populateSelects(){
   document.getElementById('t-sport').innerHTML=cfg.sports.map(s=>`<option value="${s.key}">${s.icon} ${s.label}</option>`).join('');
-  document.getElementById('t-zone').innerHTML=cfg.zones.map(z=>`<option value="${z.key}">${z.label}${z.hrMin&&z.hrMax?' ('+z.hrMin+'–'+z.hrMax+')':''}</option>`).join('');
+  document.getElementById('t-zone').innerHTML=cfg.zones.map(z=>`<option value="${z.key}">${z.label}${z.hrMin&&z.hrMax?' ('+z.hrMin+'â'+z.hrMax+')':''}</option>`).join('');
 }
 function updateNoteLabel(){
   const sport=document.getElementById('t-sport').value;
   const isFrei=FREITEXT.includes(sport);
-  document.getElementById('t-note-label').textContent=isFrei?'Übungen / Training (frei)':'Notiz (optional)';
+  document.getElementById('t-note-label').textContent=isFrei?'Ãbungen / Training (frei)':'Notiz (optional)';
   document.getElementById('t-note').placeholder=isFrei?'z.B. Kniebeugen 4x8 80kg':'z.B. Intervalle 5x4min';
   document.getElementById('t-title-wrap').style.display=isFrei?'':'none';
   if(isFrei)document.getElementById('t-zone').value='-';
 }
 document.getElementById('t-sport').addEventListener('change',updateNoteLabel);
 
-// ── KI ────────────────────────────────────────────────────────────────────────
+// ââ KI ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function buildTrainingContext(weekSessions,allSessions){
   const range=getWeekRange();
   const ws=weekSessions||sessions.filter(s=>inRange(s.date,range));
 
-  // Letzte 4 Wochen für Kontext
+  // Letzte 4 Wochen fÃ¼r Kontext
   const fourWeeksAgo=new Date();fourWeeksAgo.setDate(fourWeeksAgo.getDate()-28);
   const recent=allSessions||sessions.filter(s=>new Date(s.date+'T00:00:00')>=fourWeeksAgo);
 
   const formatSession=s=>`- ${s.date} | ${s.sport} | ${zoneCfg(s.zone).label} | ${fmtMin(s.duration)}h`+
     (s.distance_km?` | ${s.distance_km}km`:'')+
-    (s.elevation_m?` | ↑${s.elevation_m}m`:'')+
-    (s.hr_avg?` | Ø${s.hr_avg}bpm`:'')+
+    (s.elevation_m?` | â${s.elevation_m}m`:'')+
+    (s.hr_avg?` | Ã${s.hr_avg}bpm`:'')+
     (s.hr_max?` Max${s.hr_max}bpm`:'')+
     (s.title?` | "${s.title}"`:'')+
     (s.note?` | ${s.note}`:'');
@@ -519,13 +519,13 @@ function buildTrainingContext(weekSessions,allSessions){
   const highPct=zonedTotal>0?Math.round(((zt[cfg.zones[3]?.key]||0)+(zt[cfg.zones[4]?.key]||0))/zonedTotal*100):0;
 
   return`=== TRAININGSPROFIL & PRINZIPIEN ===
-${trainingProfile||'(noch nicht ausgefüllt – bitte unter Einstellungen → Trainingsprofil ergänzen)'}
+${trainingProfile||'(noch nicht ausgefÃ¼llt â bitte unter Einstellungen â Trainingsprofil ergÃ¤nzen)'}
 
-=== AKTUELLE WOCHE (${fmtDate(range.start)} – ${fmtDate(range.end)}) ===
+=== AKTUELLE WOCHE (${fmtDate(range.start)} â ${fmtDate(range.end)}) ===
 Einheiten: ${ws.length} | Gesamtzeit: ${fmtMin(ws.reduce((a,s)=>a+s.duration,0))}
 Zonenverteilung: Z1+Z2=${lowPct}% | Z4+Z5=${highPct}%
 Distanz: ${ws.filter(s=>s.distance_km).reduce((a,s)=>a+parseFloat(s.distance_km),0).toFixed(1)}km
-H�henmeter: ${ws.filter(s=>s.elevation_m).reduce((a,s)=>a+s.elevation_m,0)}m
+H¶henmeter: ${ws.filter(s=>s.elevation_m).reduce((a,s)=>a+s.elevation_m,0)}m
 
 Einheiten im Detail:
 ${ws.length>0?ws.map(formatSession).join('\n'):'(keine Einheiten diese Woche)'}
@@ -534,7 +534,7 @@ ${ws.length>0?ws.map(formatSession).join('\n'):'(keine Einheiten diese Woche)'}
 ${recent.map(formatSession).join('\n')||'(keine Daten)'}
 
 === ZONEN-KONFIGURATION ===
-${cfg.zones.filter(z=>z.key!=='-').map(z=>z.label+(z.hrMin&&z.hrMax?` (${z.hrMin}–${z.hrMax} bpm)`:'')).join(' | ')}`;
+${cfg.zones.filter(z=>z.key!=='-').map(z=>z.label+(z.hrMin&&z.hrMax?` (${z.hrMin}â${z.hrMax} bpm)`:'')).join(' | ')}`;
 }
 
 async function callAI(messages){
@@ -544,7 +544,7 @@ async function callAI(messages){
     body:JSON.stringify({
       model:'claude-sonnet-4-6',
       max_tokens:1024,
-      system:`Du bist ein persönlicher Trainingsassistent. Du analysierst Trainingsdaten und gibst konkrete, datenbasierte Empfehlungen. Antworte immer auf Deutsch. Sei präzise und direkt – keine allgemeinen Floskeln. Beziehe dich immer auf die konkreten Zahlen aus den Daten.`,
+      system:`Du bist ein persÃ¶nlicher Trainingsassistent. Du analysierst Trainingsdaten und gibst konkrete, datenbasierte Empfehlungen. Antworte immer auf Deutsch. Sei prÃ¤zise und direkt â keine allgemeinen Floskeln. Beziehe dich immer auf die konkreten Zahlen aus den Daten.`,
       messages
     })
   });
@@ -558,10 +558,10 @@ function addChatMessage(role,text,isLoading=false){
   const div=document.createElement('div');
   div.className='chat-msg '+role;
   if(isLoading){
-    div.innerHTML=`<div class="chat-avatar">🤖</div><div class="chat-bubble"><div class="ai-loading"><span></span><span></span><span></span></div></div>`;
+    div.innerHTML=`<div class="chat-avatar">ð¤</div><div class="chat-bubble"><div class="ai-loading"><span></span><span></span><span></span></div></div>`;
     div.id='chat-loading';
   }else{
-    const avatar=role==='user'?'<div class="chat-avatar">Du</div>':`<div class="chat-avatar">🤖</div>`;
+    const avatar=role==='user'?'<div class="chat-avatar">Du</div>':`<div class="chat-avatar">ð¤</div>`;
     div.innerHTML=`${avatar}<div class="chat-bubble">${esc(text)}</div>`;
   }
   container.appendChild(div);
@@ -597,23 +597,23 @@ document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key===
 document.getElementById('btn-analyze-week').addEventListener('click',async()=>{
   const btn=document.getElementById('btn-analyze-week');
   const box=document.getElementById('week-analysis-box');
-  btn.disabled=true;btn.textContent='🤖 Analysiere…';
+  btn.disabled=true;btn.textContent='ð¤ Analysiereâ¦';
   box.style.display='none';
   const range=getWeekRange();
   const ws=sessions.filter(s=>inRange(s.date,range));
   const context=buildTrainingContext(ws);
   try{
-    const reply=await callAI([{role:'user',content:`Analysiere meine Trainingswoche und gib konkrete Empfehlungen für die nächste Woche. Berücksichtige mein Trainingsprofil und die 80/20-Regel falls relevant.\n\n${context}`}]);
-    box.innerHTML=`<div class="ai-analysis-box"><h3>🤖 Wochenanalyse</h3>${esc(reply)}</div>`;
+    const reply=await callAI([{role:'user',content:`Analysiere meine Trainingswoche und gib konkrete Empfehlungen fÃ¼r die nÃ¤chste Woche. BerÃ¼cksichtige mein Trainingsprofil und die 80/20-Regel falls relevant.\n\n${context}`}]);
+    box.innerHTML=`<div class="ai-analysis-box"><h3>ð¤ Wochenanalyse</h3>${esc(reply)}</div>`;
     box.style.display='block';
   }catch(e){
     box.innerHTML=`<div class="ai-analysis-box"><h3>Fehler</h3>${esc(e.message)}</div>`;
     box.style.display='block';
   }
-  btn.disabled=false;btn.textContent='🤖 Woche analysieren';
+  btn.disabled=false;btn.textContent='ð¤ Woche analysieren';
 });
 
-// ── TRAININGSPROFIL ───────────────────────────────────────────────────────────
+// ââ TRAININGSPROFIL âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 document.getElementById('save-profile').addEventListener('click',async()=>{
   const content=document.getElementById('profile-content').value;
   const statusEl=document.getElementById('profile-status');
@@ -622,11 +622,11 @@ document.getElementById('save-profile').addEventListener('click',async()=>{
     await DB.saveProfile(content);
     trainingProfile=content;
     setSyncState('ok');
-    statusEl.textContent='Gespeichert ✓';setTimeout(()=>{statusEl.textContent='';},2000);
+    statusEl.textContent='Gespeichert â';setTimeout(()=>{statusEl.textContent='';},2000);
   }catch(e){setSyncState('error');statusEl.textContent='Fehler: '+e.message;}
 });
 
-// ── LOG ───────────────────────────────────────────────────────────────────────
+// ââ LOG âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function saveSession(){
   const date=document.getElementById('t-date').value;
   const duration=parseFloat(document.getElementById('t-duration').value);
@@ -641,7 +641,7 @@ async function saveSession(){
   try{
     const saved=await DB.addSession(session);sessions.unshift(saved);setSyncState('ok');
     ['t-note','t-hravg','t-hrmax','t-distance','t-elevation','t-title'].forEach(id=>document.getElementById(id).value='');
-    statusEl.textContent='Gespeichert ✓';setTimeout(()=>{statusEl.textContent='';},2000);renderLog();
+    statusEl.textContent='Gespeichert â';setTimeout(()=>{statusEl.textContent='';},2000);renderLog();
   }catch(e){setSyncState('error');statusEl.textContent='Fehler';console.error(e);}
 }
 document.getElementById('t-add').addEventListener('click',saveSession);
@@ -659,16 +659,16 @@ function buildDetailHTML(s){
     <div class="detail-field"><label>Dauer (min)</label><input class="ed-dur" type="number" value="${s.duration}" min="1" data-id="${s.id}"></div>
     <div class="detail-field"><label>Datum</label><input class="ed-date" type="date" value="${s.date}" data-id="${s.id}"></div>
     ${isFrei?`<div class="detail-field"><label>Name</label><input class="ed-title" type="text" value="${esc(s.title||'')}" data-id="${s.id}"></div>`:''}
-    <div class="detail-field"><label>Ø-HF</label><input class="ed-hravg" type="number" value="${s.hr_avg||''}" data-id="${s.id}"></div>
+    <div class="detail-field"><label>Ã-HF</label><input class="ed-hravg" type="number" value="${s.hr_avg||''}" data-id="${s.id}"></div>
     <div class="detail-field"><label>Max-HF</label><input class="ed-hrmax" type="number" value="${s.hr_max||''}" data-id="${s.id}"></div>
     <div class="detail-field"><label>Distanz (km)</label><input class="ed-dist" type="number" step="0.1" value="${s.distance_km||''}" data-id="${s.id}"></div>
-    <div class="detail-field"><label>Höhenmeter</label><input class="ed-elev" type="number" value="${s.elevation_m||''}" data-id="${s.id}"></div>
+    <div class="detail-field"><label>HÃ¶henmeter</label><input class="ed-elev" type="number" value="${s.elevation_m||''}" data-id="${s.id}"></div>
   </div>
-  <div class="detail-field" style="margin-bottom:.65rem;"><label>${isFrei?'Übungen':'Notiz'}</label>
+  <div class="detail-field" style="margin-bottom:.65rem;"><label>${isFrei?'Ãbungen':'Notiz'}</label>
     <textarea class="ed-note" data-id="${s.id}" rows="2">${esc(s.note||'')}</textarea></div>
   <div class="row">
     <button class="primary btn-save-edit" data-id="${s.id}">Speichern</button>
-    <button class="danger btn-delete" data-id="${s.id}">Löschen</button>
+    <button class="danger btn-delete" data-id="${s.id}">LÃ¶schen</button>
     <span class="status edit-status-${s.id}"></span>
   </div>`;
 }
@@ -682,11 +682,11 @@ async function handleSaveEdit(id){
     distance_km:parseFloat(wrap.querySelector('.ed-dist').value)||null,elevation_m:parseFloat(wrap.querySelector('.ed-elev').value)||null};
   const titleEl=wrap.querySelector('.ed-title');if(titleEl)updates.title=titleEl.value||null;
   setSyncState('syncing');
-  try{const saved=await DB.updateSession(id,updates);const idx=sessions.findIndex(s=>String(s.id)===String(id));if(idx!==-1)sessions[idx]=saved;setSyncState('ok');statusEl.textContent='✓';setTimeout(()=>renderLog(),600);}
+  try{const saved=await DB.updateSession(id,updates);const idx=sessions.findIndex(s=>String(s.id)===String(id));if(idx!==-1)sessions[idx]=saved;setSyncState('ok');statusEl.textContent='â';setTimeout(()=>renderLog(),600);}
   catch(e){setSyncState('error');statusEl.textContent='Fehler';}
 }
 async function handleDelete(id){
-  if(!confirm('Einheit wirklich löschen?'))return;
+  if(!confirm('Einheit wirklich lÃ¶schen?'))return;
   setSyncState('syncing');
   try{await DB.deleteSession(id);sessions=sessions.filter(s=>String(s.id)!==String(id));setSyncState('ok');renderLog();}
   catch(e){setSyncState('error');}
@@ -695,7 +695,7 @@ async function handleDelete(id){
 function renderLog(){
   const range=getWeekRange();
   const tag=weekOffset===0?'<span class="current-tag">aktuelle Woche</span>':'';
-  document.getElementById('t-weeklabel').innerHTML=fmtDate(range.start)+' – '+fmtDate(range.end)+tag;
+  document.getElementById('t-weeklabel').innerHTML=fmtDate(range.start)+' â '+fmtDate(range.end)+tag;
   const ws=sessions.filter(s=>inRange(s.date,range)).sort((a,b)=>a.date.localeCompare(b.date));
   const totalMin=ws.reduce((sum,s)=>sum+s.duration,0);
   document.getElementById('m-total').textContent=fmtMin(totalMin);
@@ -708,12 +708,12 @@ function renderLog(){
   document.getElementById('m-low').textContent=zonedTotal>0?Math.round(((zt[z1k]||0)+(zt[z2k]||0))/zonedTotal*100)+'%':'0%';
   document.getElementById('m-high').textContent=zonedTotal>0?Math.round(((zt[z4k]||0)+(zt[z5k]||0))/zonedTotal*100)+'%':'0%';
   const distS=ws.filter(s=>s.distance_km);
-  document.getElementById('m-dist').textContent=distS.length>0?Math.round(distS.reduce((a,s)=>a+parseFloat(s.distance_km),0)*10)/10:'–';
+  document.getElementById('m-dist').textContent=distS.length>0?Math.round(distS.reduce((a,s)=>a+parseFloat(s.distance_km),0)*10)/10:'â';
   const elevS=ws.filter(s=>s.elevation_m);
-  document.getElementById('m-elev').textContent=elevS.length>0?elevS.reduce((a,s)=>a+s.elevation_m,0):'–';
+  document.getElementById('m-elev').textContent=elevS.length>0?elevS.reduce((a,s)=>a+s.elevation_m,0):'â';
 
   const zcols=cfg.zones.map(z=>z.color);
-  const zlbls=cfg.zones.map(z=>z.label+(z.hrMin&&z.hrMax?' '+z.hrMin+'–'+z.hrMax:''));
+  const zlbls=cfg.zones.map(z=>z.label+(z.hrMin&&z.hrMax?' '+z.hrMin+'â'+z.hrMax:''));
   if(chart1)chart1.destroy();
   chart1=new Chart(document.getElementById('t-chart'),{type:'bar',
     data:{labels:zlbls,datasets:[{label:'min',data:zkeys.map(k=>Math.round(zt[k]||0)),backgroundColor:zcols,borderRadius:4}]},
@@ -738,9 +738,9 @@ function renderLog(){
     const dateStr=d.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
     const sc=sportCfg(s.sport),zc=zoneCfg(s.zone);
     const meta=[];
-    if(s.hr_avg||s.hr_max)meta.push('♥ '+(s.hr_avg?'Ø '+s.hr_avg:'')+(s.hr_avg&&s.hr_max?' / ':'')+(s.hr_max?'Max '+s.hr_max:''));
-    if(s.distance_km)meta.push('📍 '+s.distance_km+' km');
-    if(s.elevation_m)meta.push('↑ '+s.elevation_m+' m');
+    if(s.hr_avg||s.hr_max)meta.push('â¥ '+(s.hr_avg?'Ã '+s.hr_avg:'')+(s.hr_avg&&s.hr_max?' / ':'')+(s.hr_max?'Max '+s.hr_max:''));
+    if(s.distance_km)meta.push('ð '+s.distance_km+' km');
+    if(s.elevation_m)meta.push('â '+s.elevation_m+' m');
     const titleStr=s.title?`<span style="font-style:italic;color:var(--text-muted);font-size:.78rem;">${esc(s.title)}</span>`:'';
     return`<div class="entry">
       <div class="entry-top" onclick="toggleDetail('${s.id}')">
@@ -749,7 +749,7 @@ function renderLog(){
         ${titleStr}
         <span class="pill" style="background:${zc.color}22;color:${zc.color};">${zc.label}</span>
         <span class="entry-duration">${fmtMin(s.duration)}</span>
-        <span class="row-end" style="font-size:.72rem;color:var(--text-faint);">▾</span>
+        <span class="row-end" style="font-size:.72rem;color:var(--text-faint);">â¾</span>
       </div>
       ${meta.length?`<div class="entry-meta">${meta.map(m=>`<span>${m}</span>`).join('')}</div>`:''}
       <div class="entry-detail" id="detail-${s.id}">${buildDetailHTML(s)}</div>
@@ -759,7 +759,7 @@ function renderLog(){
   listEl.querySelectorAll('.btn-delete').forEach(btn=>btn.addEventListener('click',()=>handleDelete(btn.getAttribute('data-id'))));
 }
 
-// ── KALENDER ──────────────────────────────────────────────────────────────────
+// ââ KALENDER ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function renderCalCell(cellDate,isOutside,weekMode){
   const iso=toISODate(cellDate);const entries=byDate(iso);
   const isToday=isSameDate(cellDate,new Date());
@@ -767,7 +767,7 @@ function renderCalCell(cellDate,isOutside,weekMode){
   const dayLabel=weekMode?cellDate.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'}):cellDate.getDate();
   const chips=entries.map(s=>{
     const sc=sportCfg(s.sport);
-    const label=weekMode?(s.title||s.sport+(s.zone!=='-'?' · '+zoneCfg(s.zone).label:'')):s.sport;
+    const label=weekMode?(s.title||s.sport+(s.zone!=='-'?' Â· '+zoneCfg(s.zone).label:'')):s.sport;
     const iconHTML=sc.imgUrl?`<img src="${esc(sc.imgUrl)}" style="width:11px;height:11px;border-radius:2px;object-fit:cover;">`:`<span>${sc.icon}</span>`;
     return`<span class="cal-chip" style="background:${sc.color}22;color:${sc.color};" title="${esc(s.sport+(s.note?': '+s.note:''))}">
       ${iconHTML}<span>${esc(label)}</span><span class="cal-dur">${fmtMin(s.duration)}</span></span>`;
@@ -780,7 +780,7 @@ function renderCalendar(){
   const grid=document.createElement('div');grid.className='cal-grid'+(calMode==='week'?' week':'');
   ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(wd=>{const el=document.createElement('div');el.className='cal-weekday';el.textContent=wd;grid.appendChild(el);});
   if(calMode==='week'){
-    const range=getWeekRange();labelEl.textContent=fmtDate(range.start)+' – '+fmtDate(range.end);
+    const range=getWeekRange();labelEl.textContent=fmtDate(range.start)+' â '+fmtDate(range.end);
     for(let i=0;i<7;i++){const d=new Date(range.start);d.setDate(d.getDate()+i);grid.insertAdjacentHTML('beforeend',renderCalCell(d,false,true));}
   }else{
     const range=getMonthRange();labelEl.textContent=range.start.toLocaleDateString('de-DE',{month:'long',year:'numeric'});
@@ -796,7 +796,7 @@ document.getElementById('cal-tab-month').addEventListener('click',()=>{calMode='
 document.getElementById('cal-prev').addEventListener('click',()=>{if(calMode==='week'){weekOffset--;if(activePage==='log')renderLog();else renderCalendar();}else{monthOffset--;renderCalendar();}});
 document.getElementById('cal-next').addEventListener('click',()=>{if(calMode==='week'){weekOffset++;if(activePage==='log')renderLog();else renderCalendar();}else{monthOffset++;renderCalendar();}});
 
-// ── ANALYTICS ─────────────────────────────────────────────────────────────────
+// ââ ANALYTICS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function getPeriodRange(){
   const now=new Date();
   if(analyticsPeriod==='week'){const s=startOfWeek(now);const e=new Date(s);e.setDate(e.getDate()+6);return{start:s,end:e,buckets:null};}
@@ -852,20 +852,20 @@ function renderAnalytics(){
   const totalDist=filtered.filter(s=>s.distance_km).reduce((a,s)=>a+parseFloat(s.distance_km),0);
   const totalElev=filtered.filter(s=>s.elevation_m).reduce((a,s)=>a+s.elevation_m,0);
   document.getElementById('analytics-table-wrap').innerHTML=`<table class="analytics-table">
-    <thead><tr><th>Sportart</th><th>Zeit</th><th>Strecke</th><th>Höhenmeter</th><th>Einheiten</th></tr></thead>
+    <thead><tr><th>Sportart</th><th>Zeit</th><th>Strecke</th><th>HÃ¶henmeter</th><th>Einheiten</th></tr></thead>
     <tbody>${activeSports.map(sk=>{const ss=filtered.filter(s=>s.sport===sk);if(!ss.length)return'';
       const t=ss.reduce((a,s)=>a+s.duration,0);
       const d=ss.filter(s=>s.distance_km).reduce((a,s)=>a+parseFloat(s.distance_km),0);
       const e=ss.filter(s=>s.elevation_m).reduce((a,s)=>a+s.elevation_m,0);
-      return`<tr><td>${sportIconHTML(sk,16)} ${sk}</td><td>${fmtMin(t)}</td><td>${d>0?Math.round(d*10)/10+'km':'–'}</td><td>${e>0?e+'m':'–'}</td><td>${ss.length}</td></tr>`;
+      return`<tr><td>${sportIconHTML(sk,16)} ${sk}</td><td>${fmtMin(t)}</td><td>${d>0?Math.round(d*10)/10+'km':'â'}</td><td>${e>0?e+'m':'â'}</td><td>${ss.length}</td></tr>`;
     }).join('')}</tbody>
-    <tfoot><tr style="font-weight:600;"><td>Gesamt</td><td>${fmtMin(totalTime)}</td><td>${totalDist>0?Math.round(totalDist*10)/10+'km':'–'}</td><td>${totalElev>0?totalElev+'m':'–'}</td><td>${filtered.length}</td></tr></tfoot>
+    <tfoot><tr style="font-weight:600;"><td>Gesamt</td><td>${fmtMin(totalTime)}</td><td>${totalDist>0?Math.round(totalDist*10)/10+'km':'â'}</td><td>${totalElev>0?totalElev+'m':'â'}</td><td>${filtered.length}</td></tr></tfoot>
   </table>`;
 }
 document.getElementById('analytics-period-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{analyticsPeriod=btn.dataset.period;document.getElementById('analytics-period-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnalytics();});});
 document.getElementById('analytics-metric-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{analyticsMetric=btn.dataset.metric;document.getElementById('analytics-metric-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnalytics();});});
 
-// ── EINSTELLUNGEN ─────────────────────────────────────────────────────────────
+// ââ EINSTELLUNGEN âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function sportSettingsHTML(){
   return cfg.sports.map((s,i)=>`
     <div class="sport-row">
@@ -892,11 +892,11 @@ function renderSettingsInline(){
     inp.addEventListener('change',async()=>{
       const file=inp.files[0];if(!file)return;
       const i=parseInt(inp.dataset.sport);
-      const statusEl=document.getElementById('settings-status-inline');statusEl.textContent='Lade hoch…';
+      const statusEl=document.getElementById('settings-status-inline');statusEl.textContent='Lade hochâ¦';
       try{const url=await DB.uploadIcon(cfg.sports[i].key,file);cfg.sports[i].imgUrl=url;
         const prev=document.getElementById('img-prev-inline-'+i);
         if(prev)prev.outerHTML=`<img src="${esc(url)}" class="sport-img-preview" id="img-prev-inline-${i}">`;
-        statusEl.textContent='Bild gespeichert ✓';setTimeout(()=>{statusEl.textContent='';},2000);}
+        statusEl.textContent='Bild gespeichert â';setTimeout(()=>{statusEl.textContent='';},2000);}
       catch(e){statusEl.textContent='Upload fehlgeschlagen';}
     });
   });
@@ -909,16 +909,16 @@ document.getElementById('save-settings-inline').addEventListener('click',()=>{
   document.querySelectorAll('.zone-hrmax-inline').forEach(el=>{cfg.zones[parseInt(el.dataset.zone)].hrMax=parseFloat(el.value)||null;});
   document.querySelectorAll('.zone-color-inline').forEach(el=>{cfg.zones[parseInt(el.dataset.zone)].color=el.value;});
   saveCfg();populateSelects();renderLog();
-  document.getElementById('settings-status-inline').textContent='Gespeichert ✓';
+  document.getElementById('settings-status-inline').textContent='Gespeichert â';
   setTimeout(()=>{document.getElementById('settings-status-inline').textContent='';},2000);
 });
 document.getElementById('reset-settings-inline').addEventListener('click',()=>{
-  if(!confirm('Einstellungen zurücksetzen?'))return;
+  if(!confirm('Einstellungen zurÃ¼cksetzen?'))return;
   cfg={sports:JSON.parse(JSON.stringify(DEFAULT_SPORTS)),zones:JSON.parse(JSON.stringify(DEFAULT_ZONES))};
   saveCfg();populateSelects();renderSettingsInline();renderLog();
 });
 
-// ── GPX ───────────────────────────────────────────────────────────────────────
+// ââ GPX âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function parseGPX(xmlText){
   const doc=new DOMParser().parseFromString(xmlText,'application/xml');
   const trkpts=Array.from(doc.querySelectorAll('trkpt'));if(trkpts.length===0)throw new Error('Keine Trackpunkte');
@@ -951,12 +951,12 @@ function parseGPX(xmlText){
   return{date,durationMin,distKm,elevM,hrAvg,hrMax,sport,name:nameEl?nameEl.textContent.trim():''};
 }
 function showGpxPreview(p){
-  document.getElementById('gpx-preview').innerHTML=`<div class="gpx-preview-box"><h3>📍 ${esc(p.name||'GPX-Aktivität')}</h3><div class="gpx-stats">
+  document.getElementById('gpx-preview').innerHTML=`<div class="gpx-preview-box"><h3>ð ${esc(p.name||'GPX-AktivitÃ¤t')}</h3><div class="gpx-stats">
     <div class="gpx-stat"><strong>${p.date}</strong>Datum</div><div class="gpx-stat"><strong>${p.sport}</strong>Sportart</div>
     <div class="gpx-stat"><strong>${fmtMin(p.durationMin)}</strong>Dauer</div>
     ${p.distKm?`<div class="gpx-stat"><strong>${p.distKm}km</strong>Distanz</div>`:''}
-    ${p.elevM?`<div class="gpx-stat"><strong>${p.elevM}m</strong>Höhenmeter↑</div>`:''}
-    ${p.hrAvg?`<div class="gpx-stat"><strong>${p.hrAvg}</strong>Ø-HF</div>`:''}
+    ${p.elevM?`<div class="gpx-stat"><strong>${p.elevM}m</strong>HÃ¶henmeterâ</div>`:''}
+    ${p.hrAvg?`<div class="gpx-stat"><strong>${p.hrAvg}</strong>Ã-HF</div>`:''}
     ${p.hrMax?`<div class="gpx-stat"><strong>${p.hrMax}</strong>Max-HF</div>`:''}
   </div></div>`;
   document.getElementById('gpx-preview').style.display='';document.getElementById('gpx-actions').style.display='';
@@ -977,7 +977,7 @@ document.getElementById('t-gpx').addEventListener('change',e=>{if(e.target.files
 document.getElementById('gpx-save').addEventListener('click',async()=>{await saveSession();clearGpx();});
 document.getElementById('gpx-discard').addEventListener('click',()=>{clearGpx();['t-note','t-hravg','t-hrmax','t-distance','t-elevation'].forEach(id=>document.getElementById(id).value='');});
 
-// ── CSV ───────────────────────────────────────────────────────────────────────
+// ââ CSV âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function parseCSV(text){
   const lines=text.split(/\r?\n/).filter(l=>l.trim().length>0);if(lines.length<2)return[];
   const headers=lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/"/g,''));
@@ -1002,14 +1002,14 @@ function parseCSV(text){
   return results;
 }
 document.getElementById('t-csv').addEventListener('change',async(e)=>{
-  const file=e.target.files[0],st=document.getElementById('t-csv-status');if(!file)return;st.textContent='Lese…';
+  const file=e.target.files[0],st=document.getElementById('t-csv-status');if(!file)return;st.textContent='Leseâ¦';
   const reader=new FileReader();
   reader.onload=async()=>{try{const imp=parseCSV(reader.result);if(!imp.length){st.textContent='Keine Zeilen';return;}
     setSyncState('syncing');const saved=await DB.addSessions(imp);sessions=[...sessions,...saved];setSyncState('ok');st.textContent=imp.length+' importiert';renderLog();}
   catch(err){setSyncState('error');st.textContent='Fehler';}};reader.readAsText(file);
 });
 
-// ── AUTH ──────────────────────────────────────────────────────────────────────
+// ââ AUTH ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function showApp(user){
   currentUser=user;
   document.getElementById('auth-screen').style.display='none';document.getElementById('app').style.display='';
@@ -1023,13 +1023,13 @@ async function showApp(user){
   populateSelects();updateNoteLabel();
   document.getElementById('t-date').value=toISODate(new Date());
   renderLog();
-  // Begrüßungsnachricht im Chat
-  addChatMessage('ai','Hallo! Ich bin dein Trainingsassistent. Ich habe Zugriff auf deine Trainingsdaten und dein Trainingsprofil.\n\nDu kannst mich z.B. fragen:\n• "Wie war meine Trainingswoche?"\n• "Halte ich die 80/20-Regel ein?"\n• "Wann war meine letzte lange Radausfahrt?"\n• "Wie viel km bin ich diesen Monat gelaufen?"');
+  // BegrÃ¼Ãungsnachricht im Chat
+  addChatMessage('ai','Hallo! Ich bin dein Trainingsassistent. Ich habe Zugriff auf deine Trainingsdaten und dein Trainingsprofil.\n\nDu kannst mich z.B. fragen:\nâ¢ "Wie war meine Trainingswoche?"\nâ¢ "Halte ich die 80/20-Regel ein?"\nâ¢ "Wann war meine letzte lange Radausfahrt?"\nâ¢ "Wie viel km bin ich diesen Monat gelaufen?"');
 }
 document.getElementById('btn-login').addEventListener('click',async()=>{await sb.auth.signInWithOAuth({provider:'github',options:{redirectTo:window.location.href}});});
 document.getElementById('btn-logout').addEventListener('click',async()=>{await sb.auth.signOut();currentUser=null;sessions=[];document.getElementById('app').style.display='none';document.getElementById('auth-screen').style.display='';});
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
+// ââ INIT ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 loadCfg();
 (async()=>{
   const{data:{session}}=await sb.auth.getSession();
