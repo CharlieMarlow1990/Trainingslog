@@ -3947,6 +3947,11 @@ function renderWeeklyTrendChart(){
   const bandLoCum=bandLoVal!==null?dayLabels2.map((_,i)=>Math.round(bandLoVal*(i+1)/7)):null;
   const bandHiCum=bandHiVal!==null?dayLabels2.map((_,i)=>Math.round(bandHiVal*(i+1)/7)):null;
   const hasFuturePlan=currentWeek.dailyPlanned.some((v,i)=>v>0&&i>=dow-1);
+  // Kumulierte Planlinie: Ist (bisher) + geplante Einheiten
+  const plannedCum=currentWeek.dailyPlanned.some(v=>v>0)?(()=>{
+    let r=0;
+    return currentWeek.dailyPlanned.map((p,i)=>{r+=p;return thisWeekCum[i]+r;});
+  })():null;
 
   // SVG-Rendering
   const W=wcc.clientWidth||wcc.parentElement.clientWidth||360;
@@ -3954,7 +3959,7 @@ function renderWeeklyTrendChart(){
   const padL=34,padR=12,padT=14,padB=24;
   const innerW=W-padL-padR,innerH=H-padT-padB;
   const xAt=i=>padL+i*(innerW/6);
-  const maxVal2=Math.max(...thisWeekCum,...(prevWeekCum||[0]),...(bandHiCum||[0]),1);
+  const maxVal2=Math.max(...thisWeekCum,...(prevWeekCum||[0]),...(bandHiCum||[0]),...(plannedCum||[0]),1);
   const yAt=v=>padT+innerH-Math.max(0,v/maxVal2)*innerH;
   const buildPath=cum=>{
     const pts=cum.map((v,i)=>v!=null?`${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`:null).filter(Boolean);
@@ -3969,11 +3974,14 @@ function renderWeeklyTrendChart(){
   }
   const prevPath=prevWeekCum?buildPath(prevWeekCum):'';
   const thisPath=buildPath(thisWeekVisible);
+  const plannedPath=plannedCum?buildPath(plannedCum):'';
 
   const thisDots=currentWeek.daily.map((d,i)=>d>0&&thisWeekVisible[i]!=null
     ?`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(thisWeekVisible[i]).toFixed(1)}" r="4" fill="#9d6dfa" stroke="#F1EEE6" stroke-width="1.5"/>`:'').join('');
   const prevDots=prevWeek?prevWeek.daily.map((d,i)=>d>0&&prevWeekCum
     ?`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(prevWeekCum[i]).toFixed(1)}" r="3.5" fill="#6b6870" stroke="#F1EEE6" stroke-width="1.2"/>`:'').join(''):'';
+  const plannedDots=plannedCum?currentWeek.dailyPlanned.map((p,i)=>p>0
+    ?`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(plannedCum[i]).toFixed(1)}" r="3.5" fill="none" stroke="#f0a04e" stroke-width="1.5"/>`:'').join(''):'';
 
   const yLabels2=Array.from({length:4},(_,i)=>{
     const v=Math.round(maxVal2/3*i);const y=yAt(v);
@@ -3987,12 +3995,14 @@ function renderWeeklyTrendChart(){
   </defs>
   ${yLabels2}${xLabels2}${bandSvg}
   ${prevPath?`<path d="${prevPath}" fill="none" stroke="#6b6870" stroke-width="1.5" stroke-opacity="0.7"/>`:''}
+  ${plannedPath?`<path d="${plannedPath}" fill="none" stroke="#f0a04e" stroke-width="1.8" stroke-dasharray="5,4" stroke-opacity="0.9"/>`:''}
   ${thisPath?`<path d="${thisPath}" fill="none" stroke="#9d6dfa" stroke-width="2"/>`:''}
-  ${prevDots}${thisDots}`;
+  ${prevDots}${plannedDots}${thisDots}`;
 
   document.getElementById('weekly-compare-legend').innerHTML=
     `<span><span style="display:inline-block;width:18px;height:2.5px;background:#9d6dfa;vertical-align:middle;margin-right:.3rem;border-radius:2px;"></span>Diese Woche</span>`+
     (prevWeekCum?`<span><span style="display:inline-block;width:18px;height:2px;background:#6b6870;vertical-align:middle;margin-right:.3rem;border-radius:2px;"></span>Letzte Woche</span>`:'')+
+    (plannedCum?`<span><span style="display:inline-block;width:18px;height:0;border-top:2px dashed #f0a04e;vertical-align:middle;margin-right:.3rem;"></span>Geplant (Ist+Plan)</span>`:'')+
     (bandLoCum?`<span><span style="display:inline-block;width:14px;height:9px;background:rgba(133,183,235,.38);border-radius:3px;vertical-align:middle;margin-right:.3rem;"></span>Empfohlener Bereich</span>`:'');
 }
 
