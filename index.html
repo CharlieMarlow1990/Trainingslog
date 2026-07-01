@@ -829,6 +829,16 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
     </label>
   </div>
 
+  <!-- Garmin-Sync-Import (aus garmin/data.json) -->
+  <div class="card">
+    <h2><i class="ti ti-cloud-download"></i> Garmin-Sync</h2>
+    <p class="profile-hint" style="margin-bottom:.85rem;">Aktivit&#xE4;ten aus dem automatischen Garmin-Sync (<code>garmin/data.json</code>) in die App &#xFC;bernehmen. Bereits vorhandene Tage werden &#xFC;bersprungen; Tage mit mehreren Aktivit&#xE4;ten werden zu einer Einheit zusammengefasst.</p>
+    <div class="row">
+      <button class="primary" id="garmin-import-btn"><i class="ti ti-cloud-download"></i> Garmin-Aktivit&#xE4;ten importieren</button>
+      <span class="status" id="garmin-import-status"></span>
+    </div>
+  </div>
+
   <!-- Trainingsprofil -->
   <div class="card">
     <h2><i class="ti ti-target"></i> Trainingsprofil &amp; Prinzipien</h2>
@@ -5184,6 +5194,66 @@ async function himDoImport(){
   document.getElementById('history-import-modal').classList.remove('open');
   showStatus(`${imported} Einheiten importiert.`,'ok');
 }
+
+// ── GARMIN-SYNC-IMPORT ──────────────────────────────────────────────────────
+// Übernimmt Aktivitäten aus dem automatischen Garmin-Sync (garmin/data.json,
+// via GitHub Actions befüllt) als App-Einheiten. Respektiert die "eine Einheit
+// pro Tag"-Regel: mehrere Aktivitäten desselben Tages werden zusammengefasst,
+// bereits vorhandene Tage übersprungen. Read-only ggü. Garmin; schreibt nur in
+// die eigene Supabase des angemeldeten Nutzers.
+const GARMIN_SPORT_MAP={
+  running:'Lauf',trail_running:'Lauf',treadmill_running:'Lauf',track_running:'Lauf',walking:'Lauf',
+  cycling:'Rad',road_biking:'Rad',mountain_biking:'Rad',gravel_cycling:'Rad',virtual_ride:'Rad',indoor_cycling:'Rad',
+  strength_training:'Kraft',
+  mixed_martial_arts:'Kampfsport',boxing:'Kampfsport',martial_arts:'Kampfsport',
+  hiit:'Capacity',cardio:'Capacity',elliptical:'Capacity',indoor_rowing:'Capacity',rowing:'Capacity',indoor_cardio:'Capacity',
+};
+function mapGarminSport(typeKey){
+  const key=GARMIN_SPORT_MAP[typeKey]||'Sonstiges';
+  return (cfg.sports||[]).some(s=>s.key===key)?key:'Sonstiges';
+}
+async function importGarminActivities(){
+  const btn=document.getElementById('garmin-import-btn');
+  const st=document.getElementById('garmin-import-status');
+  const orig=btn.innerHTML;btn.disabled=true;btn.textContent='Lade…';st.textContent='';
+  try{
+    let data;
+    try{
+      const res=await fetch('garmin/data.json?_='+Date.now());
+      if(!res.ok)throw new Error('HTTP '+res.status);
+      data=await res.json();
+    }catch(e){st.textContent='garmin/data.json nicht gefunden ('+e.message+').';return;}
+    const workouts=(data&&data.workouts)||[];
+    if(!workouts.length){st.textContent='Keine Aktivitäten im Sync gefunden.';return;}
+    // Pro Tag aggregieren
+    const byDate={};
+    workouts.forEach(w=>{if(w&&w.date){(byDate[w.date]=byDate[w.date]||[]).push(w);}});
+    const existing=new Set(sessions.map(s=>s.date));
+    const rows=[];let skipped=0;
+    Object.keys(byDate).sort().forEach(date=>{
+      if(existing.has(date)){skipped++;return;}
+      const acts=byDate[date];
+      const primary=acts.slice().sort((a,b)=>(b.durationMin||0)-(a.durationMin||0))[0];
+      const duration=acts.reduce((s,a)=>s+(a.durationMin||0),0)||1;
+      const hrActs=acts.filter(a=>a.avgHr);
+      const wsum=hrActs.reduce((s,a)=>s+(a.durationMin||1),0);
+      const hr_avg=hrActs.length?Math.round(hrActs.reduce((s,a)=>s+a.avgHr*(a.durationMin||1),0)/wsum):null;
+      const distM=Math.round(acts.reduce((s,a)=>s+(a.distanceKm?a.distanceKm*1000:0),0))||null;
+      const note='Garmin-Sync'+(acts.length>1?' ('+acts.map(a=>a.type).join(', ')+')':'');
+      rows.push({date,sport:mapGarminSport(primary.type),duration,distance:distM,
+        hr_avg,hr_series:[],power_records:[],zone:'-',srpe:null,notes:note,
+        workload_method:'edwards',planned:false,feedback:null,feedback_hint:null});
+    });
+    if(!rows.length){st.textContent=`Nichts Neues – alle ${Object.keys(byDate).length} Tage bereits in der App.`;return;}
+    setSyncState('syncing');btn.textContent=`Importiere ${rows.length}…`;
+    const saved=await DB.addSessions(rows);
+    sessions=[...sessions,...saved];setSyncState('ok');
+    st.textContent=`✓ ${saved.length} importiert${skipped?`, ${skipped} Tag(e) übersprungen`:''}.`;
+    renderLog();
+  }catch(e){setSyncState('error');st.textContent='Fehler: '+(e.message||e);}
+  finally{btn.disabled=false;btn.innerHTML=orig;}
+}
+document.getElementById('garmin-import-btn')?.addEventListener('click',importGarminActivities);
 
 // Ordner verbinden (User-Geste)
 async function wfConnect(){
