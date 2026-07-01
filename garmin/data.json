@@ -14,8 +14,8 @@
       },
       "restingHR": null,
       "bodyBattery": {
-        "high": 1782691200006,
-        "low": 1782691200001
+        "high": null,
+        "low": null
       },
       "stress": {
         "avg": null
@@ -66,8 +66,8 @@
       },
       "restingHR": null,
       "bodyBattery": {
-        "high": 1782864000006,
-        "low": 1782864000001
+        "high": null,
+        "low": null
       },
       "stress": {
         "avg": null
@@ -534,8 +534,8 @@
       },
       "restingHR": null,
       "bodyBattery": {
-        "high": 1782604800006,
-        "low": 1782604800001
+        "high": null,
+        "low": null
       },
       "stress": {
         "avg": null
@@ -670,5 +670,5 @@
       "calories": 496.0
     }
   ],
-  "generated": "2026-07-01T13:46:54+00:00"
+  "generated": "2026-07-01T13:49:30+00:00"
 }
