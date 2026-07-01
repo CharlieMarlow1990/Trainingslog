@@ -10,9 +10,13 @@ on:
   workflow_dispatch:
     inputs:
       days:
-        description: "Anzahl Tage rückwirkend synchronisieren"
+        description: "Wellness+Aktivitäten rückwirkend synchronisieren"
         required: false
         default: "3"
+      activities_days:
+        description: "Nur Aktivitäten weiter zurück holen (Backfill, z.B. 365)"
+        required: false
+        default: ""
 
 permissions:
   contents: write   # erlaubt das Zurück-Committen der garmin/-Dateien
@@ -45,7 +49,12 @@ jobs:
         env:
           GARMIN_TOKENSTORE_DIR: ${{ runner.temp }}/garmintoken
           GARMIN_OUTDIR: garmin
-        run: python garmin-ai/garmin_sync.py --days "${{ github.event.inputs.days || 7 }}"
+        run: |
+          ARGS="--days ${{ github.event.inputs.days || 7 }}"
+          if [ -n "${{ github.event.inputs.activities_days }}" ]; then
+            ARGS="$ARGS --activities-days ${{ github.event.inputs.activities_days }}"
+          fi
+          python garmin-ai/garmin_sync.py $ARGS
 
       - name: Änderungen committen
         run: |

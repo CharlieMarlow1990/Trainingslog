@@ -270,7 +270,7 @@ def write_workout_md(w, folder):
 
 
 # ── Hauptlauf ───────────────────────────────────────────────────────────────
-def do_sync(days):
+def do_sync(days, activities_days=None):
     from pathlib import Path
     api = connect_with_token()
 
@@ -301,8 +301,11 @@ def do_sync(days):
         data["days"][iso] = day
         write_wellness_md(iso, day, wellness_dir)
 
-    # Workouts im Zeitraum (per id zusammenführen)
-    fresh = collect_workouts(api, start, today)
+    # Workouts im Zeitraum (per id zusammenführen). Für Backfill kann der
+    # Aktivitäts-Zeitraum weiter zurückreichen als das Wellness-Fenster.
+    act_span = max(days, activities_days or 0)
+    act_start = today - dt.timedelta(days=act_span - 1)
+    fresh = collect_workouts(api, act_start, today)
     by_id = {w["id"]: w for w in data["workouts"] if w.get("id")}
     for w in fresh:
         if w.get("id"):
@@ -320,13 +323,15 @@ def do_sync(days):
 def main():
     ap = argparse.ArgumentParser(description="Garmin → Repo Sync (read-only).")
     ap.add_argument("--auth", action="store_true", help="Einmaliger Login, Token speichern.")
-    ap.add_argument("--days", type=int, default=3, help="Anzahl Tage rückwirkend (Default 3).")
+    ap.add_argument("--days", type=int, default=3, help="Wellness+Aktivitäten rückwirkend (Default 3).")
+    ap.add_argument("--activities-days", type=int, default=None,
+                    help="Aktivitäten weiter zurück holen (Backfill), unabhängig von --days.")
     args = ap.parse_args()
 
     if args.auth:
         do_auth()
     else:
-        do_sync(max(1, args.days))
+        do_sync(max(1, args.days), args.activities_days)
 
 
 if __name__ == "__main__":
