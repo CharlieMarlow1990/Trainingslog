@@ -1,2 +1,2 @@
-# Garmin-Connect-Client (zieht garth für Auth/Token automatisch mit)
-garminconnect>=0.2.19
+# Garmin-Connect-Client (0.3.x: eigener SSO-Client, Token via api.client.dump/load)
+garminconnect>=0.3.2,<0.4

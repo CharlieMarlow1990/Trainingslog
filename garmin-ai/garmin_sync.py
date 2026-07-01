@@ -56,22 +56,27 @@ def do_auth():
     mfa = os.environ.get("GARMIN_MFA", "").strip()
     Garmin = _Garmin()
 
+    # python-garminconnect 0.3.x: Login über self.client; 2FA via return_on_mfa + resume_login.
+    api = Garmin(email=email, password=password, return_on_mfa=True)
     try:
-        # Neuere python-garminconnect-Versionen: 2FA ohne interaktiven Prompt lösbar.
-        api = Garmin(email=email, password=password, return_on_mfa=True)
         result = api.login()
-        state = result[0] if isinstance(result, tuple) else None
-        if state == "needs_mfa":
-            if not mfa:
-                sys.exit("Garmin verlangt einen 2FA-Code. Workflow erneut mit 'mfa_code' starten.")
-            api.resume_login(result[1], mfa)
-    except TypeError:
-        # Ältere Version ohne return_on_mfa
-        api = Garmin(email, password)
-        api.login()
+    except Exception as e:  # noqa: BLE001
+        msg = str(e).lower()
+        if "429" in msg or "too many" in msg:
+            sys.exit("Garmin hat die Server-IP kurz gedrosselt (429). Bitte ~30–60 Min warten "
+                     "und den Workflow erneut starten.")
+        raise
 
+    state = result[0] if isinstance(result, tuple) else None
+    if state == "needs_mfa":
+        if not mfa:
+            sys.exit("Garmin verlangt einen 2FA-Code. Workflow erneut starten und den Code "
+                     "ins Feld 'mfa_code' eintragen.")
+        api.resume_login(result[1], mfa)
+
+    # Token speichern (0.3.x: self.client.dump schreibt die Token-Dateien ins Verzeichnis).
     os.makedirs(TOKENSTORE, exist_ok=True)
-    api.garth.dump(TOKENSTORE)
+    api.client.dump(TOKENSTORE)
     print(f"✓ Login erfolgreich. Token gespeichert unter {TOKENSTORE}/")
 
 
