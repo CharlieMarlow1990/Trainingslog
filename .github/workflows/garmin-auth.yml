@@ -1,0 +1,62 @@
+name: Garmin Auth (einmalig)
+
+# Einmaliger Login bei Garmin, um einen langlebigen Token zu erzeugen.
+# Manuell starten: Actions → "Garmin Auth (einmalig)" → Run workflow.
+# Falls dein Garmin-Konto 2FA hat, den 6-stelligen Code ins Feld "mfa_code" eintragen.
+# Der Token wird anschließend automatisch als Secret GARMIN_TOKENSTORE gespeichert.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mfa_code:
+        description: "2FA-Code (nur falls Garmin danach fragt, sonst leer lassen)"
+        required: false
+        default: ""
+
+jobs:
+  auth:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Abhängigkeiten installieren
+        run: pip install -r garmin-ai/requirements.txt
+
+      - name: Bei Garmin einloggen und Token erzeugen
+        env:
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          GARMIN_MFA: ${{ github.event.inputs.mfa_code }}
+          GARMIN_TOKENSTORE_DIR: ${{ runner.temp }}/garmintoken
+        run: python garmin-ai/garmin_sync.py --auth
+
+      - name: Token als Secret GARMIN_TOKENSTORE speichern (mit GH_PAT)
+        id: store
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          TOKEN_DIR: ${{ runner.temp }}/garmintoken
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::Kein GH_PAT gesetzt — Token wird als Artefakt bereitgestellt (manuell als Secret eintragen)."
+            echo "stored=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          tar -C "$TOKEN_DIR" -czf - . | base64 -w0 | gh secret set GARMIN_TOKENSTORE --repo "$GITHUB_REPOSITORY" --body-file -
+          echo "✓ Secret GARMIN_TOKENSTORE aktualisiert."
+          echo "stored=true" >> "$GITHUB_OUTPUT"
+
+      - name: Token als Artefakt sichern (Fallback ohne GH_PAT)
+        if: steps.store.outputs.stored == 'false'
+        run: tar -C "${{ runner.temp }}/garmintoken" -czf - . | base64 -w0 > garmin_tokenstore.b64
+
+      - name: Artefakt hochladen (Fallback)
+        if: steps.store.outputs.stored == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: garmin-tokenstore
+          path: garmin_tokenstore.b64
+          retention-days: 1

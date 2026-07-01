@@ -1,0 +1,2 @@
+# Garmin-Connect-Client (zieht garth für Auth/Token automatisch mit)
+garminconnect>=0.2.19
