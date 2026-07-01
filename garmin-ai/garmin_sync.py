@@ -142,9 +142,10 @@ def _body_battery(bb, summary):
         arr = (bb[0].get("bodyBatteryValuesArray") if isinstance(bb, list) and bb else None) or []
         levels = []
         for row in arr:
-            nums = [x for x in row if isinstance(x, (int, float))]
-            if nums:
-                levels.append(nums[-1])
+            # Zeilenformat i.d.R. [timestamp, status, level, version] — Level (0–100) an Index 2
+            if isinstance(row, (list, tuple)) and len(row) >= 3 \
+                    and isinstance(row[2], (int, float)) and 0 <= row[2] <= 100:
+                levels.append(row[2])
         if levels:
             return max(levels), min(levels)
     except Exception:
