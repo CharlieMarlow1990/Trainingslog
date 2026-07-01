@@ -14,8 +14,8 @@
       },
       "restingHR": null,
       "bodyBattery": {
-        "high": null,
-        "low": null
+        "high": 1782691200006,
+        "low": 1782691200001
       },
       "stress": {
         "avg": null
@@ -66,8 +66,476 @@
       },
       "restingHR": null,
       "bodyBattery": {
-        "high": null,
-        "low": null
+        "high": 1782864000006,
+        "low": 1782864000001
+      },
+      "stress": {
+        "avg": null
+      },
+      "steps": null,
+      "trainingReadiness": {
+        "score": null,
+        "level": null
+      }
+    },
+    "2026-06-11": {
+      "sleep": {
+        "score": 72,
+        "durationH": 6.3,
+        "deepH": 1.1,
+        "remH": 1.1,
+        "awakeH": 0.5
+      },
+      "hrv": {
+        "lastNightAvg": 94,
+        "status": "BALANCED"
+      },
+      "restingHR": 46.0,
+      "bodyBattery": {
+        "high": 64,
+        "low": 5
+      },
+      "stress": {
+        "avg": 43
+      },
+      "steps": 6079,
+      "trainingReadiness": {
+        "score": 64,
+        "level": "MODERATE"
+      }
+    },
+    "2026-06-12": {
+      "sleep": {
+        "score": 72,
+        "durationH": 6.3,
+        "deepH": 1.3,
+        "remH": 1.3,
+        "awakeH": 0.7
+      },
+      "hrv": {
+        "lastNightAvg": 96,
+        "status": "BALANCED"
+      },
+      "restingHR": 44.0,
+      "bodyBattery": {
+        "high": 52,
+        "low": 5
+      },
+      "stress": {
+        "avg": 31
+      },
+      "steps": 8111,
+      "trainingReadiness": {
+        "score": 72,
+        "level": "MODERATE"
+      }
+    },
+    "2026-06-13": {
+      "sleep": {
+        "score": 83,
+        "durationH": 9.8,
+        "deepH": 1.6,
+        "remH": 2.3,
+        "awakeH": 0.5
+      },
+      "hrv": {
+        "lastNightAvg": 98,
+        "status": "BALANCED"
+      },
+      "restingHR": 43.0,
+      "bodyBattery": {
+        "high": 98,
+        "low": 19
+      },
+      "stress": {
+        "avg": 31
+      },
+      "steps": 3568,
+      "trainingReadiness": {
+        "score": 86,
+        "level": "HIGH"
+      }
+    },
+    "2026-06-14": {
+      "sleep": {
+        "score": 59,
+        "durationH": 6.4,
+        "deepH": 0.7,
+        "remH": 0.3,
+        "awakeH": 0.7
+      },
+      "hrv": {
+        "lastNightAvg": 82,
+        "status": "BALANCED"
+      },
+      "restingHR": 45.0,
+      "bodyBattery": {
+        "high": 78,
+        "low": 12
+      },
+      "stress": {
+        "avg": 34
+      },
+      "steps": 5827,
+      "trainingReadiness": {
+        "score": 67,
+        "level": "MODERATE"
+      }
+    },
+    "2026-06-15": {
+      "sleep": {
+        "score": 61,
+        "durationH": 4.9,
+        "deepH": 0.9,
+        "remH": 0.8,
+        "awakeH": 0.7
+      },
+      "hrv": {
+        "lastNightAvg": 77,
+        "status": "BALANCED"
+      },
+      "restingHR": 44.0,
+      "bodyBattery": {
+        "high": 64,
+        "low": 5
+      },
+      "stress": {
+        "avg": 40
+      },
+      "steps": 13146,
+      "trainingReadiness": {
+        "score": 64,
+        "level": "MODERATE"
+      }
+    },
+    "2026-06-16": {
+      "sleep": {
+        "score": 64,
+        "durationH": 5.9,
+        "deepH": 0.4,
+        "remH": 0.6,
+        "awakeH": 0.9
+      },
+      "hrv": {
+        "lastNightAvg": 73,
+        "status": "BALANCED"
+      },
+      "restingHR": 46.0,
+      "bodyBattery": {
+        "high": 42,
+        "low": 5
+      },
+      "stress": {
+        "avg": 40
+      },
+      "steps": 8003,
+      "trainingReadiness": {
+        "score": 34,
+        "level": "LOW"
+      }
+    },
+    "2026-06-17": {
+      "sleep": {
+        "score": 56,
+        "durationH": 5.8,
+        "deepH": 0.6,
+        "remH": 0.9,
+        "awakeH": 1.7
+      },
+      "hrv": {
+        "lastNightAvg": 83,
+        "status": "BALANCED"
+      },
+      "restingHR": 46.0,
+      "bodyBattery": {
+        "high": 55,
+        "low": 5
+      },
+      "stress": {
+        "avg": 28
+      },
+      "steps": 4710,
+      "trainingReadiness": {
+        "score": 38,
+        "level": "LOW"
+      }
+    },
+    "2026-06-18": {
+      "sleep": {
+        "score": 69,
+        "durationH": 6.8,
+        "deepH": 0.4,
+        "remH": 0.8,
+        "awakeH": 0.5
+      },
+      "hrv": {
+        "lastNightAvg": 85,
+        "status": "BALANCED"
+      },
+      "restingHR": 47.0,
+      "bodyBattery": {
+        "high": 64,
+        "low": 5
+      },
+      "stress": {
+        "avg": 33
+      },
+      "steps": 8560,
+      "trainingReadiness": {
+        "score": 50,
+        "level": "MODERATE"
+      }
+    },
+    "2026-06-19": {
+      "sleep": {
+        "score": 73,
+        "durationH": 6.3,
+        "deepH": 1.9,
+        "remH": 0.8,
+        "awakeH": 0.2
+      },
+      "hrv": {
+        "lastNightAvg": 83,
+        "status": "BALANCED"
+      },
+      "restingHR": 44.0,
+      "bodyBattery": {
+        "high": 74,
+        "low": 9
+      },
+      "stress": {
+        "avg": 32
+      },
+      "steps": 4026,
+      "trainingReadiness": {
+        "score": 52,
+        "level": "MODERATE"
+      }
+    },
+    "2026-06-20": {
+      "sleep": {
+        "score": null,
+        "durationH": null,
+        "deepH": null,
+        "remH": null,
+        "awakeH": null
+      },
+      "hrv": {
+        "lastNightAvg": null,
+        "status": "BALANCED"
+      },
+      "restingHR": 49.0,
+      "bodyBattery": {
+        "high": 61,
+        "low": 5
+      },
+      "stress": {
+        "avg": 58
+      },
+      "steps": 4196,
+      "trainingReadiness": {
+        "score": 70,
+        "level": "MODERATE"
+      }
+    },
+    "2026-06-21": {
+      "sleep": {
+        "score": 79,
+        "durationH": 7.0,
+        "deepH": 1.4,
+        "remH": 0.8,
+        "awakeH": 0.1
+      },
+      "hrv": {
+        "lastNightAvg": 84,
+        "status": "BALANCED"
+      },
+      "restingHR": 46.0,
+      "bodyBattery": {
+        "high": 69,
+        "low": 5
+      },
+      "stress": {
+        "avg": 26
+      },
+      "steps": 1689,
+      "trainingReadiness": {
+        "score": 62,
+        "level": "MODERATE"
+      }
+    },
+    "2026-06-22": {
+      "sleep": {
+        "score": 73,
+        "durationH": 6.0,
+        "deepH": 1.1,
+        "remH": 1.0,
+        "awakeH": 0.1
+      },
+      "hrv": {
+        "lastNightAvg": 80,
+        "status": "BALANCED"
+      },
+      "restingHR": 43.0,
+      "bodyBattery": {
+        "high": 80,
+        "low": 5
+      },
+      "stress": {
+        "avg": 35
+      },
+      "steps": 17387,
+      "trainingReadiness": {
+        "score": 70,
+        "level": "MODERATE"
+      }
+    },
+    "2026-06-23": {
+      "sleep": {
+        "score": 75,
+        "durationH": 6.2,
+        "deepH": 1.3,
+        "remH": 0.8,
+        "awakeH": 0.1
+      },
+      "hrv": {
+        "lastNightAvg": 86,
+        "status": "BALANCED"
+      },
+      "restingHR": 44.0,
+      "bodyBattery": {
+        "high": 67,
+        "low": 5
+      },
+      "stress": {
+        "avg": 33
+      },
+      "steps": 9762,
+      "trainingReadiness": {
+        "score": 49,
+        "level": "LOW"
+      }
+    },
+    "2026-06-24": {
+      "sleep": {
+        "score": 71,
+        "durationH": 6.2,
+        "deepH": 1.1,
+        "remH": 1.1,
+        "awakeH": 0.5
+      },
+      "hrv": {
+        "lastNightAvg": 82,
+        "status": "BALANCED"
+      },
+      "restingHR": 44.0,
+      "bodyBattery": {
+        "high": 74,
+        "low": 13
+      },
+      "stress": {
+        "avg": 28
+      },
+      "steps": 7004,
+      "trainingReadiness": {
+        "score": 59,
+        "level": "MODERATE"
+      }
+    },
+    "2026-06-25": {
+      "sleep": {
+        "score": null,
+        "durationH": null,
+        "deepH": null,
+        "remH": null,
+        "awakeH": null
+      },
+      "hrv": {
+        "lastNightAvg": null,
+        "status": "BALANCED"
+      },
+      "restingHR": 43.0,
+      "bodyBattery": {
+        "high": 88,
+        "low": 21
+      },
+      "stress": {
+        "avg": 34
+      },
+      "steps": 7823,
+      "trainingReadiness": {
+        "score": 63,
+        "level": "MODERATE"
+      }
+    },
+    "2026-06-26": {
+      "sleep": {
+        "score": 69,
+        "durationH": 5.6,
+        "deepH": 1.1,
+        "remH": 0.8,
+        "awakeH": 0.1
+      },
+      "hrv": {
+        "lastNightAvg": 77,
+        "status": "BALANCED"
+      },
+      "restingHR": 47.0,
+      "bodyBattery": {
+        "high": 80,
+        "low": 29
+      },
+      "stress": {
+        "avg": 30
+      },
+      "steps": 6180,
+      "trainingReadiness": {
+        "score": 58,
+        "level": "MODERATE"
+      }
+    },
+    "2026-06-27": {
+      "sleep": {
+        "score": 54,
+        "durationH": 5.3,
+        "deepH": 0.5,
+        "remH": 0.1,
+        "awakeH": 0.0
+      },
+      "hrv": {
+        "lastNightAvg": 77,
+        "status": "BALANCED"
+      },
+      "restingHR": 47.0,
+      "bodyBattery": {
+        "high": 80,
+        "low": 38
+      },
+      "stress": {
+        "avg": 30
+      },
+      "steps": 7550,
+      "trainingReadiness": {
+        "score": 28,
+        "level": "LOW"
+      }
+    },
+    "2026-06-28": {
+      "sleep": {
+        "score": null,
+        "durationH": null,
+        "deepH": null,
+        "remH": null,
+        "awakeH": null
+      },
+      "hrv": {
+        "lastNightAvg": null,
+        "status": null
+      },
+      "restingHR": null,
+      "bodyBattery": {
+        "high": 1782604800006,
+        "low": 1782604800001
       },
       "stress": {
         "avg": null
@@ -90,7 +558,117 @@
       "maxHr": 144.0,
       "distanceKm": 31.01,
       "calories": 513.0
+    },
+    {
+      "id": 23395832112,
+      "date": "2026-06-27",
+      "type": "running",
+      "name": "Berlin Laufen",
+      "durationMin": 35,
+      "avgHr": 156.0,
+      "maxHr": 171.0,
+      "distanceKm": 5.9,
+      "calories": 519.0
+    },
+    {
+      "id": 23386193235,
+      "date": "2026-06-26",
+      "type": "strength_training",
+      "name": "Krafttraining",
+      "durationMin": 65,
+      "avgHr": 119.0,
+      "maxHr": 161.0,
+      "distanceKm": null,
+      "calories": 546.0
+    },
+    {
+      "id": 23364859019,
+      "date": "2026-06-24",
+      "type": "virtual_ride",
+      "name": "Zwift - Diesel Distance Builder",
+      "durationMin": 60,
+      "avgHr": 115.0,
+      "maxHr": 132.0,
+      "distanceKm": 25.96,
+      "calories": 411.0
+    },
+    {
+      "id": 23350471964,
+      "date": "2026-06-23",
+      "type": "strength_training",
+      "name": "Krafttraining",
+      "durationMin": 67,
+      "avgHr": 115.0,
+      "maxHr": 157.0,
+      "distanceKm": null,
+      "calories": 490.0
+    },
+    {
+      "id": 23338852540,
+      "date": "2026-06-22",
+      "type": "running",
+      "name": "Berlin Laufen",
+      "durationMin": 36,
+      "avgHr": 142.0,
+      "maxHr": 168.0,
+      "distanceKm": 5.75,
+      "calories": 489.0
+    },
+    {
+      "id": 23316752504,
+      "date": "2026-06-20",
+      "type": "strength_training",
+      "name": "Krafttraining",
+      "durationMin": 65,
+      "avgHr": 116.0,
+      "maxHr": 162.0,
+      "distanceKm": null,
+      "calories": 496.0
+    },
+    {
+      "id": 23297620541,
+      "date": "2026-06-18",
+      "type": "virtual_ride",
+      "name": "Zwift - keine Stunde ",
+      "durationMin": 54,
+      "avgHr": 115.0,
+      "maxHr": 133.0,
+      "distanceKm": 18.87,
+      "calories": 360.0
+    },
+    {
+      "id": 23280604221,
+      "date": "2026-06-17",
+      "type": "strength_training",
+      "name": "Krafttraining",
+      "durationMin": 77,
+      "avgHr": 110.0,
+      "maxHr": 160.0,
+      "distanceKm": null,
+      "calories": 506.0
+    },
+    {
+      "id": 23261428558,
+      "date": "2026-06-15",
+      "type": "running",
+      "name": "Berlin Laufen",
+      "durationMin": 35,
+      "avgHr": 146.0,
+      "maxHr": 174.0,
+      "distanceKm": 5.58,
+      "calories": 484.0
+    },
+    {
+      "id": 23234608316,
+      "date": "2026-06-13",
+      "type": "strength_training",
+      "name": "Krafttraining",
+      "durationMin": 62,
+      "avgHr": 119.0,
+      "maxHr": 157.0,
+      "distanceKm": null,
+      "calories": 496.0
     }
   ],
-  "generated": "2026-07-01T13:43:20+00:00"
+  "generated": "2026-07-01T13:46:54+00:00"
 }
