@@ -5238,11 +5238,20 @@ async function importGarminActivities(){
       const hrActs=acts.filter(a=>a.avgHr);
       const wsum=hrActs.reduce((s,a)=>s+(a.durationMin||1),0);
       const hr_avg=hrActs.length?Math.round(hrActs.reduce((s,a)=>s+a.avgHr*(a.durationMin||1),0)/wsum):null;
-      const distM=Math.round(acts.reduce((s,a)=>s+(a.distanceKm?a.distanceKm*1000:0),0))||null;
+      const maxHrs=acts.map(a=>a.maxHr).filter(x=>x);
+      const distKm=Math.round(acts.reduce((s,a)=>s+(a.distanceKm||0),0)*100)/100||null;
       const note='Garmin-Sync'+(acts.length>1?' ('+acts.map(a=>a.type).join(', ')+')':'');
-      rows.push({date,sport:mapGarminSport(primary.type),duration,distance:distM,
-        hr_avg,hr_series:[],power_records:[],zone:'-',srpe:null,notes:note,
-        workload_method:'edwards',planned:false,feedback:null,feedback_hint:null});
+      // Spalten exakt wie beim regulären saveSession (Schema-treu)
+      const session={date,duration,sport:mapGarminSport(primary.type),zone:'-',
+        title:primary.name||null,note,
+        hr_avg,hr_max:maxHrs.length?Math.max(...maxHrs):null,
+        distance_km:distKm,elevation_m:null,avg_pace:null,
+        avg_power_w:null,peak_power_w:null,normalized_power_w:null,
+        user_id:currentUser.id,srpe:null,workload:null,workload_method:null};
+      const wl=berechneWorkload(session);
+      if(wl.value!=null){session.workload=wl.value;session.workload_method=wl.method;
+        if(wl.method==='tss'){session.tss=wl.tss;session.intensity_factor=wl.intensityFactor;}}
+      rows.push(session);
     });
     if(!rows.length){st.textContent=`Nichts Neues – alle ${Object.keys(byDate).length} Tage bereits in der App.`;return;}
     setSyncState('syncing');btn.textContent=`Importiere ${rows.length}…`;
