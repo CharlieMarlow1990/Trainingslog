@@ -123,13 +123,32 @@ def hours(seconds):
 
 
 # ── Datenabruf pro Tag ──────────────────────────────────────────────────────
+_DEBUG_DONE = False
+
+
 def collect_day(api, date):
+    global _DEBUG_DONE
     iso = date.isoformat()
     print(f"→ Wellness {iso}")
     summary = safe(api.get_user_summary, iso) or {}
     sleep = safe(api.get_sleep_data, iso) or {}
     hrv = safe(api.get_hrv_data, iso) or {}
     readiness = safe(api.get_training_readiness, iso) or []
+
+    if os.environ.get("GARMIN_DEBUG") and not _DEBUG_DONE:
+        _DEBUG_DONE = True
+        def dump(name, obj):
+            print(f"--- DEBUG {name} ({iso}) ---")
+            print(json.dumps(obj, ensure_ascii=False, default=str)[:1200])
+        dump("user_summary", summary)
+        dump("sleep", sleep)
+        dump("hrv", hrv)
+        dump("rhr", safe(api.get_rhr_day, iso))
+        dump("stress", safe(api.get_stress_data, iso))
+        dump("body_battery", safe(api.get_body_battery, iso, iso))
+        dump("steps", safe(api.get_steps_data, iso))
+        dump("training_readiness", readiness)
+        print("--- DEBUG ENDE ---")
 
     sleep_dto = g(sleep, "dailySleepDTO", default={}) or {}
     tr = (readiness[0] if isinstance(readiness, list) and readiness else readiness) or {}
