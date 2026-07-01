@@ -1,0 +1,60 @@
+name: Garmin Sync (täglich)
+
+# Zieht täglich die Garmin-Daten (Workouts + Recovery) und committet sie unter garmin/.
+# Nutzt den gespeicherten Token aus dem Secret GARMIN_TOKENSTORE — kein Passwort/2FA nötig.
+# Voraussetzung: der Workflow "Garmin Auth (einmalig)" wurde bereits erfolgreich ausgeführt.
+
+on:
+  schedule:
+    - cron: "0 5 * * *"   # täglich 05:00 UTC (~07:00 MESZ). Bei Bedarf anpassen.
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Anzahl Tage rückwirkend synchronisieren"
+        required: false
+        default: "3"
+
+permissions:
+  contents: write   # erlaubt das Zurück-Committen der garmin/-Dateien
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Abhängigkeiten installieren
+        run: pip install -r garmin-ai/requirements.txt
+
+      - name: Token aus Secret wiederherstellen
+        env:
+          GARMIN_TOKENSTORE: ${{ secrets.GARMIN_TOKENSTORE }}
+        run: |
+          if [ -z "$GARMIN_TOKENSTORE" ]; then
+            echo "::error::Secret GARMIN_TOKENSTORE fehlt. Zuerst 'Garmin Auth (einmalig)' ausführen."
+            exit 1
+          fi
+          mkdir -p "$RUNNER_TEMP/garmintoken"
+          echo "$GARMIN_TOKENSTORE" | base64 -d | tar -C "$RUNNER_TEMP/garmintoken" -xzf -
+
+      - name: Garmin-Daten synchronisieren
+        env:
+          GARMIN_TOKENSTORE_DIR: ${{ runner.temp }}/garmintoken
+          GARMIN_OUTDIR: garmin
+        run: python garmin-ai/garmin_sync.py --days "${{ github.event.inputs.days || 7 }}"
+
+      - name: Änderungen committen
+        run: |
+          git config user.name "garmin-sync-bot"
+          git config user.email "garmin-sync-bot@users.noreply.github.com"
+          git add garmin/
+          if git diff --cached --quiet; then
+            echo "Keine Änderungen."
+          else
+            git commit -m "Garmin-Sync: $(date -u +%Y-%m-%d)"
+            git push
+          fi
