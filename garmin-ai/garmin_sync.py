@@ -123,35 +123,49 @@ def hours(seconds):
 
 
 # ── Datenabruf pro Tag ──────────────────────────────────────────────────────
-_DEBUG_DONE = False
+def _rhr_value(rhr):
+    """Ruhepuls aus dem dedizierten Endpoint (allMetrics.metricsMap.WELLNESS_RESTING_HEART_RATE[0].value)."""
+    try:
+        m = rhr["allMetrics"]["metricsMap"]["WELLNESS_RESTING_HEART_RATE"]
+        return m[0].get("value") if m else None
+    except Exception:
+        return None
+
+
+def _body_battery(bb, summary):
+    """Body-Battery-Hoch/Tief. Bevorzugt Tageszusammenfassung, sonst Werteliste."""
+    high = summary.get("bodyBatteryHighestValue")
+    low = summary.get("bodyBatteryLowestValue")
+    if high is not None or low is not None:
+        return high, low
+    try:
+        arr = (bb[0].get("bodyBatteryValuesArray") if isinstance(bb, list) and bb else None) or []
+        levels = []
+        for row in arr:
+            nums = [x for x in row if isinstance(x, (int, float))]
+            if nums:
+                levels.append(nums[-1])
+        if levels:
+            return max(levels), min(levels)
+    except Exception:
+        pass
+    return None, None
 
 
 def collect_day(api, date):
-    global _DEBUG_DONE
     iso = date.isoformat()
     print(f"→ Wellness {iso}")
     summary = safe(api.get_user_summary, iso) or {}
     sleep = safe(api.get_sleep_data, iso) or {}
     hrv = safe(api.get_hrv_data, iso) or {}
+    rhr = safe(api.get_rhr_day, iso) or {}
+    stress = safe(api.get_stress_data, iso) or {}
+    bb = safe(api.get_body_battery, iso, iso) or []
     readiness = safe(api.get_training_readiness, iso) or []
-
-    if os.environ.get("GARMIN_DEBUG") and not _DEBUG_DONE:
-        _DEBUG_DONE = True
-        def dump(name, obj):
-            print(f"--- DEBUG {name} ({iso}) ---")
-            print(json.dumps(obj, ensure_ascii=False, default=str)[:1200])
-        dump("user_summary", summary)
-        dump("sleep", sleep)
-        dump("hrv", hrv)
-        dump("rhr", safe(api.get_rhr_day, iso))
-        dump("stress", safe(api.get_stress_data, iso))
-        dump("body_battery", safe(api.get_body_battery, iso, iso))
-        dump("steps", safe(api.get_steps_data, iso))
-        dump("training_readiness", readiness)
-        print("--- DEBUG ENDE ---")
 
     sleep_dto = g(sleep, "dailySleepDTO", default={}) or {}
     tr = (readiness[0] if isinstance(readiness, list) and readiness else readiness) or {}
+    bb_high, bb_low = _body_battery(bb, summary)
 
     day = {
         "sleep": {
@@ -165,12 +179,9 @@ def collect_day(api, date):
             "lastNightAvg": g(hrv, "hrvSummary", "lastNightAvg"),
             "status": g(hrv, "hrvSummary", "status"),
         },
-        "restingHR": summary.get("restingHeartRate"),
-        "bodyBattery": {
-            "high": summary.get("bodyBatteryHighestValue"),
-            "low": summary.get("bodyBatteryLowestValue"),
-        },
-        "stress": {"avg": summary.get("averageStressLevel")},
+        "restingHR": _rhr_value(rhr),
+        "bodyBattery": {"high": bb_high, "low": bb_low},
+        "stress": {"avg": stress.get("avgStressLevel")},
         "steps": summary.get("totalSteps"),
         "trainingReadiness": {
             "score": tr.get("score") if isinstance(tr, dict) else None,

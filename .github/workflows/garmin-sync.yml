@@ -13,10 +13,6 @@ on:
         description: "Anzahl Tage rückwirkend synchronisieren"
         required: false
         default: "3"
-      debug:
-        description: "1 = einmalig Roh-JSON der Wellness-Abrufe ins Log ausgeben"
-        required: false
-        default: ""
 
 permissions:
   contents: write   # erlaubt das Zurück-Committen der garmin/-Dateien
@@ -49,7 +45,6 @@ jobs:
         env:
           GARMIN_TOKENSTORE_DIR: ${{ runner.temp }}/garmintoken
           GARMIN_OUTDIR: garmin
-          GARMIN_DEBUG: ${{ github.event.inputs.debug }}
         run: python garmin-ai/garmin_sync.py --days "${{ github.event.inputs.days || 7 }}"
 
       - name: Änderungen committen
