@@ -171,6 +171,7 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 @media(max-width:600px){.charts{grid-template-columns:1fr;}}
 .chart-box{position:relative;height:180px;}
 .workload-chart-box{position:relative;height:220px;}
+@media(min-width:720px){#workload-chart-svg-box{height:340px;}}
 
 /* Chart-Container: transparent, weiche Blob-Fläche mittlerer Intensität dahinter (App-weit) */
 /* Chart-Container: rein transparent. Blur bleibt nur in einzelnen Chart-Elementen
@@ -460,8 +461,8 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 .zc-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.85rem;padding-bottom:.5rem;border-bottom:0.5px solid var(--border);}
 .zc-h h2{font-weight:600;font-size:1.05rem;letter-spacing:-.01em;margin:0;color:var(--text);}
 .zc-week{font-style:italic;font-size:.78rem;color:var(--text-muted);}
-.zc-g{display:grid;grid-template-columns:2fr 2fr 1fr;gap:10px;}
-.ab{position:relative;height:240px;border:1px solid var(--border);border-radius:4px;overflow:hidden;background:var(--surface);}
+.zc-g{display:grid;grid-template-columns:2fr 2fr 1fr;gap:10px;max-width:560px;margin:0 auto;}
+.ab{position:relative;aspect-ratio:3/4;max-height:280px;border:1px solid var(--border);border-radius:4px;overflow:hidden;background:var(--surface);}
 .ab-svg{position:absolute;inset:0;width:100%;height:100%;display:block;}
 .ab-anatomy-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:grayscale(1) contrast(1.1) brightness(.88);}
 .ab-anatomy-tint{position:absolute;inset:0;pointer-events:none;}
@@ -791,7 +792,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
         <button data-weeks="13">3 M</button>
         <button data-weeks="26">6 M</button>
       </div>
-      <div class="workload-chart-box wlc-paper"><svg id="workload-chart-svg" viewBox="0 0 360 220" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block;"></svg></div>
+      <div class="workload-chart-box wlc-paper" id="workload-chart-svg-box"><svg id="workload-chart-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
       <div id="workload-chart-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.6rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
     </div>
     <div class="card" style="margin-top:1rem;">
@@ -3779,9 +3780,12 @@ function renderWorkloadChart(){
   const maxPt=Math.max(...dispSess.map(s=>s.wl),1);
   const maxAvg=Math.max(...rollingAvg.filter(v=>v!=null).map(v=>v*1.2),0);
   const maxY=Math.max(maxPt,maxAvg)*1.12;
-  // Fixe viewBox-Koordinaten (im Markup: viewBox="0 0 360 220"). SVG skaliert automatisch
-  // mit dem Container; alle Positionen/Radien bleiben proportional zum viewBox-System.
-  const W=360,H=220;
+  // Container-relative Koordinaten (wie weekly-compare). viewBox wird dynamisch gesetzt,
+  // sodass Kreise pixelrund bleiben und der Chart die volle Container-Breite nutzt.
+  const box=document.getElementById('workload-chart-svg-box');
+  const W=(box&&box.clientWidth)||svg.clientWidth||360;
+  const H=(box&&box.clientHeight)||svg.clientHeight||220;
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
   const padL=34,padR=12,padT=16,padB=26;
   const innerW=W-padL-padR,innerH=H-padT-padB;
   const xAt=di=>padL+(di/(windowDays-1||1))*innerW;
@@ -3799,9 +3803,10 @@ function renderWorkloadChart(){
   // Radien im viewBox-System: 2 … 7 Einheiten. Bei mehr Punkten (längeres Fenster)
   // etwas kleiner, damit sie sich nicht überlappen.
   const densityFactor=windowDays>84?0.65:windowDays>56?0.8:1;
+  const sizeFactor=Math.max(1,Math.min(2.4,H/220));
   const radius=wl=>{
     const base=wlMax===wlMin?4:2+((wl-wlMin)/(wlMax-wlMin))*5;
-    return base*densityFactor;
+    return base*densityFactor*sizeFactor;
   };
   const byDay={};dispSess.forEach(s=>{(byDay[s.date]=byDay[s.date]||[]).push(s);});
   const axF=cssVar('--font-sans'),axC=cssVar('--text-muted'),dotFill=cssVar('--text');
@@ -4176,7 +4181,7 @@ function renderWeeklyTrendChart(){
   let bandSvg='';
   if(bandHiCum&&bandLoCum){
     const up=bandHiCum.map((_,i)=>`${xAt(i).toFixed(1)},${yAt(bandHiCum[i]).toFixed(1)}`);
-    const lo=bandLoCum.slice().reverse().map((_,i)=>`${xAt(6-i-1).toFixed(1)},${yAt(bandLoCum[6-i-1]).toFixed(1)}`);
+    const lo=bandLoCum.slice().reverse().map((_,i)=>`${xAt(6-i).toFixed(1)},${yAt(bandLoCum[6-i]).toFixed(1)}`);
     // Redesign-Pilot: Band als weicher Mehrfarb-Blob (blau→violett→pink) statt Einzelfarbe.
     bandSvg=`<path d="M ${up.join(' L ')} L ${lo.join(' L ')} Z" fill="url(#wc-blob)" fill-opacity="0.55" filter="url(#wc-glow)"/>`;
   }
@@ -4282,6 +4287,8 @@ document.getElementById('analytics-mode-tabs').querySelectorAll('button').forEac
 document.getElementById('analytics-period-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{analyticsPeriod=btn.dataset.period;document.getElementById('analytics-period-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnalytics();});});
 document.getElementById('analytics-metric-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{analyticsMetric=btn.dataset.metric;document.getElementById('analytics-metric-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnalytics();});});
 document.getElementById('acwr-weeks-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{acwrWeeks=parseInt(btn.dataset.weeks);document.getElementById('acwr-weeks-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnalytics();});});
+let _wlcResizeTimer=null;
+window.addEventListener('resize',()=>{clearTimeout(_wlcResizeTimer);_wlcResizeTimer=setTimeout(()=>{const p=document.getElementById('page-analytics');if(p&&p.classList.contains('active')&&document.getElementById('workload-chart-svg'))renderWorkloadChart();},180);});
 
 // Log-[+]-Button: Menü mit drei Eingabe-Optionen. Wählt eine Option → blendet die
 // zugehörige Karte ein, klappt ihren Body auf, scrollt zu ihr, schließt das Menü.
