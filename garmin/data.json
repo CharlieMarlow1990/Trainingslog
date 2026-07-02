@@ -10,7 +10,7 @@
       },
       "hrv": {
         "lastNightAvg": null,
-        "status": null
+        "status": "BALANCED"
       },
       "restingHR": null,
       "bodyBattery": {
@@ -18,12 +18,12 @@
         "low": null
       },
       "stress": {
-        "avg": null
+        "avg": -1
       },
       "steps": null,
       "trainingReadiness": {
-        "score": null,
-        "level": null
+        "score": 43,
+        "level": "LOW"
       }
     },
     "2026-06-30": {
@@ -44,12 +44,12 @@
         "low": null
       },
       "stress": {
-        "avg": null
+        "avg": -1
       },
       "steps": null,
       "trainingReadiness": {
-        "score": null,
-        "level": null
+        "score": 76,
+        "level": "HIGH"
       }
     },
     "2026-07-01": {
@@ -64,18 +64,18 @@
         "lastNightAvg": null,
         "status": null
       },
-      "restingHR": null,
+      "restingHR": 51.0,
       "bodyBattery": {
-        "high": null,
-        "low": null
+        "high": 20,
+        "low": 10
       },
       "stress": {
-        "avg": null
+        "avg": 28
       },
-      "steps": null,
+      "steps": 723,
       "trainingReadiness": {
-        "score": null,
-        "level": null
+        "score": 79,
+        "level": "HIGH"
       }
     },
     "2026-06-11": {
@@ -509,12 +509,12 @@
       "restingHR": 47.0,
       "bodyBattery": {
         "high": 80,
-        "low": 38
+        "low": 25
       },
       "stress": {
-        "avg": 30
+        "avg": 32
       },
-      "steps": 7550,
+      "steps": 8854,
       "trainingReadiness": {
         "score": 28,
         "level": "LOW"
@@ -530,20 +530,46 @@
       },
       "hrv": {
         "lastNightAvg": null,
-        "status": null
+        "status": "BALANCED"
       },
-      "restingHR": null,
+      "restingHR": 49.0,
       "bodyBattery": {
-        "high": null,
-        "low": null
+        "high": 64,
+        "low": 46
       },
       "stress": {
-        "avg": null
+        "avg": 55
       },
-      "steps": null,
+      "steps": 2045,
       "trainingReadiness": {
-        "score": null,
-        "level": null
+        "score": 19,
+        "level": "POOR"
+      }
+    },
+    "2026-07-02": {
+      "sleep": {
+        "score": 89,
+        "durationH": 8.5,
+        "deepH": 1.6,
+        "remH": 1.8,
+        "awakeH": 0.2
+      },
+      "hrv": {
+        "lastNightAvg": 89,
+        "status": "NONE"
+      },
+      "restingHR": 43.0,
+      "bodyBattery": {
+        "high": 94,
+        "low": 20
+      },
+      "stress": {
+        "avg": 23
+      },
+      "steps": 4696,
+      "trainingReadiness": {
+        "score": 86,
+        "level": "HIGH"
       }
     }
   },
@@ -1308,5 +1334,5 @@
       "calories": 335.0
     }
   ],
-  "generated": "2026-07-01T14:03:07+00:00"
+  "generated": "2026-07-02T12:30:15+00:00"
 }
