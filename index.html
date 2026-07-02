@@ -173,13 +173,31 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .workload-chart-box{position:relative;height:220px;}
 
 /* Chart-Container: transparent, weiche Blob-Fläche mittlerer Intensität dahinter (App-weit) */
+/* Chart-Container: rein transparent. Blur bleibt nur in einzelnen Chart-Elementen
+   (Optimales Band, Empfohlener Bereich, Ø-Band) und wird dort direkt gerendert. */
 .wlc-paper,.chart-dark,.analytics-chart-box{background:none;border:none;border-radius:0;padding:0;position:relative;overflow:visible;}
 .wlc-paper svg,.chart-dark canvas{position:relative;z-index:1;}
-.wlc-paper::before,.chart-dark::before,.analytics-chart-box::before{
-  content:"";position:absolute;inset:-8% -4%;z-index:0;pointer-events:none;
-  background:var(--blob-tint,var(--blob-gradient));opacity:.32;
-  filter:blur(48px);border-radius:60% 40% 55% 45%/50% 60% 40% 50%;
-}
+
+/* Log-Header: Garmin-Sync links, schwebender [+]-Button rechts oben */
+.log-header{display:flex;justify-content:space-between;align-items:center;margin:0 0 1.4rem;position:relative;gap:.6rem;flex-wrap:wrap;}
+.log-sync-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1.1rem;border-radius:999px;border:1px solid var(--text);background:transparent;color:var(--text);font-size:.82rem;cursor:pointer;transition:background .12s;}
+.log-sync-btn:hover:not(:disabled){background:rgba(44,44,42,.05);}
+.log-sync-btn:disabled{opacity:.4;cursor:not-allowed;}
+.log-sync-btn.syncing i{animation:spin 1s linear infinite;}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.log-actions{position:relative;}
+.log-add-fab{width:44px;height:44px;border-radius:999px;border:1px solid var(--text);background:var(--text);color:var(--surface);display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;font-size:1.15rem;transition:filter .12s;}
+.log-add-fab:hover{filter:brightness(1.1);}
+.log-add-fab.open{transform:rotate(45deg);}
+.log-add-menu{position:absolute;top:52px;right:0;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(44,44,42,.14);padding:.4rem;z-index:60;display:flex;flex-direction:column;gap:.2rem;}
+.log-add-menu[hidden]{display:none;}
+.log-add-menu button{background:none;border:none;color:var(--text);text-align:left;padding:.55rem .75rem;border-radius:8px;font-size:.86rem;display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;letter-spacing:0;text-transform:none;}
+.log-add-menu button:hover{background:rgba(44,44,42,.06);}
+.log-add-menu button .ti{font-size:.95em;opacity:.85;}
+/* Schließ-X in den Eingabe-Karten (nur wenn geöffnet) */
+.log-entry-card{position:relative;}
+.log-entry-card .card-close{position:absolute;top:.6rem;right:.6rem;width:28px;height:28px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;z-index:2;}
+.log-entry-card .card-close:hover{color:var(--text);border-color:var(--text);}
 
 /* Karten: rahmenlos, größerer Abstand zwischen Sections (App-weit) */
 .card{background:none;border:none;border-radius:0;padding:0;margin-bottom:2.6rem;}
@@ -515,9 +533,25 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 <!-- LOG -->
 <div class="page active" id="page-log">
 
+  <!-- Log-Header mit schwebendem [+]-Button. Der Button öffnet ein Menü,
+       das die drei Eingabe-Karten (Trainingsnotiz, Neue Einheit, Import) selektiv einblendet.
+       qnSaveDraft-Persistenz bleibt unangetastet — Notiz überlebt Menüwechsel und Seitenwechsel. -->
+  <div class="log-header">
+    <button type="button" class="log-sync-btn" id="log-garmin-sync" title="PAT in Einstellungen eintragen, um zu aktivieren." disabled><i class="ti ti-refresh" aria-hidden="true"></i> Garmin</button>
+    <div class="log-actions" id="log-actions-wrap">
+      <button type="button" class="log-add-fab" id="log-add-btn" aria-label="Eingabe öffnen"><i class="ti ti-plus" aria-hidden="true"></i></button>
+      <div class="log-add-menu" id="log-add-menu" hidden>
+        <button type="button" data-target="quicknote-card"><i class="ti ti-notes"></i> Trainingsnotiz</button>
+        <button type="button" data-target="neue-einheit-card"><i class="ti ti-plus"></i> Neue Einheit</button>
+        <button type="button" data-target="import-card"><i class="ti ti-upload"></i> Import</button>
+      </div>
+    </div>
+  </div>
+  <span class="status" id="log-sync-status" style="display:block;text-align:right;margin:-.9rem 0 1rem;min-height:1em;"></span>
+
   <!-- Trainingsnotiz: Einheiten vortragen, während des Trainings ergänzen, speichern.
        Datum frei wählbar, Uhr nicht nötig. Verknüpfung mit FIT/GPX-Upload bleibt bestehen. -->
-  <div class="card collapsible-card" id="quicknote-card">
+  <div class="card collapsible-card log-entry-card" id="quicknote-card" style="display:none;">
     <button class="collapse-toggle" onclick="toggleCard('qn-body','qn-chevron')" aria-expanded="false">
       <span><i class="ti ti-notes"></i> Trainingsnotiz</span>
       <i class="ti ti-chevron-down collapse-chevron" id="qn-chevron"></i>
@@ -555,7 +589,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
     </div>
   </div>
 
-  <div class="card collapsible-card">
+  <div class="card collapsible-card log-entry-card" id="neue-einheit-card" style="display:none;">
     <button class="collapse-toggle" onclick="toggleCard('neue-einheit-body','neue-einheit-chevron')" aria-expanded="false">
       <span><i class="ti ti-plus"></i> Neue Einheit</span>
       <i class="ti ti-chevron-down collapse-chevron" id="neue-einheit-chevron"></i>
@@ -594,7 +628,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 
   <div id="week-analysis-box" style="display:none;"></div>
 
-  <div class="card collapsible-card">
+  <div class="card collapsible-card log-entry-card" id="import-card" style="display:none;">
     <button class="collapse-toggle" onclick="toggleCard('import-body','import-chevron')" aria-expanded="false">
       <span><i class="ti ti-upload"></i> Import <span class="badge" style="margin-left:.3rem;">GPX &amp; CSV</span></span>
       <i class="ti ti-chevron-down collapse-chevron" id="import-chevron"></i>
@@ -752,10 +786,12 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
       <h2><i class="ti ti-activity"></i> Workload-Progression</h2>
       <div class="metrics metrics-3" id="acwr-cards"></div>
       <div class="tab-bar" id="acwr-weeks-tabs" style="margin:.6rem 0;">
-        <button class="active" data-weeks="4">4 Wochen</button>
-        <button data-weeks="8">8 Wochen</button>
+        <button class="active" data-weeks="4">4 W</button>
+        <button data-weeks="8">8 W</button>
+        <button data-weeks="13">3 M</button>
+        <button data-weeks="26">6 M</button>
       </div>
-      <div class="workload-chart-box wlc-paper"><svg id="workload-chart-svg" preserveAspectRatio="none"></svg></div>
+      <div class="workload-chart-box wlc-paper"><svg id="workload-chart-svg" viewBox="0 0 360 220" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block;"></svg></div>
       <div id="workload-chart-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.6rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
     </div>
     <div class="card" style="margin-top:1rem;">
@@ -902,6 +938,21 @@ Aktueller Fokus: Grundlagenausdauer aufbauen"></textarea>
     </div>
   </div>
 
+  <!-- GitHub PAT für manuellen Garmin-Sync -->
+  <div class="card">
+    <h2><i class="ti ti-brand-github"></i> GitHub PAT (Garmin-Sync)</h2>
+    <p class="profile-hint">Ein <strong>Fine-grained Personal Access Token</strong>, mit dem der „Garmin"-Button oben im Log den Sync auslöst. Empfohlener Scope: <em>nur dieses Repo</em>, Berechtigung <em>Actions: Read and write</em>. Wird verschlüsselt in Supabase gespeichert und ist nur für dich zugänglich (RLS). Ohne Token bleibt der Garmin-Button deaktiviert.</p>
+    <div class="field" style="margin-bottom:.75rem;">
+      <label>Token (github_pat_…)</label>
+      <input type="password" id="github-pat-input" placeholder="github_pat_..." autocomplete="off">
+    </div>
+    <div class="row">
+      <button class="primary" id="save-github-pat">Speichern</button>
+      <button class="ghost" id="clear-github-pat">Entfernen</button>
+      <span class="status" id="github-pat-status"></span>
+    </div>
+  </div>
+
   <!-- Anthropic API Key -->
   <div class="card">
     <h2><i class="ti ti-key"></i> Anthropic API Key</h2>
@@ -948,9 +999,15 @@ Aktueller Fokus: Grundlagenausdauer aufbauen"></textarea>
     </div>
   </div>
 
-  <!-- Zonen -->
+  <!-- Zonen: Global-Profil + optionale Lauf-/Rad-Profile -->
   <div class="card">
     <h2>Trainingszonen</h2>
+    <div class="tab-bar" id="zones-profile-tabs" style="margin:0 0 .8rem;">
+      <button type="button" class="active" data-profile="global">Global</button>
+      <button type="button" data-profile="Lauf">Lauf</button>
+      <button type="button" data-profile="Rad">Rad</button>
+    </div>
+    <p id="zones-profile-hint" style="font-size:.72rem;color:var(--text-muted);margin:0 0 .5rem;">Globale Zonen gelten für alle Sportarten ohne eigenes Profil.</p>
     <div style="display:grid;grid-template-columns:1fr 72px 72px 34px;gap:.4rem;margin-bottom:.35rem;">
       <span style="font-size:.7rem;color:var(--text-muted);font-weight:500;">Name</span>
       <span style="font-size:.7rem;color:var(--text-muted);font-weight:500;">HF min</span>
@@ -958,6 +1015,9 @@ Aktueller Fokus: Grundlagenausdauer aufbauen"></textarea>
       <span></span>
     </div>
     <div id="zone-settings-inline"></div>
+    <div id="zones-profile-actions" style="display:none;margin-top:.6rem;">
+      <button type="button" class="ghost" id="zones-profile-reset" style="font-size:.78rem;">Profil auf Global zurücksetzen</button>
+    </div>
   </div>
 
   <div class="row" style="padding:0 0 1rem;">
@@ -1127,6 +1187,21 @@ const DB={
     const{error}=await sb.from('sessions').delete().eq('id',id);
     if(error)throw error;
   },
+  async getGithubPat(){
+    if(!currentUser)return null;
+    try{
+      const{data}=await sb.from('user_secrets').select('github_pat').eq('user_id',currentUser.id).maybeSingle();
+      return data?.github_pat||null;
+    }catch(e){return null;}
+  },
+  async saveGithubPat(token){
+    const{data}=await sb.from('user_secrets').select('user_id').eq('user_id',currentUser.id).maybeSingle();
+    if(data)await sb.from('user_secrets').update({github_pat:token}).eq('user_id',currentUser.id);
+    else await sb.from('user_secrets').insert([{user_id:currentUser.id,github_pat:token}]);
+  },
+  async deleteGithubPat(){
+    await sb.from('user_secrets').delete().eq('user_id',currentUser.id);
+  },
   async getProfile(){const{data}=await sb.from('training_profile').select('content').eq('user_id',currentUser.id).single();return data?.content||'';},
   async saveProfile(content){
     const{data}=await sb.from('training_profile').select('id').eq('user_id',currentUser.id).single();
@@ -1253,7 +1328,7 @@ let currentUser=null,trainingProfile='';
 let activePage='log';
 let analyticsPeriod='week',analyticsMetric='time',analyticsActiveSports=new Set();
 let analyticsMode='time-sport-abs'; // time-sport-abs | time-zone
-let cfg={sports:JSON.parse(JSON.stringify(DEFAULT_SPORTS)),zones:JSON.parse(JSON.stringify(DEFAULT_ZONES)),hrMax:192,hrRest:40,ftp:200,radMethod:'tss'};
+let cfg={sports:JSON.parse(JSON.stringify(DEFAULT_SPORTS)),zones:JSON.parse(JSON.stringify(DEFAULT_ZONES)),sportZones:{},hrMax:192,hrRest:40,ftp:200,radMethod:'tss'};
 let chatHistory=[];
 let pendingGpxData=null;
 let pendingGpxMulti=[];
@@ -1267,6 +1342,7 @@ function loadCfg(){
       const p=JSON.parse(c);
       cfg.sports=p.sports||cfg.sports;
       cfg.zones=p.zones||cfg.zones;
+      cfg.sportZones=p.sportZones||cfg.sportZones||{};
       cfg.hrMax=p.hrMax||cfg.hrMax;
       cfg.hrRest=p.hrRest||cfg.hrRest;
       cfg.ftp=p.ftp||cfg.ftp;
@@ -1294,10 +1370,19 @@ function sportCfg(key){
   if(found)return found;
   return{color:'#a8a59a',icon:'&#x26A1;',label:key,imgUrl:null,freitext:false};
 }
-function zoneCfg(key){return cfg.zones.find(z=>z.key===key)||{label:key,color:'#c9c6bc'};}
-function inferZone(hrAvg){
+// Zonen-Auflösung pro Modalität: Lauf/Rad bekommen ggf. eigene Profile.
+// Andere Sportarten (oder Modalitäten ohne eigenes Profil) nutzen die globale Liste.
+function zonesFor(sport){
+  const p=cfg.sportZones&&cfg.sportZones[sport];
+  return Array.isArray(p)&&p.length?p:cfg.zones;
+}
+function zoneCfg(key,sport){
+  const list=sport?zonesFor(sport):cfg.zones;
+  return list.find(z=>z.key===key)||cfg.zones.find(z=>z.key===key)||{label:key,color:'#c9c6bc'};
+}
+function inferZone(hrAvg,sport){
   if(!hrAvg||hrAvg<=0)return null;
-  for(const z of cfg.zones){
+  for(const z of zonesFor(sport)){
     if(z.key==='-')continue;
     if(z.hrMin&&z.hrMax&&hrAvg>=z.hrMin&&hrAvg<=z.hrMax)return z.key;
   }
@@ -2997,7 +3082,7 @@ function renderLog(){
   function renderEntry(s,planned){
     const d=new Date(s.date+'T00:00:00');
     const dateStr=d.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
-    const sc=sportCfg(s.sport),zc=zoneCfg(s.zone);
+    const sc=sportCfg(s.sport),zc=zoneCfg(s.zone,s.sport);
     const meta=[];
     if(s.hr_avg||s.hr_max)meta.push('&#x2665; '+(s.hr_avg?'Ø '+s.hr_avg:'')+(s.hr_avg&&s.hr_max?' / ':'')+(s.hr_max?'Max '+s.hr_max:''));
     if(s.distance_km)meta.push('<i class="ti ti-map-pin"></i> '+s.distance_km+' km');
@@ -3317,7 +3402,7 @@ function closeCalPlanModal(){
 function openSessionModal(id){
   const s=sessions.find(x=>String(x.id)===String(id));
   if(!s)return;
-  const sc=sportCfg(s.sport),zc=zoneCfg(s.zone);
+  const sc=sportCfg(s.sport),zc=zoneCfg(s.zone,s.sport);
   const d=new Date(s.date+'T00:00:00');
   const dateStr=d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   const rows=[];
@@ -3694,8 +3779,9 @@ function renderWorkloadChart(){
   const maxPt=Math.max(...dispSess.map(s=>s.wl),1);
   const maxAvg=Math.max(...rollingAvg.filter(v=>v!=null).map(v=>v*1.2),0);
   const maxY=Math.max(maxPt,maxAvg)*1.12;
-  const W=svg.clientWidth||svg.parentElement.clientWidth||360;
-  const H=svg.clientHeight||220;
+  // Fixe viewBox-Koordinaten (im Markup: viewBox="0 0 360 220"). SVG skaliert automatisch
+  // mit dem Container; alle Positionen/Radien bleiben proportional zum viewBox-System.
+  const W=360,H=220;
   const padL=34,padR=12,padT=16,padB=26;
   const innerW=W-padL-padR,innerH=H-padT-padB;
   const xAt=di=>padL+(di/(windowDays-1||1))*innerW;
@@ -3710,7 +3796,13 @@ function renderWorkloadChart(){
     midPath='M '+vi.map(i=>xAt(i).toFixed(1)+','+yAt(rollingAvg[i]).toFixed(1)).join(' L ');
   }
   const wlVals=dispSess.map(s=>s.wl),wlMin=Math.min(...wlVals),wlMax=Math.max(...wlVals);
-  const radius=wl=>wlMax===wlMin?5:3+((wl-wlMin)/(wlMax-wlMin))*7;
+  // Radien im viewBox-System: 2 … 7 Einheiten. Bei mehr Punkten (längeres Fenster)
+  // etwas kleiner, damit sie sich nicht überlappen.
+  const densityFactor=windowDays>84?0.65:windowDays>56?0.8:1;
+  const radius=wl=>{
+    const base=wlMax===wlMin?4:2+((wl-wlMin)/(wlMax-wlMin))*5;
+    return base*densityFactor;
+  };
   const byDay={};dispSess.forEach(s=>{(byDay[s.date]=byDay[s.date]||[]).push(s);});
   const axF=cssVar('--font-sans'),axC=cssVar('--text-muted'),dotFill=cssVar('--text');
   const dots=dispSess.map(s=>{
@@ -3726,10 +3818,23 @@ function renderWorkloadChart(){
     return '<text x="'+(padL-5)+'" y="'+(y+3)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="end">'+v+'</text>'+
            '<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="rgba(44,44,42,0.07)" stroke-width="0.5"/>';
   }).join('');
-  const step=windowDays<=28?7:14;let xLabels='';
-  for(let i=0;i<windowDays;i+=step){
-    const d=new Date(displayStart);d.setDate(d.getDate()+i);
-    xLabels+='<text x="'+xAt(i).toFixed(1)+'" y="'+(H-7)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="middle">'+d.getDate()+'.'+(d.getMonth()+1)+'.</text>';
+  // X-Achsen-Ticks: bis 28 Tage wöchentlich, bis 84 Tage 2-wöchentlich,
+  // darüber monatlich (jeweils am 1. des Monats).
+  let xLabels='';
+  if(windowDays<=84){
+    const step=windowDays<=28?7:14;
+    for(let i=0;i<windowDays;i+=step){
+      const d=new Date(displayStart);d.setDate(d.getDate()+i);
+      xLabels+='<text x="'+xAt(i).toFixed(1)+'" y="'+(H-7)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="middle">'+d.getDate()+'.'+(d.getMonth()+1)+'.</text>';
+    }
+  }else{
+    for(let i=0;i<windowDays;i++){
+      const d=new Date(displayStart);d.setDate(d.getDate()+i);
+      if(d.getDate()===1){
+        const label=d.toLocaleDateString('de-DE',{month:'short'});
+        xLabels+='<text x="'+xAt(i).toFixed(1)+'" y="'+(H-7)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="middle">'+label+'</text>';
+      }
+    }
   }
   const ld=new Date(today);
   xLabels+='<text x="'+xAt(windowDays-1).toFixed(1)+'" y="'+(H-7)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="end">'+ld.getDate()+'.'+(ld.getMonth()+1)+'.</text>';
@@ -3738,13 +3843,13 @@ function renderWorkloadChart(){
   svg.innerHTML='<defs>'+
     '<filter id="wlc-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6"/></filter>'+
     '<linearGradient id="wlc-blob" x1="0" y1="0" x2="0" y2="1">'+
-      '<stop offset="0%" stop-color="'+cssVar('--blob-blue')+'"/>'+
-      '<stop offset="55%" stop-color="'+cssVar('--blob-violet')+'"/>'+
-      '<stop offset="100%" stop-color="'+cssVar('--blob-pink')+'"/>'+
+      '<stop offset="0%" stop-color="'+cssVar('--acwr-low')+'" stop-opacity="0.85"/>'+
+      '<stop offset="100%" stop-color="'+cssVar('--acwr-low')+'" stop-opacity="0.35"/>'+
     '</linearGradient></defs>'+yLabels+xLabels+bp+dots;
+  const bandLabel=acwrWeeks<=8?'Ø letzte '+acwrWeeks+' Wochen ±20%':'Ø gleitend ±20%';
   document.getElementById('workload-chart-legend').innerHTML=
     '<span style="color:var(--text);">Einheit (Größe = Workload)</span>'+
-    '<span style="color:var(--blob-blue);">Ø letzte '+acwrWeeks+' Wochen ±20%</span>';
+    '<span style="color:var(--acwr-low);">'+bandLabel+'</span>';
 }
 // Monotonie & Strain nach Foster (1998): Bewertung der Belastungsverteilung INNERHALB
 // der Woche, ergänzend zu ACWR (das nur die Gesamtmenge bewertet).
@@ -3920,21 +4025,21 @@ function renderWeeklyTrendChart(){
   // Redesign-Pilot: das Optimale Band als weiche Blob-Gradient-Fläche statt harter Outline —
   // ctx.createLinearGradient braucht die Canvas-Fläche, daher als Funktion (Chart.js ruft sie
   // beim Zeichnen mit {chart} auf).
+  // Optimales Band: einheitlich hellblaue Fläche (--acwr-low), leicht verblurt/glowend
   const bandBlobFill=({chart})=>{
     const {ctx,chartArea}=chart;
-    if(!chartArea)return 'rgba(91,141,214,.16)';
+    if(!chartArea)return 'rgba(133,167,196,.24)';
     const g=ctx.createLinearGradient(0,chartArea.top,0,chartArea.bottom);
-    g.addColorStop(0,'rgba(91,141,214,.22)');
-    g.addColorStop(.5,'rgba(140,109,176,.18)');
-    g.addColorStop(1,'rgba(214,123,160,.14)');
+    g.addColorStop(0,'rgba(133,167,196,.30)');
+    g.addColorStop(1,'rgba(133,167,196,.14)');
     return g;
   };
   const datasets=[
     {type:'line',label:'_up',data:bandUp,fill:'+1',
-      // Optimales Band: weiche Blob-Fläche (blau→violett→pink), verblurt
+      // Optimales Band: weiche hellblaue Fläche, verblurt
       backgroundColor:bandBlobFill,borderColor:'transparent',borderWidth:0,
       pointRadius:0,tension:0.4,spanGaps:true,
-      _glow:true,_glowColor:cssVar('--blob-violet'),_glowBlur:22},
+      _glow:true,_glowColor:cssVar('--acwr-low'),_glowBlur:22},
     {type:'line',label:'_lo',data:bandLo,fill:false,
       borderColor:'transparent',borderWidth:0,
       pointRadius:0,tension:0.4,spanGaps:true},
@@ -3977,7 +4082,7 @@ function renderWeeklyTrendChart(){
   });
   document.getElementById('weekly-trend-legend').innerHTML=
     '<span style="color:var(--orange-soft);">Wochensumme</span>'+
-    '<span style="color:var(--blob-violet);">Optimales Band</span>'+
+    '<span style="color:var(--acwr-low);">Optimales Band</span>'+
     '<span style="color:var(--acwr-high);">Hoch</span>'+
     '<span style="color:var(--acwr-caution);">Vorsicht</span>'+
     '<span style="color:var(--acwr-optimal);">Optimal</span>'+
@@ -4097,9 +4202,8 @@ function renderWeeklyTrendChart(){
   wcc.innerHTML=`<defs>
     <filter id="wc-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6"/></filter>
     <linearGradient id="wc-blob" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${cssVar('--blob-blue')}"/>
-      <stop offset="55%" stop-color="${cssVar('--blob-violet')}"/>
-      <stop offset="100%" stop-color="${cssVar('--blob-pink')}"/>
+      <stop offset="0%" stop-color="${cssVar('--acwr-low')}" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="${cssVar('--acwr-low')}" stop-opacity="0.35"/>
     </linearGradient>
   </defs>
   ${yLabels2}${xLabels2}${bandSvg}
@@ -4112,7 +4216,7 @@ function renderWeeklyTrendChart(){
     `<span style="color:var(--data-plum);">Diese Woche</span>`+
     (prevWeekCum?`<span style="color:var(--text-muted);">Letzte Woche</span>`:'')+
     (plannedCum?`<span style="color:var(--orange-soft);">Geplant (Ist+Plan)</span>`:'')+
-    (bandLoCum?`<span style="color:var(--blob-blue);">Empfohlener Bereich</span>`:'');
+    (bandLoCum?`<span style="color:var(--acwr-low);">Empfohlener Bereich</span>`:'');
 }
 
 // Drill-down: Tagesbalken (Mo–So) der angeklickten Woche
@@ -4179,6 +4283,112 @@ document.getElementById('analytics-period-tabs').querySelectorAll('button').forE
 document.getElementById('analytics-metric-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{analyticsMetric=btn.dataset.metric;document.getElementById('analytics-metric-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnalytics();});});
 document.getElementById('acwr-weeks-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{acwrWeeks=parseInt(btn.dataset.weeks);document.getElementById('acwr-weeks-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnalytics();});});
 
+// Log-[+]-Button: Menü mit drei Eingabe-Optionen. Wählt eine Option → blendet die
+// zugehörige Karte ein, klappt ihren Body auf, scrollt zu ihr, schließt das Menü.
+// qnSaveDraft-Persistenz bleibt unangetastet — Werte im DOM überleben Öffnen/Schließen.
+(function initLogAddMenu(){
+  const btn=document.getElementById('log-add-btn');
+  const menu=document.getElementById('log-add-menu');
+  if(!btn||!menu)return;
+  const bodyIdFor={'quicknote-card':'qn-body','neue-einheit-card':'neue-einheit-body','import-card':'import-body'};
+  const chevIdFor={'quicknote-card':'qn-chevron','neue-einheit-card':'neue-einheit-chevron','import-card':'import-chevron'};
+
+  function toggleMenu(open){
+    const isOpen=open==null?menu.hasAttribute('hidden'):open;
+    if(isOpen){menu.removeAttribute('hidden');btn.classList.add('open');}
+    else{menu.setAttribute('hidden','');btn.classList.remove('open');}
+  }
+  btn.addEventListener('click',e=>{e.stopPropagation();toggleMenu();});
+  document.addEventListener('click',e=>{
+    if(!menu.hasAttribute('hidden')&&!menu.contains(e.target)&&e.target!==btn){toggleMenu(false);}
+  });
+
+  function ensureCloseButton(card){
+    if(card.querySelector(':scope > .card-close'))return;
+    const x=document.createElement('button');
+    x.className='card-close';x.type='button';x.setAttribute('aria-label','Schließen');
+    x.innerHTML='<i class="ti ti-x" aria-hidden="true"></i>';
+    x.addEventListener('click',()=>{card.style.display='none';});
+    card.appendChild(x);
+  }
+
+  menu.querySelectorAll('button[data-target]').forEach(item=>{
+    item.addEventListener('click',()=>{
+      const cardId=item.dataset.target;
+      const card=document.getElementById(cardId);
+      if(!card)return;
+      ensureCloseButton(card);
+      card.style.display='';
+      const bodyId=bodyIdFor[cardId],chevId=chevIdFor[cardId];
+      if(bodyId&&chevId&&typeof toggleCard==='function')toggleCard(bodyId,chevId,true);
+      toggleMenu(false);
+      setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'start'}),30);
+    });
+  });
+})();
+
+// Manueller Garmin-Sync: nutzt PAT aus Supabase (user_secrets), triggert
+// den GitHub-Actions-Workflow "garmin-sync.yml" und pollt den letzten Run
+// bis fertig; danach lädt Sessions neu.
+const GARMIN_SYNC_REPO='CharlieMarlow1990/Trainingslog';
+const GARMIN_SYNC_WORKFLOW='garmin-sync.yml';
+let cachedGithubPat=null;
+async function refreshGarminSyncButton(){
+  const btn=document.getElementById('log-garmin-sync');if(!btn)return;
+  try{cachedGithubPat=await DB.getGithubPat();}catch(e){cachedGithubPat=null;}
+  btn.disabled=!cachedGithubPat;
+  btn.title=cachedGithubPat?'Manuellen Garmin-Sync jetzt starten':'PAT in Einstellungen eintragen, um zu aktivieren.';
+}
+async function triggerGarminSync(){
+  const btn=document.getElementById('log-garmin-sync');
+  const stat=document.getElementById('log-sync-status');
+  if(!btn||!cachedGithubPat)return;
+  btn.disabled=true;btn.classList.add('syncing');stat.textContent='Sync gestartet …';
+  try{
+    // Aktuelle letzte Run-Nummer merken, damit Polling den neuen Run erkennt.
+    let lastKnownId=null;
+    try{
+      const r0=await fetch(`https://api.github.com/repos/${GARMIN_SYNC_REPO}/actions/workflows/${GARMIN_SYNC_WORKFLOW}/runs?per_page=1`,
+        {headers:{Authorization:`Bearer ${cachedGithubPat}`,Accept:'application/vnd.github+json'}});
+      if(r0.ok){const j=await r0.json();lastKnownId=j.workflow_runs?.[0]?.id||null;}
+    }catch(e){}
+    // Workflow triggern
+    const resp=await fetch(`https://api.github.com/repos/${GARMIN_SYNC_REPO}/actions/workflows/${GARMIN_SYNC_WORKFLOW}/dispatches`,{
+      method:'POST',
+      headers:{Authorization:`Bearer ${cachedGithubPat}`,Accept:'application/vnd.github+json','Content-Type':'application/json'},
+      body:JSON.stringify({ref:'main',inputs:{days:'3'}})
+    });
+    if(!resp.ok){throw new Error('GitHub API '+resp.status);}
+    stat.textContent='Läuft im Hintergrund …';
+    // Bis zu 3 Minuten auf einen neuen Run mit Status !== 'completed' warten
+    const start=Date.now();
+    while(Date.now()-start<180000){
+      await new Promise(r=>setTimeout(r,6000));
+      try{
+        const r=await fetch(`https://api.github.com/repos/${GARMIN_SYNC_REPO}/actions/workflows/${GARMIN_SYNC_WORKFLOW}/runs?per_page=1`,
+          {headers:{Authorization:`Bearer ${cachedGithubPat}`,Accept:'application/vnd.github+json'}});
+        if(!r.ok)continue;
+        const j=await r.json();
+        const run=j.workflow_runs?.[0];
+        if(!run||run.id===lastKnownId)continue;
+        if(run.status==='completed'){
+          stat.textContent=run.conclusion==='success'?'Sync fertig – lade neue Daten …':'Sync abgeschlossen: '+run.conclusion;
+          if(run.conclusion==='success'&&typeof loadSessions==='function'){await loadSessions();renderLog();}
+          break;
+        }else{
+          stat.textContent='Läuft: '+run.status+' …';
+        }
+      }catch(e){}
+    }
+  }catch(e){
+    stat.textContent='Fehler: '+(e.message||e);
+  }finally{
+    btn.classList.remove('syncing');btn.disabled=!cachedGithubPat;
+    setTimeout(()=>{if(stat)stat.textContent='';},8000);
+  }
+}
+document.getElementById('log-garmin-sync')?.addEventListener('click',triggerGarminSync);
+
 // ── EINSTELLUNGEN ─────────────────────────────────────────────────────────────
 function sportSettingsHTML(){
   const rows=cfg.sports.map((s,i)=>{
@@ -4196,8 +4406,17 @@ function sportSettingsHTML(){
   }).join('');
   return rows+`<button class="add-sport-btn" id="add-sport-btn">+ Sportart hinzufügen</button>`;
 }
-function zoneSettingsHTML(){
-  return cfg.zones.map((z,i)=>`
+// Aktuell im Editor sichtbares Zonen-Profil: 'global' oder Sportart-Key ('Lauf'/'Rad').
+let currentZoneProfile='global';
+function zonesForProfile(profile){
+  if(profile==='global')return cfg.zones;
+  const p=cfg.sportZones&&cfg.sportZones[profile];
+  // Wenn kein eigenes Profil existiert, Basis aus global klonen (nur zur Anzeige)
+  return Array.isArray(p)&&p.length?p:JSON.parse(JSON.stringify(cfg.zones));
+}
+function zoneSettingsHTML(profile){
+  profile=profile||currentZoneProfile;
+  return zonesForProfile(profile).map((z,i)=>`
     <div class="zone-row">
       <input type="text" class="zone-name-inline" data-zone="${i}" value="${esc(z.label)}">
       <input type="number" class="zone-hrmin-inline" data-zone="${i}" value="${z.hrMin||''}" placeholder="min" min="0" max="250">
@@ -4267,6 +4486,42 @@ function renderSettingsInline(){
     setTimeout(()=>{document.getElementById('api-key-status').textContent='';},2000);
   };
 
+  // ── GitHub PAT (für manuellen Garmin-Sync) ─────────────────────────────────
+  const patInput=document.getElementById('github-pat-input');
+  const patStatus=document.getElementById('github-pat-status');
+  if(patInput){
+    // Aktueller Status als Platzhalter (Token selbst wird nicht mehr angezeigt)
+    DB.getGithubPat().then(t=>{
+      patInput.placeholder=t?'Token gespeichert (****'+(t.slice(-4))+')':'github_pat_...';
+    }).catch(()=>{patInput.placeholder='github_pat_...';});
+    patInput.value='';
+    document.getElementById('save-github-pat').onclick=async()=>{
+      const val=(patInput.value||'').trim();
+      if(!val){patStatus.textContent='Bitte Token eingeben';return;}
+      patStatus.textContent='Speichere …';
+      try{
+        await DB.saveGithubPat(val);
+        patInput.value='';
+        patInput.placeholder='Token gespeichert (****'+val.slice(-4)+')';
+        cachedGithubPat=val;
+        await refreshGarminSyncButton();
+        patStatus.textContent='Gespeichert ✓';
+        setTimeout(()=>{patStatus.textContent='';},2500);
+      }catch(e){patStatus.textContent='Fehler: '+(e.message||e);}
+    };
+    document.getElementById('clear-github-pat').onclick=async()=>{
+      patStatus.textContent='Entferne …';
+      try{
+        await DB.deleteGithubPat();
+        cachedGithubPat=null;
+        patInput.value='';patInput.placeholder='github_pat_...';
+        await refreshGarminSyncButton();
+        patStatus.textContent='Entfernt';
+        setTimeout(()=>{patStatus.textContent='';},2000);
+      }catch(e){patStatus.textContent='Fehler: '+(e.message||e);}
+    };
+  }
+
   // ── Bild-Upload ─────────────────────────────────────────────────────────────
   document.querySelectorAll('.img-upload-inline').forEach(inp=>{
     inp.addEventListener('change',async()=>{
@@ -4293,6 +4548,42 @@ function renderSettingsInline(){
   });
   const addBtn=document.getElementById('add-sport-btn');
   if(addBtn)addBtn.addEventListener('click',addNewSport);
+
+  // Zonen-Profil-Tabs (Global / Lauf / Rad)
+  const tabsEl=document.getElementById('zones-profile-tabs');
+  const hintEl=document.getElementById('zones-profile-hint');
+  const actionsEl=document.getElementById('zones-profile-actions');
+  const resetBtn=document.getElementById('zones-profile-reset');
+  if(tabsEl){
+    tabsEl.querySelectorAll('button').forEach(btn=>{
+      if(btn.dataset.profile===currentZoneProfile)btn.classList.add('active'); else btn.classList.remove('active');
+      btn.addEventListener('click',()=>{
+        currentZoneProfile=btn.dataset.profile;
+        tabsEl.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));
+        document.getElementById('zone-settings-inline').innerHTML=zoneSettingsHTML();
+        const hasCustom=currentZoneProfile!=='global'&&Array.isArray(cfg.sportZones?.[currentZoneProfile])&&cfg.sportZones[currentZoneProfile].length;
+        if(hintEl){
+          hintEl.textContent=currentZoneProfile==='global'
+            ?'Globale Zonen gelten für alle Sportarten ohne eigenes Profil.'
+            :hasCustom?`Eigenes ${currentZoneProfile}-Profil aktiv – überschreibt die globalen Zonen.`
+                       :`Noch kein eigenes ${currentZoneProfile}-Profil. Werte anpassen und speichern legt es an.`;
+        }
+        if(actionsEl)actionsEl.style.display=(currentZoneProfile!=='global'&&hasCustom)?'':'none';
+      });
+    });
+  }
+  if(resetBtn){
+    resetBtn.addEventListener('click',()=>{
+      if(currentZoneProfile==='global')return;
+      if(!confirm(`${currentZoneProfile}-Zonenprofil löschen und auf Global zurückfallen?`))return;
+      if(cfg.sportZones)delete cfg.sportZones[currentZoneProfile];
+      saveCfg();
+      document.getElementById('zone-settings-inline').innerHTML=zoneSettingsHTML();
+      if(hintEl)hintEl.textContent=`Noch kein eigenes ${currentZoneProfile}-Profil. Werte anpassen und speichern legt es an.`;
+      if(actionsEl)actionsEl.style.display='none';
+      renderLog();
+    });
+  }
 }
 
 function addNewSport(){
@@ -4345,10 +4636,21 @@ document.getElementById('save-settings-inline').addEventListener('click',()=>{
   document.querySelectorAll('.color-pick-inline').forEach(el=>{cfg.sports[parseInt(el.dataset.sport)].color=el.value;});
   document.querySelectorAll('.emoji-pick-inline').forEach(el=>{cfg.sports[parseInt(el.dataset.sport)].icon=el.value;});
   document.querySelectorAll('.sport-freitext-inline').forEach(el=>{cfg.sports[parseInt(el.dataset.sport)].freitext=el.checked;});
-  document.querySelectorAll('.zone-name-inline').forEach(el=>{cfg.zones[parseInt(el.dataset.zone)].label=el.value;});
-  document.querySelectorAll('.zone-hrmin-inline').forEach(el=>{cfg.zones[parseInt(el.dataset.zone)].hrMin=parseFloat(el.value)||null;});
-  document.querySelectorAll('.zone-hrmax-inline').forEach(el=>{cfg.zones[parseInt(el.dataset.zone)].hrMax=parseFloat(el.value)||null;});
-  document.querySelectorAll('.zone-color-inline').forEach(el=>{cfg.zones[parseInt(el.dataset.zone)].color=el.value;});
+  // Zonen ins gerade aktive Profil (global oder Sportart-spezifisch) schreiben
+  const targetProfile=currentZoneProfile;
+  let targetZones;
+  if(targetProfile==='global'){targetZones=cfg.zones;}
+  else{
+    cfg.sportZones=cfg.sportZones||{};
+    if(!Array.isArray(cfg.sportZones[targetProfile])||!cfg.sportZones[targetProfile].length){
+      cfg.sportZones[targetProfile]=JSON.parse(JSON.stringify(cfg.zones));
+    }
+    targetZones=cfg.sportZones[targetProfile];
+  }
+  document.querySelectorAll('.zone-name-inline').forEach(el=>{targetZones[parseInt(el.dataset.zone)].label=el.value;});
+  document.querySelectorAll('.zone-hrmin-inline').forEach(el=>{targetZones[parseInt(el.dataset.zone)].hrMin=parseFloat(el.value)||null;});
+  document.querySelectorAll('.zone-hrmax-inline').forEach(el=>{targetZones[parseInt(el.dataset.zone)].hrMax=parseFloat(el.value)||null;});
+  document.querySelectorAll('.zone-color-inline').forEach(el=>{targetZones[parseInt(el.dataset.zone)].color=el.value;});
   saveCfg();populateSelects();updateNoteLabel();renderLog();
   document.getElementById('settings-status-inline').textContent='Gespeichert <i class="ti ti-check"></i>';
   setTimeout(()=>{document.getElementById('settings-status-inline').textContent='';},2000);
@@ -4484,7 +4786,7 @@ function showGpxPreview(p){
   if(p.name)document.getElementById('t-note').value=p.name;updateNoteLabel();
   // Zone aus Ø-HF inferieren (nach updateNoteLabel, weil das bei Freitext auf '-' setzt)
   if(p.hrAvg&&!isSportFreitext(p.sport)){
-    const inferred=inferZone(p.hrAvg);
+    const inferred=inferZone(p.hrAvg,p.sport);
     if(inferred)document.getElementById('t-zone').value=inferred;
   }
 }
@@ -4871,7 +5173,7 @@ async function linkActivityToSession(activity,sessionId){
   patch.workload=wl.value;patch.workload_method=wl.method;
   // Zone aus Ø-HF nachziehen, falls Session noch keine echte Zone hat
   if(activity.hrAvg&&(!s.zone||s.zone==='-')&&!isSportFreitext(s.sport)){
-    const z=inferZone(activity.hrAvg);if(z)patch.zone=z;
+    const z=inferZone(activity.hrAvg,activity.sport);if(z)patch.zone=z;
   }
   try{
     await DB.updateSession(s.id,patch);
@@ -4967,7 +5269,7 @@ document.getElementById('gpx-save').addEventListener('click',async()=>{
   if(pendingGpxMulti.length){
     const sessionsToSave=pendingGpxMulti.map(p=>{
       const base={date:p.date,duration:p.durationMin||1,sport:p.sport,
-        zone:(p.hrAvg&&!isSportFreitext(p.sport)?inferZone(p.hrAvg):null)||'-',
+        zone:(p.hrAvg&&!isSportFreitext(p.sport)?inferZone(p.hrAvg,p.sport):null)||'-',
         title:null,note:p.name||p.fileName||null,avg_pace:null,
         hr_avg:p.hrAvg||null,hr_max:p.hrMax||null,hr_series:p.hrSeries?JSON.stringify(p.hrSeries):null,
         distance_km:p.distKm||null,elevation_m:p.elevM||null,
@@ -5007,7 +5309,7 @@ document.getElementById('gpx-save').addEventListener('click',async()=>{
   console.log('[GPX Single] Parsed:',p);
   const session={
     date:p.date,duration:p.durationMin||1,sport:p.sport,
-    zone:(p.hrAvg&&!isSportFreitext(p.sport)?inferZone(p.hrAvg):null)||'-',
+    zone:(p.hrAvg&&!isSportFreitext(p.sport)?inferZone(p.hrAvg,p.sport):null)||'-',
     title:null,note:p.name||null,avg_pace:null,
     hr_avg:p.hrAvg||null,hr_max:p.hrMax||null,hr_series:p.hrSeries?JSON.stringify(p.hrSeries):null,
     distance_km:p.distKm||null,elevation_m:p.elevM||null,
@@ -5056,7 +5358,7 @@ function parseCSV(text){
     else if(sl.includes('mma')||sl.includes('boxing')||sl.includes('kampf'))sport='Kampfsport';
     const hrAvg=haI!==-1?(parseFloat(cols[haI])||null):null;
     const hrMax=hmI!==-1?(parseFloat(cols[hmI])||null):null;
-    const zone=(hrAvg&&!isSportFreitext(sport)?inferZone(hrAvg):null)||'-';
+    const zone=(hrAvg&&!isSportFreitext(sport)?inferZone(hrAvg,sport):null)||'-';
     if(dm>0)results.push({date:toISODate(d),sport,zone,duration:Math.round(dm),note:sr+' (importiert)',
       hr_avg:hrAvg,hr_max:hrMax,user_id:currentUser.id});
   }
@@ -5413,7 +5715,7 @@ async function wfScan(manual=false){
       const text=await file.text();
       const p=parseGPX(text);
       const base={date:p.date,duration:p.durationMin||1,sport:p.sport,
-        zone:(p.hrAvg&&!isSportFreitext(p.sport)?inferZone(p.hrAvg):null)||'-',
+        zone:(p.hrAvg&&!isSportFreitext(p.sport)?inferZone(p.hrAvg,p.sport):null)||'-',
         title:null,note:p.name||file.name||null,avg_pace:null,
         hr_avg:p.hrAvg||null,hr_max:p.hrMax||null,
         distance_km:p.distKm||null,elevation_m:p.elevM||null,
@@ -5526,6 +5828,8 @@ async function showApp(user){
   document.getElementById('profile-content').value=trainingProfile;
   populateSelects();updateNoteLabel();
   initQuickNote();
+  // Sync-Button-Status aus Supabase-PAT ableiten
+  refreshGarminSyncButton().catch(()=>{});
   // Keine Voreintragungen mehr bei "Neue Einheit" — Datum und Dauer bleiben leer
   renderLog();
   // Rückwärtsbefüllung Workload für alte Sessions mit HR
