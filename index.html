@@ -768,23 +768,8 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
     </div>
     </div>
   <div class="card" style="margin-top:1rem;">
-    <h2><i class="ti ti-trending-up"></i> Wochenverlauf</h2>
-      <p style="font-size:.74rem;color:var(--text-muted);margin:-.3rem 0 .7rem;">Akkumulierte Last pro Woche &#xFC;ber 12 Wochen. Das Band zeigt den Bereich, in dem die Steigerung optimal verl&#xE4;uft (0.8&#x2013;1.3&#xD7; chronische Last). Tippe auf einen Punkt f&#xFC;r die Tagesaufschl&#xFC;sselung dieser Woche.</p>
-      <div class="workload-chart-box chart-dark"><canvas id="weekly-trend-chart"></canvas></div>
-      <div id="weekly-trend-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.6rem;display:flex;flex-wrap:wrap;gap:.7rem;justify-content:center;"></div>
-      <div id="weekly-growth-cards" class="metrics metrics-3" style="margin-top:.9rem;margin-bottom:.9rem;"></div>
-      <div class="workload-chart-box wlc-paper" style="height:200px;"><svg id="weekly-compare-chart" width="100%" height="100%"></svg></div>
-      <div id="weekly-compare-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
-      <div id="weekly-detail-box" class="weekly-detail-box" style="display:none;">
-        <div class="weekly-detail-head">
-          <span id="weekly-detail-title"></span>
-          <button id="weekly-detail-close" class="weekly-detail-close" aria-label="Schlie&#xDF;en"><i class="ti ti-x"></i></button>
-        </div>
-        <div class="workload-chart-box chart-dark" style="height:180px;"><canvas id="weekly-detail-chart"></canvas></div>
-      </div>
-    </div>
-    <div class="card" style="margin-top:1rem;">
       <h2><i class="ti ti-activity"></i> Workload-Progression</h2>
+      <p style="font-size:.74rem;color:var(--text-muted);margin:-.3rem 0 .7rem;">4 W / 8 W: einzelne Einheiten im Vergleich zum lokalen Ø. 3 M / 6 M: kumulierte Wochenlast im Vergleich zum 3-Wochen-Ø. Klick auf einen Wochenpunkt öffnet den Tagesverlauf.</p>
       <div class="metrics metrics-3" id="acwr-cards"></div>
       <div class="tab-bar" id="acwr-weeks-tabs" style="margin:.6rem 0;">
         <button class="active" data-weeks="4">4 W</button>
@@ -794,6 +779,19 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
       </div>
       <div class="workload-chart-box wlc-paper" id="workload-chart-svg-box"><svg id="workload-chart-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
       <div id="workload-chart-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.6rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
+      <div id="weekly-detail-box" class="weekly-detail-box" style="display:none;margin-top:1rem;">
+        <div class="weekly-detail-head">
+          <span id="weekly-detail-title"></span>
+          <button id="weekly-detail-close" class="weekly-detail-close" aria-label="Schließen"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="workload-chart-box chart-dark" style="height:180px;"><canvas id="weekly-detail-chart"></canvas></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1rem;">
+      <h2><i class="ti ti-git-compare"></i> Wochenvergleich</h2>
+      <div id="weekly-growth-cards" class="metrics metrics-3" style="margin-bottom:.9rem;"></div>
+      <div class="workload-chart-box wlc-paper" style="height:200px;"><svg id="weekly-compare-chart" width="100%" height="100%"></svg></div>
+      <div id="weekly-compare-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
     </div>
     <div class="card" style="margin-top:1rem;">
       <h2><i class="ti ti-wave-sine"></i> Belastungsverteilung</h2>
@@ -3744,8 +3742,9 @@ function renderAnalytics(){
   };
   document.getElementById('analytics-mode-hint').textContent=hints[analyticsMode]||'';
 
-  renderWeeklyTrendChart();
+  weeklyChartData=computeWeeklyTrendData(Math.max(28,acwrWeeks+4));
   renderWorkloadChart();
+  renderWeeklyTrendChart();
   renderMonotony();
 }
 
@@ -3757,105 +3756,153 @@ function renderWorkloadChart(){
   const svg=document.getElementById('workload-chart-svg');
   if(!svg)return;
   document.getElementById('acwr-cards').innerHTML=acwrCardsHTML(computeAcwrStats());
+  const detailBox=document.getElementById('weekly-detail-box');
   const windowDays=acwrWeeks*7;
-  const chronicDays=28;
+  const weekMode=acwrWeeks>8;
   const today=new Date();today.setHours(23,59,59,999);
   const displayStart=new Date(today);displayStart.setDate(displayStart.getDate()-windowDays+1);displayStart.setHours(0,0,0,0);
-  const lookbackStart=new Date(displayStart);lookbackStart.setDate(lookbackStart.getDate()-chronicDays);
-  const allSess=actualSessions().filter(s=>{
-    return s.date>=toISODate(lookbackStart)&&s.date<=toISODate(today)&&(berechneWorkload(s).value||0)>0;
-  }).map(s=>({id:s.id,date:s.date,wl:berechneWorkload(s).value||0,sport:s.sport,duration:s.duration,hr_avg:s.hr_avg,title:s.title})).sort((a,b)=>a.date.localeCompare(b.date));
-  const dispSess=allSess.filter(s=>s.date>=toISODate(displayStart));
-  if(dispSess.length===0){
-    svg.innerHTML='<text x="50%" y="50%" text-anchor="middle" fill="'+cssVar('--text-faint')+'" font-family="'+cssVar('--font-sans')+'" font-size="12">Keine Trainingsdaten im Zeitraum</text>';
-    document.getElementById('workload-chart-legend').innerHTML='';return;
-  }
-  const rollingAvg=[];
-  for(let di=0;di<windowDays;di++){
-    const refDate=new Date(displayStart);refDate.setDate(refDate.getDate()+di);
-    const refIso=toISODate(refDate);
-    const cutIso=toISODate(new Date(refDate.getTime()-chronicDays*86400000));
-    const win=allSess.filter(s=>s.date>cutIso&&s.date<refIso);
-    rollingAvg.push(win.length===0?null:win.reduce((a,b)=>a+b.wl,0)/win.length);
-  }
-  const maxPt=Math.max(...dispSess.map(s=>s.wl),1);
-  const maxAvg=Math.max(...rollingAvg.filter(v=>v!=null).map(v=>v*1.2),0);
-  const maxY=Math.max(maxPt,maxAvg)*1.12;
-  // Container-relative Koordinaten (wie weekly-compare). viewBox wird dynamisch gesetzt,
-  // sodass Kreise pixelrund bleiben und der Chart die volle Container-Breite nutzt.
   const box=document.getElementById('workload-chart-svg-box');
   const W=(box&&box.clientWidth)||svg.clientWidth||360;
   const H=(box&&box.clientHeight)||svg.clientHeight||220;
   svg.setAttribute('viewBox','0 0 '+W+' '+H);
   const padL=34,padR=12,padT=16,padB=26;
   const innerW=W-padL-padR,innerH=H-padT-padB;
-  const xAt=di=>padL+(di/(windowDays-1||1))*innerW;
-  const yAt=v=>padT+innerH-Math.max(0,(v/maxY))*innerH;
-  const dayIdx=iso=>Math.round((new Date(iso)-new Date(displayStart))/86400000);
-  const vi=rollingAvg.map((v,i)=>v!=null?i:-1).filter(i=>i>=0);
-  let bandPath='',midPath='';
-  if(vi.length>1){
-    const up=vi.map(i=>xAt(i).toFixed(1)+','+yAt(rollingAvg[i]*1.2).toFixed(1));
-    const lo=vi.slice().reverse().map(i=>xAt(i).toFixed(1)+','+yAt(rollingAvg[i]*0.8).toFixed(1));
-    bandPath='M '+up.join(' L ')+' L '+lo.join(' L ')+' Z';
-    midPath='M '+vi.map(i=>xAt(i).toFixed(1)+','+yAt(rollingAvg[i]).toFixed(1)).join(' L ');
-  }
-  const wlVals=dispSess.map(s=>s.wl),wlMin=Math.min(...wlVals),wlMax=Math.max(...wlVals);
-  // Radien im viewBox-System: 2 … 7 Einheiten. Bei mehr Punkten (längeres Fenster)
-  // etwas kleiner, damit sie sich nicht überlappen.
-  const densityFactor=windowDays>84?0.65:windowDays>56?0.8:1;
-  const sizeFactor=Math.max(1,Math.min(2.4,H/220));
-  const radius=wl=>{
-    const base=wlMax===wlMin?4:2+((wl-wlMin)/(wlMax-wlMin))*5;
-    return base*densityFactor*sizeFactor;
-  };
-  const byDay={};dispSess.forEach(s=>{(byDay[s.date]=byDay[s.date]||[]).push(s);});
   const axF=cssVar('--font-sans'),axC=cssVar('--text-muted'),dotFill=cssVar('--text');
-  const dots=dispSess.map(s=>{
-    const di=dayIdx(s.date),same=byDay[s.date],mi=same.indexOf(s);
-    const jitter=same.length>1?(mi-(same.length-1)/2)*7:0;
-    const x=(xAt(di)+jitter).toFixed(1),y=yAt(s.wl).toFixed(1),r=radius(s.wl).toFixed(1);
-    return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+dotFill+'" style="cursor:pointer;" '+
-           'data-sid="'+(s.id||'')+'" onclick="wlcDotClick(this)">'+
-           '<title>'+s.date+' · '+(sportCfg(s.sport).label||s.sport)+' · '+s.wl+' Pkt</title></circle>';
+  const sizeFactor=Math.max(1,Math.min(2.4,H/220));
+  const emptyMsg=()=>{
+    svg.innerHTML='<text x="50%" y="50%" text-anchor="middle" fill="'+cssVar('--text-faint')+'" font-family="'+cssVar('--font-sans')+'" font-size="12">Keine Trainingsdaten im Zeitraum</text>';
+    document.getElementById('workload-chart-legend').innerHTML='';
+    if(detailBox)detailBox.style.display='none';
+  };
+  const commonDefs='<defs>'+
+    '<filter id="wlc-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3"/></filter>'+
+    '<linearGradient id="wlc-blob" x1="0" y1="0" x2="0" y2="1">'+
+      '<stop offset="0%" stop-color="'+cssVar('--acwr-low')+'" stop-opacity="0.95"/>'+
+      '<stop offset="100%" stop-color="'+cssVar('--acwr-low')+'" stop-opacity="0.55"/>'+
+    '</linearGradient></defs>';
+
+  if(!weekMode){
+    // ── Session-Modus (4 W / 8 W): Punkt pro Einheit, Band = zentriertes ±14-Tage-Mean ──
+    if(detailBox)detailBox.style.display='none';
+    const halfWin=14;
+    const lookbackStart=new Date(displayStart);lookbackStart.setDate(lookbackStart.getDate()-halfWin);
+    const lookaheadEnd=new Date(today);lookaheadEnd.setDate(lookaheadEnd.getDate()+halfWin);
+    const allSess=actualSessions().filter(s=>{
+      return s.date>=toISODate(lookbackStart)&&s.date<=toISODate(lookaheadEnd)&&(berechneWorkload(s).value||0)>0;
+    }).map(s=>({id:s.id,date:s.date,wl:berechneWorkload(s).value||0,sport:s.sport,duration:s.duration,hr_avg:s.hr_avg,title:s.title})).sort((a,b)=>a.date.localeCompare(b.date));
+    const dispSess=allSess.filter(s=>s.date>=toISODate(displayStart)&&s.date<=toISODate(today));
+    if(dispSess.length===0){emptyMsg();return;}
+    const rollingAvg=[];
+    for(let di=0;di<windowDays;di++){
+      const refDate=new Date(displayStart);refDate.setDate(refDate.getDate()+di);
+      const loIso=toISODate(new Date(refDate.getTime()-halfWin*86400000));
+      const hiIso=toISODate(new Date(refDate.getTime()+halfWin*86400000));
+      const win=allSess.filter(s=>s.date>=loIso&&s.date<=hiIso);
+      rollingAvg.push(win.length===0?null:win.reduce((a,b)=>a+b.wl,0)/win.length);
+    }
+    const maxPt=Math.max(...dispSess.map(s=>s.wl),1);
+    const maxAvg=Math.max(...rollingAvg.filter(v=>v!=null).map(v=>v*1.2),0);
+    const maxY=Math.max(maxPt,maxAvg)*1.12;
+    const xAt=di=>padL+(di/(windowDays-1||1))*innerW;
+    const yAt=v=>padT+innerH-Math.max(0,(v/maxY))*innerH;
+    const dayIdx=iso=>Math.round((new Date(iso)-new Date(displayStart))/86400000);
+    const vi=rollingAvg.map((v,i)=>v!=null?i:-1).filter(i=>i>=0);
+    let bandPath='';
+    if(vi.length>1){
+      const up=vi.map(i=>xAt(i).toFixed(1)+','+yAt(rollingAvg[i]*1.2).toFixed(1));
+      const lo=vi.slice().reverse().map(i=>xAt(i).toFixed(1)+','+yAt(rollingAvg[i]*0.8).toFixed(1));
+      bandPath='M '+up.join(' L ')+' L '+lo.join(' L ')+' Z';
+    }
+    const wlVals=dispSess.map(s=>s.wl),wlMin=Math.min(...wlVals),wlMax=Math.max(...wlVals);
+    const densityFactor=windowDays>56?0.8:1;
+    const radius=wl=>{const base=wlMax===wlMin?4:2+((wl-wlMin)/(wlMax-wlMin))*5;return base*densityFactor*sizeFactor;};
+    const byDay={};dispSess.forEach(s=>{(byDay[s.date]=byDay[s.date]||[]).push(s);});
+    const dots=dispSess.map(s=>{
+      const di=dayIdx(s.date),same=byDay[s.date],mi=same.indexOf(s);
+      const jitter=same.length>1?(mi-(same.length-1)/2)*7:0;
+      const x=(xAt(di)+jitter).toFixed(1),y=yAt(s.wl).toFixed(1),r=radius(s.wl).toFixed(1);
+      return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+dotFill+'" style="cursor:pointer;" data-sid="'+(s.id||'')+'" onclick="wlcDotClick(this)">'+
+             '<title>'+s.date+' · '+(sportCfg(s.sport).label||s.sport)+' · '+s.wl+' Pkt</title></circle>';
+    }).join('');
+    const yLabels=Array.from({length:5},(_,i)=>{
+      const v=Math.round(maxY/4*i);const y=yAt(v);
+      return '<text x="'+(padL-5)+'" y="'+(y+3)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="end">'+v+'</text>'+
+             '<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="rgba(44,44,42,0.07)" stroke-width="0.5"/>';
+    }).join('');
+    let xLabels='';
+    const step=windowDays<=28?7:14;
+    for(let i=0;i<windowDays;i+=step){
+      const d=new Date(displayStart);d.setDate(d.getDate()+i);
+      xLabels+='<text x="'+xAt(i).toFixed(1)+'" y="'+(H-7)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="middle">'+d.getDate()+'.'+(d.getMonth()+1)+'.</text>';
+    }
+    const ld=new Date(today);
+    xLabels+='<text x="'+xAt(windowDays-1).toFixed(1)+'" y="'+(H-7)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="end">'+ld.getDate()+'.'+(ld.getMonth()+1)+'.</text>';
+    const bp=bandPath?'<path d="'+bandPath+'" fill="url(#wlc-blob)" fill-opacity="0.75" filter="url(#wlc-glow)"/>':'';
+    svg.innerHTML=commonDefs+yLabels+xLabels+bp+dots;
+    document.getElementById('workload-chart-legend').innerHTML=
+      '<span style="color:var(--text);">Einheit (Größe = Workload)</span>'+
+      '<span style="color:var(--acwr-low);">Ø ±14 Tage · ±20%</span>';
+    return;
+  }
+
+  // ── Wochen-Modus (3 M / 6 M): Punkt pro Woche = Wochensumme, Band = 3-Wochen-Ø ±20 % ──
+  const startIso=toISODate(displayStart);
+  const weeks=(weeklyChartData||[]).filter(w=>toISODate(w.start)>=startIso);
+  const dispWeeks=weeks.filter(w=>w.total>0);
+  if(dispWeeks.length===0){emptyMsg();return;}
+  const nW=weeks.length;
+  const rolling=weeks.map((_,i)=>{
+    const lo=Math.max(0,i-1),hi=Math.min(nW-1,i+1);
+    const win=[];for(let j=lo;j<=hi;j++)if(weeks[j].total>0)win.push(weeks[j].total);
+    return win.length?win.reduce((a,b)=>a+b,0)/win.length:null;
+  });
+  const wTotals=weeks.map(w=>w.total);
+  const maxPt=Math.max(...wTotals,1);
+  const maxAvg=Math.max(...rolling.filter(v=>v!=null).map(v=>v*1.2),0);
+  const maxY=Math.max(maxPt,maxAvg)*1.12;
+  const xAt=wi=>padL+((wi+0.5)/(nW||1))*innerW;
+  const yAt=v=>padT+innerH-Math.max(0,(v/maxY))*innerH;
+  const vi=rolling.map((v,i)=>v!=null?i:-1).filter(i=>i>=0);
+  let bandPath='';
+  if(vi.length>1){
+    const up=vi.map(i=>xAt(i).toFixed(1)+','+yAt(rolling[i]*1.2).toFixed(1));
+    const lo=vi.slice().reverse().map(i=>xAt(i).toFixed(1)+','+yAt(rolling[i]*0.8).toFixed(1));
+    bandPath='M '+up.join(' L ')+' L '+lo.join(' L ')+' Z';
+  }
+  const wlVals=dispWeeks.map(w=>w.total),wlMin=Math.min(...wlVals),wlMax=Math.max(...wlVals);
+  const radius=wl=>{const base=wlMax===wlMin?5:3+((wl-wlMin)/(wlMax-wlMin))*6;return base*sizeFactor;};
+  const dots=weeks.map((w,i)=>{
+    if(w.total<=0)return'';
+    const x=xAt(i).toFixed(1),y=yAt(w.total).toFixed(1),r=radius(w.total).toFixed(1);
+    const wIdxGlobal=(weeklyChartData||[]).indexOf(w);
+    const dateLabel=w.start.toLocaleDateString('de-DE',{day:'numeric',month:'short'});
+    return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+dotFill+'" style="cursor:pointer;" data-widx="'+wIdxGlobal+'" onclick="wlcWeekClick(this)">'+
+           '<title>Woche ab '+dateLabel+' · '+w.total+' Pkt</title></circle>';
   }).join('');
   const yLabels=Array.from({length:5},(_,i)=>{
     const v=Math.round(maxY/4*i);const y=yAt(v);
     return '<text x="'+(padL-5)+'" y="'+(y+3)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="end">'+v+'</text>'+
            '<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="rgba(44,44,42,0.07)" stroke-width="0.5"/>';
   }).join('');
-  // X-Achsen-Ticks: bis 28 Tage wöchentlich, bis 84 Tage 2-wöchentlich,
-  // darüber monatlich (jeweils am 1. des Monats).
   let xLabels='';
-  if(windowDays<=84){
-    const step=windowDays<=28?7:14;
-    for(let i=0;i<windowDays;i+=step){
-      const d=new Date(displayStart);d.setDate(d.getDate()+i);
-      xLabels+='<text x="'+xAt(i).toFixed(1)+'" y="'+(H-7)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="middle">'+d.getDate()+'.'+(d.getMonth()+1)+'.</text>';
+  weeks.forEach((w,i)=>{
+    if(w.start.getDate()<=7){
+      const label=w.start.toLocaleDateString('de-DE',{month:'short'});
+      xLabels+='<text x="'+xAt(i).toFixed(1)+'" y="'+(H-7)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="middle">'+label+'</text>';
     }
-  }else{
-    for(let i=0;i<windowDays;i++){
-      const d=new Date(displayStart);d.setDate(d.getDate()+i);
-      if(d.getDate()===1){
-        const label=d.toLocaleDateString('de-DE',{month:'short'});
-        xLabels+='<text x="'+xAt(i).toFixed(1)+'" y="'+(H-7)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="middle">'+label+'</text>';
-      }
-    }
-  }
-  const ld=new Date(today);
-  xLabels+='<text x="'+xAt(windowDays-1).toFixed(1)+'" y="'+(H-7)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="end">'+ld.getDate()+'.'+(ld.getMonth()+1)+'.</text>';
-  // Redesign-Pilot: Band als weicher Mehrfarb-Blob (blau→violett→pink) statt Einzelfarbe.
-  const bp=bandPath?'<path d="'+bandPath+'" fill="url(#wlc-blob)" fill-opacity="0.55" filter="url(#wlc-glow)"/>':'';
-  svg.innerHTML='<defs>'+
-    '<filter id="wlc-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6"/></filter>'+
-    '<linearGradient id="wlc-blob" x1="0" y1="0" x2="0" y2="1">'+
-      '<stop offset="0%" stop-color="'+cssVar('--acwr-low')+'" stop-opacity="0.85"/>'+
-      '<stop offset="100%" stop-color="'+cssVar('--acwr-low')+'" stop-opacity="0.35"/>'+
-    '</linearGradient></defs>'+yLabels+xLabels+bp+dots;
-  const bandLabel='Ø letzte 28 Tage ±20%';
+  });
+  const bp=bandPath?'<path d="'+bandPath+'" fill="url(#wlc-blob)" fill-opacity="0.75" filter="url(#wlc-glow)"/>':'';
+  svg.innerHTML=commonDefs+yLabels+xLabels+bp+dots;
   document.getElementById('workload-chart-legend').innerHTML=
-    '<span style="color:var(--text);">Einheit (Größe = Workload)</span>'+
-    '<span style="color:var(--acwr-low);">'+bandLabel+'</span>';
+    '<span style="color:var(--text);">Woche (Größe = Wochensumme)</span>'+
+    '<span style="color:var(--acwr-low);">Ø letzte 3 Wochen · ±20%</span>';
+}
+function wlcWeekClick(el){
+  const idx=parseInt(el.getAttribute('data-widx'));
+  if(isNaN(idx)||!weeklyChartData||!weeklyChartData[idx])return;
+  openWeeklyDetail(idx);
+  const box=document.getElementById('weekly-detail-box');
+  if(box)box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 // Monotonie & Strain nach Foster (1998): Bewertung der Belastungsverteilung INNERHALB
 // der Woche, ergänzend zu ACWR (das nur die Gesamtmenge bewertet).
@@ -3986,8 +4033,8 @@ function renderMonotony(){
 
 // Aggregiert jede der letzten 12 Wochen: Summe (einheitliches Stressor-Modell)
 // + Tagesaufschlüsselung Mo–So, für den Drill-down beim Klick auf einen Punkt.
-function computeWeeklyTrendData(){
-  const totalWeeks=12;
+function computeWeeklyTrendData(totalWeeks){
+  totalWeeks=totalWeeks||12;
   const now=new Date();
   const weeks=[];
   for(let w=totalWeeks-1;w>=0;w--){
@@ -4016,83 +4063,13 @@ function computeWeeklyTrendData(){
 }
 
 function renderWeeklyTrendChart(){
-  if(weeklyTrendChart)weeklyTrendChart.destroy();
-  const canvas=document.getElementById('weekly-trend-chart');
-  if(!canvas)return;
-  const weeks=computeWeeklyTrendData();
-  weeklyChartData=weeks;
-  const totals=weeks.map(w=>w.total);
-  const chronic=calcChronic(totals);
-  const labels=weeks.map(w=>(w.start.getMonth()+1)+'/'+w.start.getDate());
-  const bandUp=chronic.map(c=>c>0?Math.round(c*1.3):null);
-  const bandLo=chronic.map(c=>c>0?Math.round(c*0.8):null);
-  const pointColors=weeks.map((w,i)=>acwrColor(w.total,chronic[i]));
-
-  // Redesign-Pilot: das Optimale Band als weiche Blob-Gradient-Fläche statt harter Outline —
-  // ctx.createLinearGradient braucht die Canvas-Fläche, daher als Funktion (Chart.js ruft sie
-  // beim Zeichnen mit {chart} auf).
-  // Optimales Band: einheitlich hellblaue Fläche (--acwr-low), leicht verblurt/glowend
-  const bandBlobFill=({chart})=>{
-    const {ctx,chartArea}=chart;
-    if(!chartArea)return 'rgba(133,167,196,.24)';
-    const g=ctx.createLinearGradient(0,chartArea.top,0,chartArea.bottom);
-    g.addColorStop(0,'rgba(133,167,196,.30)');
-    g.addColorStop(1,'rgba(133,167,196,.14)');
-    return g;
-  };
-  const datasets=[
-    {type:'line',label:'_up',data:bandUp,fill:'+1',
-      // Optimales Band: weiche hellblaue Fläche, verblurt
-      backgroundColor:bandBlobFill,borderColor:'transparent',borderWidth:0,
-      pointRadius:0,tension:0.4,spanGaps:true,
-      _glow:true,_glowColor:cssVar('--acwr-low'),_glowBlur:22},
-    {type:'line',label:'_lo',data:bandLo,fill:false,
-      borderColor:'transparent',borderWidth:0,
-      pointRadius:0,tension:0.4,spanGaps:true},
-    {type:'line',label:'Wochensumme',data:totals,fill:false,
-      borderColor:cssVar('--orange-soft'),borderWidth:2.5,
-      pointBackgroundColor:pointColors,pointBorderColor:pointColors,
-      pointRadius:6,pointHoverRadius:9,pointHitRadius:14,tension:0.35,
-      _glow:true,_glowColor:cssVar('--orange-soft'),_glowBlur:6}
-  ];
-
-  weeklyTrendChart=new Chart(canvas,{
-    data:{labels,datasets},
-    options:{responsive:true,maintainAspectRatio:false,
-      interaction:{mode:'nearest',intersect:true},
-      onClick:(evt,elements)=>{
-        const el=elements.find(e=>weeklyTrendChart.data.datasets[e.datasetIndex].label==='Wochensumme');
-        if(el)openWeeklyDetail(el.index);
-      },
-      onHover:(evt,elements)=>{evt.native.target.style.cursor=elements.length?'pointer':'default';},
-      plugins:{legend:{display:false},
-        tooltip:{
-          filter:item=>item.dataset.label==='Wochensumme',
-          callbacks:{
-            title:ctx=>{const w=weeks[ctx[0].dataIndex];return 'Woche ab '+w.start.toLocaleDateString('de-DE',{day:'numeric',month:'long'});},
-            label:ctx=>{
-              const w=weeks[ctx.dataIndex],c=chronic[ctx.dataIndex];
-              const lines=[`Wochensumme (Ist): ${w.total} Punkte`];
-              if(c>0)lines.push(`Chronische Last: ${c}`);
-              lines.push('Antippen f\u00FCr Tagesansicht \u2192');
-              return lines;
-            }
-          }
-        }
-      },
-      scales:{
-        x:{grid:{display:false},ticks:{font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:7}},
-        y:{beginAtZero:true,grid:{color:'rgba(44,44,42,.07)'},ticks:{font:{size:11}}}
-      }
-    }
-  });
-  document.getElementById('weekly-trend-legend').innerHTML=
-    '<span style="color:var(--orange-soft);">Wochensumme</span>'+
-    '<span style="color:var(--acwr-low);">Optimales Band</span>'+
-    '<span style="color:var(--acwr-high);">Hoch</span>'+
-    '<span style="color:var(--acwr-caution);">Vorsicht</span>'+
-    '<span style="color:var(--acwr-optimal);">Optimal</span>'+
-    '<span style="color:var(--acwr-low);">Niedrig</span>';
+  // Umgebaut: nur noch Wochenvergleichs-Sektion (Growth-Cards + Compare-SVG).
+  // Der frühere Chart.js-Trend-Chart ist im kombinierten Workload-Progression-Chart aufgegangen.
+  if(weeklyTrendChart&&weeklyTrendChart.destroy){weeklyTrendChart.destroy();weeklyTrendChart=null;}
+  const wcc=document.getElementById('weekly-compare-chart');
+  if(!wcc)return;
+  const weeks=weeklyChartData&&weeklyChartData.length?weeklyChartData:computeWeeklyTrendData(12);
+  // (legacy Chart.js Trend-Block entfernt)
 
   // ── Steigerungskennzahlen (nur abgeschlossene Wochen) ─────────────────────
   // Die laufende Woche wird NICHT hochgerechnet und NICHT bewertet — die
@@ -4145,8 +4122,6 @@ function renderWeeklyTrendChart(){
   // ── Wochenvergleich-Chart (SVG Glow-Ästhetik) ────────────────────────────
   if(weeklyCompareChart&&weeklyCompareChart.destroy)weeklyCompareChart.destroy();
   weeklyCompareChart=null;
-  const wcc=document.getElementById('weekly-compare-chart');
-  if(!wcc)return;
 
   // Datenvorbereitung
   function buildCumulative(weekData){const cum=[];let r=0;weekData.daily.forEach(d=>{r+=d;cum.push(r);});return cum;}
@@ -4184,7 +4159,7 @@ function renderWeeklyTrendChart(){
     const up=bandHiCum.map((_,i)=>`${xAt(i).toFixed(1)},${yAt(bandHiCum[i]).toFixed(1)}`);
     const lo=bandLoCum.slice().reverse().map((_,i)=>`${xAt(6-i).toFixed(1)},${yAt(bandLoCum[6-i]).toFixed(1)}`);
     // Redesign-Pilot: Band als weicher Mehrfarb-Blob (blau→violett→pink) statt Einzelfarbe.
-    bandSvg=`<path d="M ${up.join(' L ')} L ${lo.join(' L ')} Z" fill="url(#wc-blob)" fill-opacity="0.55" filter="url(#wc-glow)"/>`;
+    bandSvg=`<path d="M ${up.join(' L ')} L ${lo.join(' L ')} Z" fill="url(#wc-blob)" fill-opacity="0.75" filter="url(#wc-glow)"/>`;
   }
   const prevPath=prevWeekCum?buildPath(prevWeekCum):'';
   const thisPath=buildPath(thisWeekVisible);
@@ -4206,10 +4181,10 @@ function renderWeeklyTrendChart(){
   const xLabels2=dayLabels2.map((l,i)=>`<text x="${xAt(i).toFixed(1)}" y="${H-7}" font-family="${axisFont}" font-size="9" fill="${axisFill}" text-anchor="middle">${l}</text>`).join('');
 
   wcc.innerHTML=`<defs>
-    <filter id="wc-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6"/></filter>
+    <filter id="wc-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3"/></filter>
     <linearGradient id="wc-blob" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${cssVar('--acwr-low')}" stop-opacity="0.85"/>
-      <stop offset="100%" stop-color="${cssVar('--acwr-low')}" stop-opacity="0.35"/>
+      <stop offset="0%" stop-color="${cssVar('--acwr-low')}" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="${cssVar('--acwr-low')}" stop-opacity="0.55"/>
     </linearGradient>
   </defs>
   ${yLabels2}${xLabels2}${bandSvg}
