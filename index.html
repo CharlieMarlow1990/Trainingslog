@@ -3758,9 +3758,10 @@ function renderWorkloadChart(){
   if(!svg)return;
   document.getElementById('acwr-cards').innerHTML=acwrCardsHTML(computeAcwrStats());
   const windowDays=acwrWeeks*7;
+  const chronicDays=28;
   const today=new Date();today.setHours(23,59,59,999);
   const displayStart=new Date(today);displayStart.setDate(displayStart.getDate()-windowDays+1);displayStart.setHours(0,0,0,0);
-  const lookbackStart=new Date(displayStart);lookbackStart.setDate(lookbackStart.getDate()-windowDays);
+  const lookbackStart=new Date(displayStart);lookbackStart.setDate(lookbackStart.getDate()-chronicDays);
   const allSess=actualSessions().filter(s=>{
     return s.date>=toISODate(lookbackStart)&&s.date<=toISODate(today)&&(berechneWorkload(s).value||0)>0;
   }).map(s=>({id:s.id,date:s.date,wl:berechneWorkload(s).value||0,sport:s.sport,duration:s.duration,hr_avg:s.hr_avg,title:s.title})).sort((a,b)=>a.date.localeCompare(b.date));
@@ -3773,7 +3774,7 @@ function renderWorkloadChart(){
   for(let di=0;di<windowDays;di++){
     const refDate=new Date(displayStart);refDate.setDate(refDate.getDate()+di);
     const refIso=toISODate(refDate);
-    const cutIso=toISODate(new Date(refDate.getTime()-windowDays*86400000));
+    const cutIso=toISODate(new Date(refDate.getTime()-chronicDays*86400000));
     const win=allSess.filter(s=>s.date>cutIso&&s.date<refIso);
     rollingAvg.push(win.length===0?null:win.reduce((a,b)=>a+b.wl,0)/win.length);
   }
@@ -3851,7 +3852,7 @@ function renderWorkloadChart(){
       '<stop offset="0%" stop-color="'+cssVar('--acwr-low')+'" stop-opacity="0.85"/>'+
       '<stop offset="100%" stop-color="'+cssVar('--acwr-low')+'" stop-opacity="0.35"/>'+
     '</linearGradient></defs>'+yLabels+xLabels+bp+dots;
-  const bandLabel=acwrWeeks<=8?'Ø letzte '+acwrWeeks+' Wochen ±20%':'Ø gleitend ±20%';
+  const bandLabel='Ø letzte 28 Tage ±20%';
   document.getElementById('workload-chart-legend').innerHTML=
     '<span style="color:var(--text);">Einheit (Größe = Workload)</span>'+
     '<span style="color:var(--acwr-low);">'+bandLabel+'</span>';
