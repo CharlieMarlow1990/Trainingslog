@@ -7,6 +7,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Trainingslog</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap">
 <style>
 :root{
   /* === Flächen — warmes Papier (Editorial) === */
@@ -55,10 +58,11 @@
   --radius:10px;
   --radius-lg:14px;
 
-  /* === Typografie === */
-  --font-serif:Georgia,"Iowan Old Style","Palatino Linotype","Times New Roman",serif;
-  --font-sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  /* === Typografie — Inter (Grotesk), serifenfrei === */
+  --font-sans:"Inter",-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --font-mono:"SF Mono","Roboto Mono",Consolas,monospace;
+  /* Editorial-Kapitälchen für Section-Labels: uppercase + Sperrung */
+  --caps:"letter-spacing:.10em;text-transform:uppercase;";
 
   /* Typo-Skala */
   --t-cap:.7rem; --t-sm:.78rem; --t-base:.86rem; --t-md:.95rem; --t-lg:1.1rem; --t-xl:1.4rem;
@@ -77,8 +81,8 @@ body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text
 .btn-github:hover{background:#1a1e22;}
 #bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:var(--surface);border-top:1px solid var(--border);display:flex;height:var(--nav-h);padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -1px 8px rgba(44,44,42,.06);}
 #bottom-nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:transparent;cursor:pointer;font-size:.6rem;color:var(--text-muted);padding:.25rem 0;font-family:var(--font-sans);position:relative;}
-#bottom-nav button.active{color:var(--accent);font-weight:600;}
-#bottom-nav button.active::before{content:"";position:absolute;top:0;left:25%;right:25%;height:2px;background:var(--accent-gradient);border-radius:0 0 2px 2px;}
+#bottom-nav button.active{color:var(--text);font-weight:500;}
+#bottom-nav button.active::before{content:"";position:absolute;top:0;left:25%;right:25%;height:2px;background:var(--text);border-radius:0 0 2px 2px;}
 #bottom-nav button .nav-icon{font-size:1.2rem;line-height:1;}
 header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:.75rem;}
 header h1{font-size:1.4rem;font-weight:600;margin:0;letter-spacing:-.01em;}
@@ -91,7 +95,8 @@ header h1{font-size:1.4rem;font-weight:600;margin:0;letter-spacing:-.01em;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .page{display:none;}.page.active{display:block;}
 /* Editorial: Überschriften in Serif, Body/UI bleibt Sans */
-h1,h2,h3{font-family:var(--font-serif);letter-spacing:-.01em;}
+h1,h2,h3{font-family:var(--font-sans);font-weight:400;letter-spacing:-.01em;}
+.caps{letter-spacing:.10em;text-transform:uppercase;font-weight:500;}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.25rem;margin-bottom:1.25rem;}
 .card h2{font-size:.92rem;font-weight:600;margin:0 0 .9rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
 .badge{font-size:.68rem;font-weight:500;font-family:var(--font-mono);color:var(--text-muted);background:var(--bg);border:1px solid var(--border);border-radius:100px;padding:.12rem .5rem;}
@@ -120,15 +125,17 @@ textarea.note-expanded{min-height:9rem;}
 .note-history-box .nh-empty{padding:.6rem .7rem;font-size:.78rem;color:var(--text-faint);}
 .row{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;}
 .row-end{margin-left:auto;}
-button{background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius);padding:.48rem .9rem;cursor:pointer;color:var(--text);font-weight:500;font-family:var(--font-sans);font-size:.88rem;transition:background .12s;}
-button:hover{background:var(--bg);}button:active{transform:scale(.97);}
-button.primary{background:var(--accent-gradient);border-color:transparent;color:#fff;font-weight:600;box-shadow:0 1px 3px rgba(184,80,47,.25);}
-button.primary:hover{filter:brightness(1.05);box-shadow:0 2px 8px rgba(184,80,47,.35);}
-button.primary:active{filter:brightness(.95);}
-button.danger{background:#fef2f2;border-color:#fca5a5;color:#c4544a;}
-button.icon{padding:.32rem .45rem;line-height:1;}
+/* Pillen-Buttons: dünne Ink-Schwarz-Linie, transparente Füllung, keine Gradients/Schatten */
+button{background:transparent;border:1px solid var(--text);border-radius:999px;padding:.5rem 1.1rem;cursor:pointer;color:var(--text);font-weight:400;font-family:var(--font-sans);font-size:.82rem;letter-spacing:.02em;transition:background .12s;}
+button:hover{background:rgba(44,44,42,.05);}button:active{transform:scale(.97);}
+button.primary{background:var(--text);border-color:var(--text);color:var(--surface);font-weight:500;box-shadow:none;}
+button.primary:hover{background:#000;border-color:#000;}
+button.primary:active{filter:none;}
+button.danger{background:transparent;border-color:var(--accent);color:var(--accent);}
+button.danger:hover{background:rgba(184,80,47,.08);}
+button.icon{padding:.32rem .5rem;line-height:1;border-radius:999px;}
 button.ghost{background:transparent;border-color:transparent;color:var(--text-muted);font-size:.82rem;}
-button.ghost:hover{color:var(--text);background:var(--bg);border-color:var(--border);}
+button.ghost:hover{color:var(--text);background:transparent;border-color:transparent;}
 .status{font-size:.8rem;color:var(--text-muted);}
 .week-nav{display:flex;align-items:center;justify-content:center;gap:.85rem;margin-bottom:1.1rem;}
 .week-nav .label{font-family:var(--font-mono);font-size:.85rem;font-weight:500;min-width:200px;text-align:center;}
@@ -156,43 +163,46 @@ button.ghost:hover{color:var(--text);background:var(--bg);border-color:var(--bor
 .modal-profile-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--bg);}
 .modal-profile-bar>div{height:100%;}
 .modal-profile-legend{display:flex;flex-wrap:wrap;gap:.5rem;font-size:.7rem;margin-top:.35rem;}
-.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.8rem 1rem;position:relative;overflow:hidden;}
-.metric::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent-gradient);opacity:0;transition:opacity .2s;}
-.metric:hover::before{opacity:1;}
-.metric .m-label{font-size:.72rem;color:var(--text-muted);margin:0 0 .25rem;}
-.metric .m-value{font-size:1.3rem;font-weight:600;font-family:var(--font-mono);letter-spacing:-.02em;color:var(--text);}
+/* Kennzahlen: rahmenlos, große dünne Zahl, gesperrtes Uppercase-Label (App-weit) */
+.metric{background:none;border:none;padding:0;position:relative;overflow:visible;}
+.metric .m-label{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin:0 0 .35rem;font-weight:500;}
+.metric .m-value{font-size:2.1rem;font-weight:200;font-family:var(--font-sans);letter-spacing:-.02em;color:var(--text);line-height:1;}
 .charts{display:grid;grid-template-columns:1.4fr 1fr;gap:1.25rem;margin-bottom:1.25rem;}
 @media(max-width:600px){.charts{grid-template-columns:1fr;}}
 .chart-box{position:relative;height:180px;}
 .workload-chart-box{position:relative;height:220px;}
-/* Einheitliche Papier-Panels für alle Visualisierungen (SVG via .wlc-paper, Canvas via .chart-dark) */
-.wlc-paper,.chart-dark{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;position:relative;overflow:hidden;}
-.wlc-paper svg{width:100%;height:100%;display:block;}
-.chart-dark canvas{position:relative;z-index:1;}
 
-/* ── Redesign-Pilot: kastenloses Layout (nur .canvas-page, z.B. Auswertung) ──
-   Elemente liegen frei auf der Papierfläche; Abgrenzung über Weißraum/Typografie
-   statt Rahmen. Scoped, damit der Rest der App unverändert bleibt. */
-.canvas-page .card{background:none;border:none;border-radius:0;padding:0;margin-bottom:3rem;}
-.canvas-page .card h2{font-family:var(--font-serif);font-size:1.35rem;font-weight:500;letter-spacing:.01em;margin:0 0 1.1rem;}
-.canvas-page .card h2 .ti{font-size:.85em;opacity:.7;}
-.canvas-page .wlc-paper,.canvas-page .chart-dark{background:none;border:none;border-radius:0;padding:0;}
-.canvas-page .metric{background:none;border:none;padding:0;}
-.canvas-page .metric::before{display:none;}
-.canvas-page .metric .m-label{font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;color:var(--text-faint);}
-.canvas-page .metric .m-value{font-size:2.1rem;font-weight:400;font-family:var(--font-serif);letter-spacing:-.01em;}
-.canvas-page .metrics{gap:1.75rem;}
-.canvas-page .analytics-tabs button.active{background:none;border-color:transparent;color:var(--blob-violet);text-decoration:underline;text-underline-offset:5px;}
+/* Chart-Container: transparent, weiche Blob-Fläche mittlerer Intensität dahinter (App-weit) */
+.wlc-paper,.chart-dark,.analytics-chart-box{background:none;border:none;border-radius:0;padding:0;position:relative;overflow:visible;}
+.wlc-paper svg,.chart-dark canvas{position:relative;z-index:1;}
+.wlc-paper::before,.chart-dark::before,.analytics-chart-box::before{
+  content:"";position:absolute;inset:-8% -4%;z-index:0;pointer-events:none;
+  background:var(--blob-tint,var(--blob-gradient));opacity:.32;
+  filter:blur(48px);border-radius:60% 40% 55% 45%/50% 60% 40% 50%;
+}
+
+/* Karten: rahmenlos, größerer Abstand zwischen Sections (App-weit) */
+.card{background:none;border:none;border-radius:0;padding:0;margin-bottom:2.6rem;}
+.card h2{font-family:var(--font-sans);font-size:.75rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin:0 0 1.2rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+.card h2 .ti{font-size:1em;opacity:.7;}
+.metrics{gap:1.75rem;}
+
+/* Redesign-Pilot behält .canvas-page-Marker für ggf. weitere Feinheiten (aktuell no-op) */
+.canvas-page{}
 
 /* Platzhalter-Zone: reserviert für spätere eigene Bilder, kein generiertes Motiv */
 .media-placeholder{
   height:180px;border-radius:120px 30px 140px 40px;margin-bottom:2.5rem;
   background:linear-gradient(120deg,rgba(91,141,214,.14),rgba(140,109,176,.14),rgba(214,123,160,.14));
   display:flex;align-items:center;justify-content:center;
-  color:var(--text-faint);font-size:.78rem;font-style:italic;font-family:var(--font-serif);
+  color:var(--text-faint);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;font-family:var(--font-sans);
 }
-.legend{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:.5rem;font-size:.75rem;color:var(--text-muted);}
-.dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:3px;vertical-align:-1px;}
+/* Chart-Legenden: gesperrte Grotesk-Kapitälchen, Kategorie in eigener Farbe */
+.legend{display:flex;flex-wrap:wrap;gap:.9rem 1.1rem;margin-bottom:.5rem;font-size:.68rem;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase;font-weight:500;}
+.legend span{display:inline-flex;align-items:center;gap:.4rem;}
+.dot{display:none;}
+/* Legenden-Container, die auf div-Ebene inline gesetzt werden (weekly-trend-legend, etc.) */
+[id$="-legend"],[id$="chart-legend"]{font-family:var(--font-sans);letter-spacing:.12em;text-transform:uppercase;font-weight:500;font-size:.68rem;}
 .entry{border-bottom:1px solid var(--border);padding:.7rem 0;}
 .entry:last-child{border-bottom:none;}
 .entry-top{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;cursor:pointer;user-select:none;}
@@ -213,9 +223,9 @@ button.ghost:hover{color:var(--text);background:var(--bg);border-color:var(--bor
 .upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:var(--accent-light);}
 .upload-zone .icon{font-size:1.75rem;margin-bottom:.4rem;}
 .upload-zone p{margin:0;font-size:.84rem;color:var(--text-muted);}
-.file-btn{display:inline-flex;align-items:center;gap:.4rem;background:var(--accent-gradient);color:#fff;font-weight:600;font-size:.86rem;padding:.55rem 1rem;border-radius:var(--radius);cursor:pointer;box-shadow:0 1px 3px rgba(184,80,47,.25);transition:filter .12s;}
-.file-btn:hover{filter:brightness(1.05);}
-.file-btn:active{filter:brightness(.95);}
+.file-btn{display:inline-flex;align-items:center;gap:.4rem;background:transparent;color:var(--text);font-weight:400;font-size:.82rem;padding:.5rem 1.1rem;border:1px solid var(--text);border-radius:999px;cursor:pointer;box-shadow:none;transition:background .12s;}
+.file-btn:hover{background:rgba(44,44,42,.05);}
+.file-btn:active{transform:scale(.97);}
 #t-gpx{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;}
 .gpx-preview-box{background:var(--accent-light);border:1px solid var(--accent);border-radius:var(--radius);padding:.85rem 1rem;margin-bottom:.85rem;}
 .gpx-preview-box h3{font-size:.84rem;font-weight:600;margin:0 0 .6rem;color:var(--accent-text);}
@@ -267,7 +277,7 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
 /* Segment-Tabs (Auswertung & Wochen-Umschalter) — einheitliches Aussehen */
 .analytics-tabs,.tab-bar{display:flex;gap:.5rem;margin-bottom:1.1rem;flex-wrap:wrap;}
 .analytics-tabs button,.tab-bar button{font-size:.8rem;padding:.32rem .75rem;}
-.analytics-tabs button.active,.tab-bar button.active{background:var(--accent-gradient);border-color:transparent;color:#fff;font-weight:600;}
+.analytics-tabs button.active,.tab-bar button.active{background:var(--text);border-color:var(--text);color:var(--surface);font-weight:500;}
 .sport-filter{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.85rem;}
 .sport-filter button{font-size:.75rem;padding:.25rem .6rem;border-radius:100px;}
 .sport-filter button.active{color:#fff;border-color:transparent;}
@@ -343,7 +353,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 /* Bibliothek: Vorlagen-Karten und Filter-Pills */
 .lib-filter-pill{padding:.3rem .6rem;border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--text-muted);font-size:.72rem;cursor:pointer;white-space:nowrap;transition:all .12s;}
 .lib-filter-pill:hover{border-color:var(--accent);color:var(--text);}
-.lib-filter-pill.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.lib-filter-pill.active{background:var(--text);color:var(--surface);border-color:var(--text);}
 .lib-template-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.7rem .8rem;margin-bottom:.5rem;cursor:pointer;transition:all .12s;}
 .lib-template-card:hover{border-color:var(--accent);background:var(--surface-alt);}
 .lib-template-title{font-weight:600;font-size:.88rem;color:var(--text);margin-bottom:.25rem;}
@@ -372,7 +382,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 .srpe-modal .srpe-subtitle{font-size:.8rem;color:var(--text-muted);margin:0 0 1.1rem;}
 .srpe-scale{display:flex;gap:.3rem;margin-bottom:.5rem;}
 .srpe-scale button{flex:1;padding:.55rem 0;font-size:.82rem;font-weight:600;border-radius:6px;border:2px solid var(--border);background:var(--bg);color:var(--text-muted);cursor:pointer;transition:all .12s;}
-.srpe-scale button.selected{border-color:var(--accent);background:var(--accent-light);color:var(--accent-text);}
+.srpe-scale button.selected{border-color:var(--text);background:var(--text);color:var(--surface);}
 .srpe-labels{display:flex;justify-content:space-between;font-size:.68rem;color:var(--text-faint);margin-bottom:1.1rem;}
 .srpe-actions{display:flex;gap:.6rem;justify-content:flex-end;}
 .workload-section{margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);}
@@ -395,9 +405,9 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 /* ── Anatomie-Collage (Zonenverteilung Log-Seite) ───────────────────────── */
 /* Bild ist NUR hinter den Balken sichtbar (via CSS-Mask). Der restliche
    Block-Hintergrund bleibt papierfarben neutral. */
-.zone-collage{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.25rem;margin:1rem 0;}
+.zone-collage{background:none;color:var(--text);border:none;border-radius:0;padding:0;margin:2rem 0;}
 /* Gemeinsamer Wochen-Rahmen (Log-Seite) */
-.week-summary{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.25rem 1.3rem;margin:1rem 0;}
+.week-summary{background:none;color:var(--text);border:none;border-radius:0;padding:0;margin:2rem 0;}
 .ws-nav{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:0.5px solid var(--border);}
 .ws-title{font-weight:500;font-size:1rem;color:var(--text);text-align:center;flex:1;}
 .ws-nav .icon{background:rgba(44,44,42,.06);border:none;color:var(--text);width:34px;height:34px;border-radius:8px;font-size:1.1rem;cursor:pointer;flex-shrink:0;}
@@ -405,7 +415,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 .ws-section{margin-top:1.4rem;}
 .ws-section:first-of-type{margin-top:1rem;}
 .ws-h{font-size:.95rem;font-weight:600;color:var(--text);margin:0 0 .7rem;}
-.week-summary .metric{background:rgba(255,255,255,.45);}
+.week-summary .metric{background:none;}
 .week-summary .m-label{color:var(--text-muted);}
 .week-summary .m-value{color:var(--text);}
 /* Wochen-Workload Tagesbalken */
@@ -444,7 +454,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 .zc-tot strong{font-weight:500;font-size:1rem;}
 .zc-empty{grid-column:1/-1;display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:.85rem;padding:2rem;}
 /* ── Sportart-Rose (Polar-Bar: Winkel=Zeit · Radius=Load) ─────────────────── */
-.sport-rose{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.25rem;margin:1rem 0;}
+.sport-rose{background:none;color:var(--text);border:none;border-radius:0;padding:0;margin:2rem 0;}
 .sr-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.85rem;padding-bottom:.5rem;border-bottom:0.5px solid var(--border);}
 .sr-h h2{font-weight:600;font-size:1.05rem;letter-spacing:-.01em;margin:0;color:var(--text);}
 .sr-week{font-style:italic;font-size:.78rem;color:var(--text-muted);}
@@ -1163,19 +1173,19 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 // ── DEFAULTS ──────────────────────────────────────────────────────────────────
 const DEFAULT_SPORTS=[
-  {key:'Rad',label:'Rad',color:'#5b9bd5',icon:'&#x1F6B4;',imgUrl:null,freitext:false},
-  {key:'Lauf',label:'Lauf',color:'#6fa86f',icon:'&#x1F3C3;',imgUrl:null,freitext:false},
-  {key:'Kraft',label:'Kraft',color:'#c4544a',icon:'&#x1F3CB;',imgUrl:null,freitext:true},
-  {key:'Capacity',label:'Capacity',color:'#e8975c',icon:'&#x1F525;',imgUrl:null,freitext:false},
-  {key:'Kampfsport',label:'Kampfsport',color:'#b07cc6',icon:'&#x1F94B;',imgUrl:null,freitext:true},
-  {key:'Sonstiges',label:'Sonstiges',color:'#a8a59a',icon:'&#x26A1;',imgUrl:null,freitext:true}
+  {key:'Rad',label:'Rad',color:'#7c9bb5',icon:'ti-bike',imgUrl:null,freitext:false},
+  {key:'Lauf',label:'Lauf',color:'#6f8f3e',icon:'ti-run',imgUrl:null,freitext:false},
+  {key:'Kraft',label:'Kraft',color:'#c8603a',icon:'ti-barbell',imgUrl:null,freitext:true},
+  {key:'Capacity',label:'Capacity',color:'#d79b46',icon:'ti-flame',imgUrl:null,freitext:false},
+  {key:'Kampfsport',label:'Kampfsport',color:'#8c6db0',icon:'ti-karate',imgUrl:null,freitext:true},
+  {key:'Sonstiges',label:'Sonstiges',color:'#5f5e5a',icon:'ti-bolt',imgUrl:null,freitext:true}
 ];
 const DEFAULT_ZONES=[
-  {key:'Z1',label:'Zone 1',hrMin:null,hrMax:null,color:'#b8d4e8'},
-  {key:'Z2',label:'Zone 2',hrMin:null,hrMax:null,color:'#5b9bd5'},
-  {key:'Z3',label:'Zone 3',hrMin:null,hrMax:null,color:'#f0c674'},
-  {key:'Z4',label:'Zone 4',hrMin:null,hrMax:null,color:'#e8975c'},
-  {key:'Z5',label:'Zone 5',hrMin:null,hrMax:null,color:'#c4544a'},
+  {key:'Z1',label:'Zone 1',hrMin:null,hrMax:null,color:'#b3c7d8'},
+  {key:'Z2',label:'Zone 2',hrMin:null,hrMax:null,color:'#7c9bb5'},
+  {key:'Z3',label:'Zone 3',hrMin:null,hrMax:null,color:'#d79b46'},
+  {key:'Z4',label:'Zone 4',hrMin:null,hrMax:null,color:'#c8603a'},
+  {key:'Z5',label:'Zone 5',hrMin:null,hrMax:null,color:'#9a3f23'},
   {key:'-',label:'Keine Zone',hrMin:null,hrMax:null,color:'#c9c6bc'}
 ];
 // Backwards-Compat: alte Configs ohne freitext-Flag pro Sport
@@ -1668,7 +1678,21 @@ function isSameDate(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()=
 function byDate(iso){return sessions.filter(s=>s.date===iso);}
 function esc(str){return String(str||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function setSyncState(state){const dot=document.getElementById('sync-dot');dot.className='sync-dot'+(state==='syncing'?' syncing':state==='error'?' error':'');}
-function sportIconHTML(sport,size=20){const sc=sportCfg(sport);if(sc.imgUrl)return`<img src="${esc(sc.imgUrl)}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:cover;" alt="${esc(sport)}">`;return`<span style="font-size:${size*0.8}px;">${sc.icon}</span>`;}
+// Nur der reine Icon-Text/HTML — für Kontexte, wo sc.icon direkt ausgegeben wird.
+// In select-<option>-Texten (kein HTML!) fällt "ti-bike" auf leer, sonst bleibt Emoji.
+function sportIconText(sc){
+  if(typeof sc.icon==='string' && sc.icon.startsWith('ti-'))return'';
+  return sc.icon||'';
+}
+function sportIconHTML(sport,size=20){
+  const sc=sportCfg(sport);
+  if(sc.imgUrl)return`<img src="${esc(sc.imgUrl)}" style="width:${size}px;height:${size}px;border-radius:4px;object-fit:cover;" alt="${esc(sport)}">`;
+  // Tabler-Icon-Klassen (neu, Default): "ti-bike" etc. → als <i class="ti ti-bike">
+  if(typeof sc.icon==='string' && sc.icon.startsWith('ti-'))
+    return`<i class="ti ${esc(sc.icon)}" style="font-size:${size*0.95}px;line-height:1;color:${esc(sc.color||'currentColor')};" aria-hidden="true"></i>`;
+  // Legacy: bestehende Nutzer-Konfigs mit Emoji-Text
+  return`<span style="font-size:${size*0.8}px;">${sc.icon||''}</span>`;
+}
 
 // ── TRAININGSNOTIZ ────────────────────────────────────────────────────────────
 // Einheiten vorab planen oder während des Trainings mitschreiben.
@@ -1698,7 +1722,7 @@ function qnPopulateSport(){
   const prev=sel.value;
   const linkable=cfg.sports.filter(s=>isSportLinkable(s.key));
   const others=cfg.sports.filter(s=>!isSportLinkable(s.key));
-  sel.innerHTML=[...linkable,...others].map(s=>`<option value="${s.key}">${s.icon} ${s.label}</option>`).join('');
+  sel.innerHTML=[...linkable,...others].map(s=>`<option value="${s.key}">${sportIconText(s)?sportIconText(s)+" ":""}${s.label}</option>`).join('');
   if(prev&&cfg.sports.find(s=>s.key===prev))sel.value=prev;
   const zsel=document.getElementById('qn-zone');
   if(zsel){
@@ -1790,7 +1814,7 @@ function qnUpdateEstimate(){
   box.style.display='';
   box.innerHTML=`
     <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
-      <span style="font-weight:600;color:${sc.color};">${sc.icon} Workload-Schätzung</span>
+      <span style="font-weight:600;color:${sc.color};">${sportIconHTML(sport,14)} Workload-Schätzung</span>
       <span style="font-size:.92rem;font-weight:700;color:var(--text);">${est.estimate} Punkte</span>
       <span style="color:var(--text-faint);">(${est.range[0]}–${est.range[1]})</span>
     </div>
@@ -2215,7 +2239,7 @@ function useTemplateInQuickNote(t){
 function populateSelects(){
   const prevSport=document.getElementById('t-sport').value;
   const prevZone=document.getElementById('t-zone').value;
-  document.getElementById('t-sport').innerHTML=cfg.sports.map(s=>`<option value="${s.key}">${s.icon} ${s.label}</option>`).join('');
+  document.getElementById('t-sport').innerHTML=cfg.sports.map(s=>`<option value="${s.key}">${sportIconText(s)?sportIconText(s)+" ":""}${s.label}</option>`).join('');
   document.getElementById('t-zone').innerHTML=cfg.zones.map(z=>`<option value="${z.key}">${z.label}${z.hrMin&&z.hrMax?' ('+z.hrMin+'–'+z.hrMax+')':''}</option>`).join('');
   // Gewählte Sportart und Zone nach Neubefüllung wiederherstellen (verhindert iOS-Reset)
   const sportKeys=cfg.sports.map(s=>s.key);
@@ -2713,10 +2737,10 @@ function renderWeekWorkloadCollage(days,loads,planLoads,meta,means,sds){
   // Legende
   const hasPlan=planLoads.some((v,i)=>loads[i]===0&&v>0);
   document.getElementById('log-week-chart-legend').innerHTML=
-    '<span><span style="display:inline-block;width:10px;height:10px;background:#dc2626;border-radius:2px;vertical-align:middle;margin-right:.3rem;"></span>Über Ø</span>'+
-    '<span><span style="display:inline-block;width:10px;height:10px;background:#16a34a;border-radius:2px;vertical-align:middle;margin-right:.3rem;"></span>Im Bereich</span>'+
-    '<span><span style="display:inline-block;width:10px;height:10px;background:#3b82f6;border-radius:2px;vertical-align:middle;margin-right:.3rem;"></span>Unter Ø</span>'+
-    (hasPlan?'<span><span style="display:inline-block;width:10px;height:10px;background:rgba(44,44,42,.2);border-radius:2px;vertical-align:middle;margin-right:.3rem;"></span>Geplant (blass)</span>':'');
+    '<span style="color:var(--acwr-high);">Über Ø</span>'+
+    '<span style="color:var(--acwr-optimal);">Im Bereich</span>'+
+    '<span style="color:var(--acwr-low);">Unter Ø</span>'+
+    (hasPlan?'<span style="color:var(--text-faint);">Geplant (blass)</span>':'');
 }
 
 // ── Zonen-Collage (Anatomie als Balken-Fenster via SVG-clipPath) ─────────────
@@ -2818,7 +2842,7 @@ function renderSportRose(ws,range){
     .sort((a,b)=>(order.indexOf(a.key)===-1?99:order.indexOf(a.key))-(order.indexOf(b.key)===-1?99:order.indexOf(b.key)));
 
   if(items.length===0){
-    svg.innerHTML='<text x="120" y="120" text-anchor="middle" fill="'+cssVar('--text-faint')+'" font-style="italic" font-family="'+cssVar('--font-serif')+'" font-size="11">Keine Trainings diese Woche</text>';
+    svg.innerHTML='<text x="120" y="120" text-anchor="middle" fill="'+cssVar('--text-faint')+'" font-family="'+cssVar('--font-sans')+'" font-size="11" letter-spacing="1">KEINE TRAININGS DIESE WOCHE</text>';
     document.getElementById('sr-legend').innerHTML='';
     document.getElementById('sr-total').textContent='';
     (document.getElementById('sr-week-label')||{}).textContent='';
@@ -3050,7 +3074,7 @@ function renderCalCell(cellDate,isOutside,weekMode){
     const planned=isPlanned(s);
     const needsDetail=s.sport==='Kraft'&&(!s.note||!s.note.trim())&&!planned;
     const label=weekMode?(s.title||s.sport+(s.zone!=='-'?' · '+zoneCfg(s.zone).label:'')):s.sport;
-    const iconHTML=sc.imgUrl?`<img class="cal-chip-icon" src="${esc(sc.imgUrl)}" style="width:11px;height:11px;border-radius:2px;object-fit:cover;">`:`<span class="cal-chip-icon">${sc.icon}</span>`;
+    const iconHTML=sc.imgUrl?`<img class="cal-chip-icon" src="${esc(sc.imgUrl)}" style="width:11px;height:11px;border-radius:2px;object-fit:cover;">`:`<span class="cal-chip-icon">${sportIconHTML(s.sport,11)}</span>`;
     const warnDot=needsDetail?'<span class="cal-chip-warn" title="Details fehlen"></span>':'';
     const chipStyle=planned
       ?`background:transparent;color:${sc.color};border:1px dashed ${sc.color}99;opacity:.7;`
@@ -3209,7 +3233,7 @@ function openCalPlanModal(iso){
   const modal=document.getElementById('cal-plan-modal');
   const d=new Date(iso+'T00:00:00');
   const dateLabel=d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
-  const sportOpts=cfg.sports.map(s=>`<option value="${s.key}">${s.icon} ${s.label}</option>`).join('');
+  const sportOpts=cfg.sports.map(s=>`<option value="${s.key}">${sportIconText(s)?sportIconText(s)+" ":""}${s.label}</option>`).join('');
   const zoneOpts=cfg.zones.map(z=>`<option value="${z.key}">${z.label}${z.hrMin&&z.hrMax?' ('+z.hrMin+'–'+z.hrMax+')':''}</option>`).join('');
   document.getElementById('cal-plan-modal-content').innerHTML=`
     <h2 style="margin-bottom:.15rem;"><i class="ti ti-calendar-plus"></i> Einheit planen</h2>
@@ -3240,7 +3264,7 @@ function openCalPlanModal(iso){
     if(!est){box.style.display='none';return;}
     const sc=sportCfg(sport);
     box.style.display='';
-    box.innerHTML=`<span style="font-weight:600;color:${sc.color};">${sc.icon} ~${est.estimate} Punkte</span> <span style="color:var(--text-faint);">(${est.range[0]}–${est.range[1]})</span><br><span style="font-size:.68rem;">aus ${est.n} ähnlichen Einheiten</span>`;
+    box.innerHTML=`<span style="font-weight:600;color:${sc.color};">${sportIconHTML(sport,12)} ~${est.estimate} Punkte</span> <span style="color:var(--text-faint);">(${est.range[0]}–${est.range[1]})</span><br><span style="font-size:.68rem;">aus ${est.n} ähnlichen Einheiten</span>`;
   }
   ['cp-sport','cp-duration','cp-zone','cp-srpe'].forEach(id=>{
     const el=document.getElementById(id);
@@ -3545,7 +3569,7 @@ function renderAnalytics(){
   const filterEl=document.getElementById('analytics-sport-filter');
   filterEl.innerHTML=visibleSports.map(s=>{
     const active=analyticsActiveSports.size===0?defaultActive.includes(s.key):analyticsActiveSports.has(s.key);
-    return`<button class="${active?'active':''}" style="${active?'background:'+s.color+';border-color:'+s.color+';':''}" data-sport="${s.key}">${s.icon} ${s.label}</button>`;
+    return`<button class="${active?'active':''}" style="${active?'background:'+s.color+';border-color:'+s.color+';':''}" data-sport="${s.key}">${sportIconHTML(s.key,12)} ${s.label}</button>`;
   }).join('');
   filterEl.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{
     const key=btn.dataset.sport;
@@ -3719,8 +3743,8 @@ function renderWorkloadChart(){
       '<stop offset="100%" stop-color="'+cssVar('--blob-pink')+'"/>'+
     '</linearGradient></defs>'+yLabels+xLabels+bp+dots;
   document.getElementById('workload-chart-legend').innerHTML=
-    '<span><span style="display:inline-block;width:9px;height:9px;background:var(--text);border-radius:50%;margin-right:.3rem;"></span>Einheit (Größe = Workload)</span>'+
-    '<span><span style="display:inline-block;width:14px;height:9px;background:rgba(133,167,196,.5);border-radius:4px;margin-right:.3rem;"></span>Ø letzte '+acwrWeeks+' Wochen ±20%</span>';
+    '<span style="color:var(--text);">Einheit (Größe = Workload)</span>'+
+    '<span style="color:var(--blob-blue);">Ø letzte '+acwrWeeks+' Wochen ±20%</span>';
 }
 // Monotonie & Strain nach Foster (1998): Bewertung der Belastungsverteilung INNERHALB
 // der Woche, ergänzend zu ACWR (das nur die Gesamtmenge bewertet).
@@ -3842,8 +3866,8 @@ function renderMonotony(){
   });
   // Referenzlinie bei Monotonie 2.0 visuell andeuten via Legende
   document.getElementById('monotony-legend').innerHTML=
-    '<span><span style="display:inline-block;width:18px;height:2px;background:var(--orange-soft);vertical-align:middle;margin-right:.3rem;"></span>Monotonie</span>'+
-    '<span><span style="display:inline-block;width:14px;height:10px;background:rgba(140,109,176,0.25);border:1px solid rgba(140,109,176,0.5);vertical-align:middle;margin-right:.3rem;"></span>Strain</span>'+
+    '<span style="color:var(--orange-soft);">Monotonie</span>'+
+    '<span style="color:var(--data-plum);">Strain</span>'+
     '<span style="color:var(--acwr-optimal);">&lt;1.5 gut</span>'+
     '<span style="color:var(--acwr-caution);">1.5–2.0 moderat</span>'+
     '<span style="color:var(--acwr-high);">&gt;2.0 kritisch</span>';
@@ -3952,12 +3976,12 @@ function renderWeeklyTrendChart(){
     }
   });
   document.getElementById('weekly-trend-legend').innerHTML=
-    '<span><span style="display:inline-block;width:18px;height:2px;background:var(--orange-soft);vertical-align:middle;margin-right:.3rem;"></span>Wochensumme</span>'+
-    '<span><span style="display:inline-block;width:14px;height:10px;border-radius:5px;background:var(--blob-gradient);vertical-align:middle;margin-right:.3rem;"></span>Optimales Band</span>'+
-    '<span><span style="display:inline-block;width:9px;height:9px;background:var(--acwr-high);border-radius:50%;vertical-align:middle;margin-right:.3rem;"></span>Hoch</span>'+
-    '<span><span style="display:inline-block;width:9px;height:9px;background:var(--acwr-caution);border-radius:50%;vertical-align:middle;margin-right:.3rem;"></span>Vorsicht</span>'+
-    '<span><span style="display:inline-block;width:9px;height:9px;background:var(--acwr-optimal);border-radius:50%;vertical-align:middle;margin-right:.3rem;"></span>Optimal</span>'+
-    '<span><span style="display:inline-block;width:9px;height:9px;background:var(--acwr-low);border-radius:50%;vertical-align:middle;margin-right:.3rem;"></span>Niedrig</span>';
+    '<span style="color:var(--orange-soft);">Wochensumme</span>'+
+    '<span style="color:var(--blob-violet);">Optimales Band</span>'+
+    '<span style="color:var(--acwr-high);">Hoch</span>'+
+    '<span style="color:var(--acwr-caution);">Vorsicht</span>'+
+    '<span style="color:var(--acwr-optimal);">Optimal</span>'+
+    '<span style="color:var(--acwr-low);">Niedrig</span>';
 
   // ── Steigerungskennzahlen (nur abgeschlossene Wochen) ─────────────────────
   // Die laufende Woche wird NICHT hochgerechnet und NICHT bewertet — die
@@ -4085,10 +4109,10 @@ function renderWeeklyTrendChart(){
   ${prevDots}${plannedDots}${thisDots}`;
 
   document.getElementById('weekly-compare-legend').innerHTML=
-    `<span><span style="display:inline-block;width:18px;height:2.5px;background:var(--data-plum);vertical-align:middle;margin-right:.3rem;border-radius:2px;"></span>Diese Woche</span>`+
-    (prevWeekCum?`<span><span style="display:inline-block;width:18px;height:2px;background:var(--text-muted);vertical-align:middle;margin-right:.3rem;border-radius:2px;"></span>Letzte Woche</span>`:'')+
-    (plannedCum?`<span><span style="display:inline-block;width:18px;height:0;border-top:2px dashed var(--orange-soft);vertical-align:middle;margin-right:.3rem;"></span>Geplant (Ist+Plan)</span>`:'')+
-    (bandLoCum?`<span><span style="display:inline-block;width:14px;height:9px;background:rgba(133,167,196,.42);border-radius:3px;vertical-align:middle;margin-right:.3rem;"></span>Empfohlener Bereich</span>`:'');
+    `<span style="color:var(--data-plum);">Diese Woche</span>`+
+    (prevWeekCum?`<span style="color:var(--text-muted);">Letzte Woche</span>`:'')+
+    (plannedCum?`<span style="color:var(--orange-soft);">Geplant (Ist+Plan)</span>`:'')+
+    (bandLoCum?`<span style="color:var(--blob-blue);">Empfohlener Bereich</span>`:'');
 }
 
 // Drill-down: Tagesbalken (Mo–So) der angeklickten Woche
@@ -4131,7 +4155,7 @@ function openWeeklyDetail(idx){
                 const wl=berechneWorkload(s);
                 const name=s.title?` \u00B7 ${s.title}`:'';
                 const load=wl.value!=null?` \u2192 ${wl.value} Pkt`:'';
-                lines.push(`${sc.icon} ${sc.label||s.sport}${name} (${fmtMin(s.duration)})${load}`);
+                lines.push(`${sportIconText(sc)}${sportIconText(sc)?' ':''}${sc.label||s.sport}${name} (${fmtMin(s.duration)})${load}`);
               });
               lines.push(`\u03A3 ${ctx.parsed.y} Punkte`);
               return lines;
@@ -4163,7 +4187,7 @@ function sportSettingsHTML(){
     return`<div class="sport-row">
       <input type="text" class="sport-label-inline" data-sport="${i}" value="${esc(s.label)}" placeholder="Name" title="Anzeigename">
       <input type="color" class="color-pick-inline" data-sport="${i}" value="${s.color}" title="Farbe">
-      <input type="text" class="emoji-pick-inline" data-sport="${i}" value="${s.icon}" maxlength="12" title="Emoji (HTML-Entity)" style="width:64px;text-align:center;font-size:.8rem;">
+      <input type="text" class="emoji-pick-inline" data-sport="${i}" value="${s.icon}" maxlength="24" title="Emoji ODER Tabler-Icon-Klasse (z.B. ti-bike)" placeholder="ti-bike oder 🚴" style="width:96px;text-align:center;font-size:.78rem;">
       ${s.imgUrl?`<img src="${esc(s.imgUrl)}" class="sport-img-preview" id="img-prev-inline-${i}">`:`<span id="img-prev-inline-${i}" style="font-size:.68rem;color:var(--text-faint);width:34px;text-align:center;">–</span>`}
       <label style="cursor:pointer;font-size:.72rem;color:var(--accent);white-space:nowrap;">Bild<input type="file" accept="image/*" class="img-upload-inline" data-sport="${i}" style="display:none;"></label>
       <label class="freitext-lbl" title="Sportart ohne HF-Zonen (z.B. Kraft, Kampfsport)"><input type="checkbox" class="sport-freitext-inline" data-sport="${i}" ${isFrei?'checked':''}>frei</label>
@@ -4895,7 +4919,7 @@ function showGpxMultiPreview(errors){
     return;
   }
   const items=pendingGpxMulti.map(p=>{
-    const sportOpts=cfg.sports.map(s=>`<option value="${s.key}"${s.key===p.sport?' selected':''}>${s.icon} ${s.label}</option>`).join('');
+    const sportOpts=cfg.sports.map(s=>`<option value="${s.key}"${s.key===p.sport?' selected':''}>${sportIconText(s)?sportIconText(s)+" ":""}${s.label}</option>`).join('');
     return`<div class="gpx-multi-item" data-id="${p._id}">
       <span class="mi-meta">${p.date}</span>
       <select class="mi-sport" data-id="${p._id}">${sportOpts}</select>
@@ -5160,7 +5184,7 @@ function himRender(){
   const sportBtns=document.getElementById('him-sport-btns');
   sportRow.style.display='';
   sportBtns.innerHTML=cfg.sports.map(s=>
-    `<button style="font-size:.75rem;padding:.2rem .55rem;" onclick="himSetAllSport('${s.key}')">${s.icon} ${s.label}</button>`
+    `<button style="font-size:.75rem;padding:.2rem .55rem;" onclick="himSetAllSport('${s.key}')">${sportIconHTML(s.key,12)} ${s.label}</button>`
   ).join('')+
   `<button style="font-size:.75rem;padding:.2rem .55rem;" onclick="himSetAllSport('')">↺ Reset</button>`;
 
@@ -5193,7 +5217,7 @@ function himRender(){
             ${r.skip?'<span style="color:var(--text-faint);">–</span>':
               `<select style="font-size:.75rem;padding:.15rem .3rem;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;" onchange="_himData[${i}].sport=this.value">
                 <option value="">— wählen —</option>
-                ${cfg.sports.map(s=>`<option value="${s.key}"${r.sport===s.key?' selected':''}>${s.icon} ${s.label}</option>`).join('')}
+                ${cfg.sports.map(s=>`<option value="${s.key}"${r.sport===s.key?' selected':''}>${sportIconText(s)?sportIconText(s)+" ":""}${s.label}</option>`).join('')}
               </select>`
             }
           </td>
