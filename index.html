@@ -48,6 +48,9 @@
   --acwr-caution:#d99a2b;
   --acwr-high:#c0453f;
 
+  /* === Workload-Chart Band === */
+---wlc-band:#A6DAF8;    /* ← neue eigene Variable, Startwert = aktuelle Farbe */
+
   /* === Blob-Akzente (Redesign-Pilot: weiche Chart-Formen, kühl über warmer Basis) === */
   --blob-blue:#5b8dd6;
   --blob-violet:#8c6db0;
@@ -3866,10 +3869,10 @@ function renderWorkloadChart(){
     if(detailBox)detailBox.style.display='none';
   };
   const commonDefs='<defs>'+
-    '<filter id="wlc-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6"/></filter>'+
+    '<filter id="wlc-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8"/></filter>'+
     '<linearGradient id="wlc-blob" x1="0" y1="0" x2="0" y2="1">'+
-      '<stop offset="0%" stop-color="'+cssVar('--acwr-low')+'" stop-opacity="0.95"/>'+
-      '<stop offset="100%" stop-color="'+cssVar('--acwr-low')+'" stop-opacity="0.55"/>'+
+      '<stop offset="0%" stop-color="'+cssVar(' --wlc-band')+'" stop-opacity="0.95"/>'+
+      '<stop offset="100%" stop-color="'+cssVar(' --wlc-band')+'" stop-opacity="0.55"/>'+
     '</linearGradient></defs>';
 
   if(!weekMode){
