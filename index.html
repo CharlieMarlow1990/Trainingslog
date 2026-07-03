@@ -3671,11 +3671,14 @@ function muteColor(hex,satMul,lightMix,lightTarget){
   const[h,s,l]=hexToHsl(hex);
   return hslToHex(h,s*satMul,l*(1-lightMix)+lightTarget*lightMix);
 }
-// ── "Verteilung über Zeit": überlagerte, verblurte Flächen (analoge Drucktechnik) ──
-// Flächen laufen NICHT gestapelt, sondern jede Kategorie von 0 aus übereinander —
-// Überschneidungen mehrerer gedämpfter Halbtransparenz-Flächen erzeugen sichtbar
-// neue Mischtöne. Dünne, unverblurte Trennlinien pro Kategorie "durchbrechen" die
-// weichen Flächen und halten die einzelnen Kategorien erkennbar.
+// Kräftige, chart-eigene Farbzuordnung für "Verteilung über Zeit" (Sport-Modus) —
+// unabhängig von DEFAULT_SPORTS, damit Sport-Buttons/Kalender unverändert bleiben.
+const AREA_SPORT_COLORS={Rad:'#4bb4e6',Lauf:'#2749c4',Kraft:'#e5484d',Capacity:'#a24bd6'};
+// ── "Verteilung über Zeit": gestapelte Aurora-Flächen mit weichem Verlauf ──────
+// Flächen laufen kumulativ gestapelt übereinander (Gesamthöhe = Wochensumme).
+// Jede Kategorie bekommt einen eigenen Farbverlauf (kräftig oben, transparenter
+// unten) + moderaten Blur für weiche Übergänge. Helle, unverblurte Trennlinien
+// auf den Stapelgrenzen machen die Kategorien trotzdem klar erkennbar.
 function renderAnalyticsAreaChart(labels,datasets,getColor){
   const svg=document.getElementById('analytics-chart-svg');
   const box=document.getElementById('analytics-chart-box');
@@ -3694,7 +3697,9 @@ function renderAnalyticsAreaChart(labels,datasets,getColor){
   const innerW=W-padL-padR,innerH=H-padT-padB;
   const n=labels.length;
   const xAt=i=>padL+(n<=1?0:(i/(n-1))*innerW);
-  const maxY=Math.max(...allVals,1)*1.2;
+  // maxY = größte Stapel-Gesamtsumme über alle X-Punkte
+  const stackTotals=Array.from({length:n},(_,i)=>datasets.reduce((a,ds)=>a+Math.max(0,ds.data[i]||0),0));
+  const maxY=Math.max(...stackTotals,1)*1.15;
   const yAt=v=>padT+innerH-Math.max(0,v/maxY)*innerH;
   const baseline=padT+innerH;
   const axF=cssVar('--font-sans'),axC=cssVar('--text-muted');
@@ -3710,24 +3715,48 @@ function renderAnalyticsAreaChart(labels,datasets,getColor){
     xLabels+='<text x="'+xAt(i).toFixed(1)+'" y="'+(H-6)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="middle">'+labels[i]+'</text>';
   }
 
-  const fills=[],lines=[];
-  datasets.forEach(ds=>{
+  // Glatte Kurve durch eine Punktfolge [{x,y},…] via Catmull-Rom → kubische Béziers.
+  // Ergibt organische, runde Verläufe statt eckiger Polylinien. Kein Overshoot dank
+  // Tension-Faktor 1/6.
+  const smoothPath=(pts,move)=>{
+    if(pts.length<2)return pts.length?((move?'M ':'L ')+pts[0].x.toFixed(1)+','+pts[0].y.toFixed(1)):'';
+    let d=(move?'M ':'L ')+pts[0].x.toFixed(1)+','+pts[0].y.toFixed(1);
+    for(let i=0;i<pts.length-1;i++){
+      const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||pts[i+1];
+      const c1x=p1.x+(p2.x-p0.x)/6,c1y=p1.y+(p2.y-p0.y)/6;
+      const c2x=p2.x-(p3.x-p1.x)/6,c2y=p2.y-(p3.y-p1.y)/6;
+      d+=' C '+c1x.toFixed(1)+','+c1y.toFixed(1)+' '+c2x.toFixed(1)+','+c2y.toFixed(1)+' '+p2.x.toFixed(1)+','+p2.y.toFixed(1);
+    }
+    return d;
+  };
+  // Kumulative Stapelung: jede Kategorie füllt zwischen prevCum und prevCum+value.
+  const prevCum=new Array(n).fill(0);
+  const gradDefs=[],fills=[],lines=[];
+  datasets.forEach((ds,di)=>{
     const base=getColor(ds._cat);
-    const fillCol=muteColor(base,0.55,0.55,0.86);
-    const lineCol=muteColor(base,0.7,0.3,0.5);
-    const pts=ds.data.map((v,i)=>xAt(i).toFixed(1)+','+yAt(v).toFixed(1));
-    const areaPath='M '+xAt(0).toFixed(1)+','+baseline.toFixed(1)+' L '+pts.join(' L ')+' L '+xAt(n-1).toFixed(1)+','+baseline.toFixed(1)+' Z';
-    const linePath='M '+pts.join(' L ');
-    fills.push('<path d="'+areaPath+'" fill="'+fillCol+'" fill-opacity="0.22" filter="url(#analytics-area-blur)"/>');
-    lines.push('<path d="'+linePath+'" fill="none" stroke="'+lineCol+'" stroke-width="1" stroke-opacity="0.45"/>');
-    ds._lineCol=lineCol;
+    const topCum=ds.data.map((v,i)=>prevCum[i]+Math.max(0,v));
+    // Aurora-Verlauf: oben kräftig, unten transparenter.
+    const gid='area-grad-'+di;
+    gradDefs.push('<linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1">'+
+      '<stop offset="0%" stop-color="'+base+'" stop-opacity="0.92"/>'+
+      '<stop offset="100%" stop-color="'+base+'" stop-opacity="0.42"/>'+
+    '</linearGradient>');
+    const upPts=topCum.map((v,i)=>({x:xAt(i),y:yAt(v)}));
+    const loPts=prevCum.map((v,i)=>({x:xAt(i),y:yAt(v)})).reverse();
+    // Fläche: glatte Oberkante, glatte (umgekehrte) Unterkante, geschlossen.
+    const areaPath=smoothPath(upPts,true)+' '+smoothPath(loPts,false)+' Z';
+    fills.push('<path d="'+areaPath+'" fill="url(#'+gid+')" filter="url(#analytics-area-blur)"/>');
+    // Helle, halbtransparente Trennlinie auf der Ober-Grenze (wie Vorlage 2), unverblurt.
+    lines.push('<path d="'+smoothPath(upPts,true)+'" fill="none" stroke="rgba(241,238,230,0.6)" stroke-width="1"/>');
+    ds._legendCol=base;
+    for(let i=0;i<n;i++)prevCum[i]=topCum[i];
   });
 
-  const defs='<defs>'+
-    '<filter id="analytics-area-blur" x="-20%" y="-60%" width="140%" height="220%"><feGaussianBlur stdDeviation="11"/></filter>'+
+  const defs='<defs>'+gradDefs.join('')+
+    '<filter id="analytics-area-blur" x="-25%" y="-50%" width="150%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>'+
     '<filter id="analytics-grain" x="0" y="0" width="100%" height="100%">'+
       '<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" result="noise"/>'+
-      '<feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.05 0"/>'+
+      '<feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.04 0"/>'+
     '</filter>'+
   '</defs>';
   const grain='<rect x="'+padL+'" y="'+padT+'" width="'+innerW+'" height="'+innerH+'" filter="url(#analytics-grain)" pointer-events="none"/>';
@@ -3737,7 +3766,7 @@ function renderAnalyticsAreaChart(labels,datasets,getColor){
   if(legendEl){
     legendEl.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:.6rem 1rem;justify-content:center;margin-top:.7rem;">'+
       datasets.map(ds=>'<span style="display:inline-flex;align-items:center;gap:.35rem;font-size:.72rem;color:var(--text-muted);">'+
-        '<span style="width:14px;height:2px;background:'+ds._lineCol+';display:inline-block;border-radius:1px;"></span>'+ds.label+'</span>').join('')+
+        '<span style="width:12px;height:12px;border-radius:3px;background:'+ds._legendCol+';display:inline-block;"></span>'+ds.label+'</span>').join('')+
       '</div>';
   }
 }
@@ -3789,7 +3818,7 @@ function renderAnalytics(){
     });
   }else{
     categories=activeSports;
-    getColor=k=>sportCfg(k).color;
+    getColor=k=>AREA_SPORT_COLORS[k]||sportCfg(k).color;
     const matrix=categories.map(sk=>weekBuckets.map(b=>{
       return actualSessions().filter(s=>s.sport===sk&&inRange(s.date,b)).reduce((a,s)=>a+s.duration,0);
     }));
