@@ -722,7 +722,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 
     <div class="ws-section">
       <h3 class="ws-h"><i class="ti ti-chart-bar"></i> Wochen-Workload</h3>
-      <div class="zone-collage" style="margin:0;border:none;padding:0;background:none;">
+      <div class="zone-collage" style="margin:0;border:none;padding:0;background:none;box-shadow:none;border-radius:0;backdrop-filter:none;-webkit-backdrop-filter:none;">
         <div class="zc-g" id="log-week-grid" style="grid-template-columns:repeat(7,1fr);gap:3px;height:280px;max-width:none;"></div>
         <div id="log-week-chart-legend" style="font-size:.7rem;color:var(--text-muted);margin-top:.6rem;display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;"></div>
       </div>
@@ -730,7 +730,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 
     <div class="ws-section">
       <h3 class="ws-h">Zonenverteilung</h3>
-      <div class="zone-collage" style="margin:0;border:none;padding:0;background:none;">
+      <div class="zone-collage" style="margin:0;border:none;padding:0;background:none;box-shadow:none;border-radius:0;backdrop-filter:none;-webkit-backdrop-filter:none;">
         <div class="zc-g" id="zc-grid" style="grid-template-columns:repeat(3,1fr);gap:3px;height:280px;max-width:none;"></div>
         <div class="zc-f">
           <span id="zc-polar"></span>
@@ -742,7 +742,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 
     <div class="ws-section">
       <h3 class="ws-h">Sportarten</h3>
-      <div class="sport-rose" style="margin:0;border:none;padding:0;background:none;">
+      <div class="sport-rose" style="margin:0;border:none;padding:0;background:none;box-shadow:none;border-radius:0;backdrop-filter:none;-webkit-backdrop-filter:none;">
         <div class="sr-body">
           <div class="sr-svg-wrap"><svg id="sr-svg" viewBox="0 0 240 240"></svg></div>
           <div class="sr-legend" id="sr-legend"></div>
@@ -2659,8 +2659,14 @@ async function saveSession(){
   }catch(e){setSyncState('error');statusEl.textContent='Fehler';console.error(e);}
 }
 document.getElementById('t-add').addEventListener('click',saveSession);
-document.getElementById('t-prev').addEventListener('click',()=>{weekOffset--;renderLog();});
-document.getElementById('t-next').addEventListener('click',()=>{weekOffset++;renderLog();});
+function goToWeek(delta){
+  weekOffset+=delta;
+  renderLog();
+  const el=document.querySelector('.week-summary');
+  if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+document.getElementById('t-prev').addEventListener('click',()=>goToWeek(-1));
+document.getElementById('t-next').addEventListener('click',()=>goToWeek(1));
 
 function toggleDetail(id){const el=document.getElementById('detail-'+id);if(el)el.classList.toggle('open');}
 // Öffnet das Detail einer Session und springt direkt ins Notizfeld —
@@ -3019,12 +3025,12 @@ function renderSportRose(ws,range){
 
   // Ebene 1: Blobs — Radius flächenproportional (sqrt), leicht Richtung Segment-
   // Mittelwinkel versetzt, große zuerst (unten), kleine zuletzt (oben) gezeichnet.
-  const BLOB_MIN=38,BLOB_MAX=70,BLOB_OFFSET=16;
+  const BLOB_MIN=54,BLOB_MAX=100,BLOB_OFFSET=20;
   const blobEls=[...segs].sort((a,b)=>b.share-a.share).map(seg=>{
     const r=BLOB_MIN+(BLOB_MAX-BLOB_MIN)*Math.sqrt(seg.share);
     const ox=segs.length>1?BLOB_OFFSET*Math.cos(seg.midA):0;
     const oy=segs.length>1?BLOB_OFFSET*Math.sin(seg.midA):0;
-    return `<circle cx="${(cx+ox).toFixed(1)}" cy="${(cy+oy).toFixed(1)}" r="${r.toFixed(1)}" fill="${seg.color}" fill-opacity="0.62"/>`;
+    return `<circle cx="${(cx+ox).toFixed(1)}" cy="${(cy+oy).toFixed(1)}" r="${r.toFixed(1)}" fill="${seg.color}" fill-opacity="0.78"/>`;
   }).join('');
 
   // Ebene 2: klassisches Kreisdiagramm, keine Beschriftung — Weichzeichnung und
@@ -3032,13 +3038,13 @@ function renderSportRose(ws,range){
   const wedgeEls=segs.map(seg=>`<path d="${wedgePath(cx,cy,R,seg.startA,seg.endA)}" fill="${seg.color}"/>`).join('');
 
   const defs=`<defs>
-    <filter id="sr-blob-blur" x="-60%" y="-60%" width="220%" height="220%">
-      <feGaussianBlur stdDeviation="8"/>
+    <filter id="sr-blob-blur" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="15"/>
     </filter>
     <filter id="sr-pie-fx" x="-30%" y="-30%" width="160%" height="160%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" seed="7" result="n"/>
-      <feDisplacementMap in="SourceGraphic" in2="n" scale="8" xChannelSelector="R" yChannelSelector="G" result="disp"/>
-      <feGaussianBlur in="disp" stdDeviation="3.4"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="12" xChannelSelector="R" yChannelSelector="G" result="disp"/>
+      <feGaussianBlur in="disp" stdDeviation="4.2"/>
     </filter>
     <filter id="sr-grain" x="0" y="0" width="100%" height="100%">
       <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="noise"/>
@@ -3754,9 +3760,6 @@ function muteColor(hex,satMul,lightMix,lightTarget){
   const[h,s,l]=hexToHsl(hex);
   return hslToHex(h,s*satMul,l*(1-lightMix)+lightTarget*lightMix);
 }
-// Kräftige, chart-eigene Farbzuordnung für "Verteilung über Zeit" (Sport-Modus) —
-// unabhängig von DEFAULT_SPORTS, damit Sport-Buttons/Kalender unverändert bleiben.
-const AREA_SPORT_COLORS={Rad:'#4bb4e6',Lauf:'#2749c4',Kraft:'#e5484d',Capacity:'#a24bd6'};
 // ── "Verteilung über Zeit": gestapelte Aurora-Flächen mit weichem Verlauf ──────
 // Flächen laufen kumulativ gestapelt übereinander (Gesamthöhe = Wochensumme).
 // Jede Kategorie bekommt einen eigenen Farbverlauf (kräftig oben, transparenter
@@ -3901,7 +3904,7 @@ function renderAnalytics(){
     });
   }else{
     categories=activeSports;
-    getColor=k=>AREA_SPORT_COLORS[k]||sportCfg(k).color;
+    getColor=k=>sportCfg(k).color;
     const matrix=categories.map(sk=>weekBuckets.map(b=>{
       return actualSessions().filter(s=>s.sport===sk&&inRange(s.date,b)).reduce((a,s)=>a+s.duration,0);
     }));
