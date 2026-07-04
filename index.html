@@ -2956,6 +2956,26 @@ function renderZoneCollage(zt,ztPlan,range){
 // Pro Sportart ein Sektor. Sektorwinkel proportional zur Trainingszeit. Hintergrund
 // je Sektor ist ein S/W-Bild der Sportart (img/sport-{key}.jpg), via SVG clip-path
 // auf den Sektor geschnitten, darüber eine leicht transparente Sportart-Farbe.
+// Sportarten-Verteilung: zwei Ebenen übereinander.
+// 1) Hintergrund: organische, verblurte Farbflächen je Sportart (Größe ~ Zeitanteil,
+//    Radius ~ sqrt(Anteil) für flächenproportionale Wahrnehmung), rund um die Mitte
+//    positioniert und überlappend — die Gaussian-Blur-Filterung erfolgt NACH dem
+//    Zusammensetzen der Kreise, wodurch sich die Farben an den Überlappungen weich
+//    mischen statt hart zu wechseln.
+// 2) Vordergrund: klassisches Kreisdiagramm (exakte Winkel/Proportionen, keine
+//    Beschriftung), mit feTurbulence+feDisplacementMap leicht organisch verzerrt und
+//    per feGaussianBlur weichgezeichnet — Segmentgrenzen UND Außenrand sind dadurch
+//    weich, nicht geometrisch hart.
+// Ganz oben: feine Grain-Textur über der gesamten Komposition.
+function wedgePath(cx,cy,R,startA,endA){
+  if(endA-startA>=2*Math.PI-0.0001){
+    return `M ${cx-R} ${cy} A ${R} ${R} 0 1 1 ${cx+R} ${cy} A ${R} ${R} 0 1 1 ${cx-R} ${cy} Z`;
+  }
+  const sx=cx+R*Math.cos(startA), sy=cy+R*Math.sin(startA);
+  const ex=cx+R*Math.cos(endA), ey=cy+R*Math.sin(endA);
+  const largeArc=(endA-startA)>Math.PI?1:0;
+  return `M ${cx} ${cy} L ${sx.toFixed(2)} ${sy.toFixed(2)} A ${R} ${R} 0 ${largeArc} 1 ${ex.toFixed(2)} ${ey.toFixed(2)} Z`;
+}
 function renderSportRose(ws,range){
   const svg=document.getElementById('sr-svg');
   if(!svg)return;
@@ -2982,40 +3002,54 @@ function renderSportRose(ws,range){
   }
 
   const totalTime=items.reduce((a,b)=>a+b.time,0);
-  const totalLoad=items.reduce((a,b)=>a+b.load,0);
-  const cx=120,cy=120,R=105;
+  // Pie deutlich kleiner als der Blob-Radius, damit die Blobs als sichtbarer,
+  // organischer Hof rund um den Kreis erscheinen (nicht vollständig verdeckt).
+  const cx=120,cy=120,R=54;
 
-  let defs='',content='';
+  // Segmente (Winkel) berechnen
   let currentA=-Math.PI/2;
-  items.forEach((it,i)=>{
-    const angleSpan=(it.time/totalTime)*2*Math.PI;
-    const sCfg=cfg.sports.find(s=>s.key===it.key)||{color:'#888',label:it.key};
-    const startA=currentA, endA=currentA+angleSpan;
-    const sx=cx+R*Math.cos(startA), sy=cy+R*Math.sin(startA);
-    const ex=cx+R*Math.cos(endA), ey=cy+R*Math.sin(endA);
-    const largeArc=angleSpan>Math.PI?1:0;
-    const path=angleSpan>=2*Math.PI-0.0001
-      ? `M ${cx-R} ${cy} A ${R} ${R} 0 1 1 ${cx+R} ${cy} A ${R} ${R} 0 1 1 ${cx-R} ${cy} Z`
-      : `M ${cx} ${cy} L ${sx.toFixed(2)} ${sy.toFixed(2)} A ${R} ${R} 0 ${largeArc} 1 ${ex.toFixed(2)} ${ey.toFixed(2)} Z`;
-    const clipId=`sr-cp-${i}-${Math.floor(Math.random()*1e6)}`;
-    // Sektor leicht aus dem Zentrum ziehen (exploded pie)
-    const EXPLODE=5;
-    const midA=(startA+endA)/2;
-    const tx=(EXPLODE*Math.cos(midA)).toFixed(2);
-    const ty=(EXPLODE*Math.sin(midA)).toFixed(2);
-    defs+=`<clipPath id="${clipId}"><path d="${path}"/></clipPath>`;
-    const slug=it.key.toLowerCase();
-    content+=`<g transform="translate(${tx},${ty})">`;
-    content+=`<g clip-path="url(#${clipId})">`;
-    content+=`<image href="img/sport-${slug}.jpg" x="${cx-R}" y="${cy-R}" width="${R*2}" height="${R*2}" preserveAspectRatio="xMidYMid slice" style="filter:grayscale(0.85) contrast(1.1);"/>`;
-    content+=`<path d="${path}" fill="${sCfg.color}" fill-opacity="0.18"/>`;
-    content+=`</g>`;
-    content+=`<path d="${path}" fill="none" stroke="${sCfg.color}" stroke-width="1.5" stroke-opacity="0.85"/>`;
-    content+=`</g>`;
+  const segs=items.map(it=>{
+    const share=it.time/totalTime;
+    const angleSpan=share*2*Math.PI;
+    const startA=currentA,endA=currentA+angleSpan,midA=(startA+endA)/2;
     currentA=endA;
+    const sCfg=cfg.sports.find(s=>s.key===it.key)||{color:'#888',label:it.key};
+    return{key:it.key,share,startA,endA,midA,color:sCfg.color};
   });
 
-  svg.innerHTML=`<defs>${defs}</defs>${content}`;
+  // Ebene 1: Blobs — Radius flächenproportional (sqrt), leicht Richtung Segment-
+  // Mittelwinkel versetzt, große zuerst (unten), kleine zuletzt (oben) gezeichnet.
+  const BLOB_MIN=38,BLOB_MAX=70,BLOB_OFFSET=16;
+  const blobEls=[...segs].sort((a,b)=>b.share-a.share).map(seg=>{
+    const r=BLOB_MIN+(BLOB_MAX-BLOB_MIN)*Math.sqrt(seg.share);
+    const ox=segs.length>1?BLOB_OFFSET*Math.cos(seg.midA):0;
+    const oy=segs.length>1?BLOB_OFFSET*Math.sin(seg.midA):0;
+    return `<circle cx="${(cx+ox).toFixed(1)}" cy="${(cy+oy).toFixed(1)}" r="${r.toFixed(1)}" fill="${seg.color}" fill-opacity="0.62"/>`;
+  }).join('');
+
+  // Ebene 2: klassisches Kreisdiagramm, keine Beschriftung — Weichzeichnung und
+  // Verzerrung entstehen rein über den Filter der umschließenden <g>.
+  const wedgeEls=segs.map(seg=>`<path d="${wedgePath(cx,cy,R,seg.startA,seg.endA)}" fill="${seg.color}"/>`).join('');
+
+  const defs=`<defs>
+    <filter id="sr-blob-blur" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+    <filter id="sr-pie-fx" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="8" xChannelSelector="R" yChannelSelector="G" result="disp"/>
+      <feGaussianBlur in="disp" stdDeviation="3.4"/>
+    </filter>
+    <filter id="sr-grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.05 0"/>
+    </filter>
+  </defs>`;
+
+  svg.innerHTML=defs+
+    `<g filter="url(#sr-blob-blur)">${blobEls}</g>`+
+    `<g filter="url(#sr-pie-fx)">${wedgeEls}</g>`+
+    `<rect x="0" y="0" width="240" height="240" filter="url(#sr-grain)" style="mix-blend-mode:overlay;" pointer-events="none"/>`;
 
   const fmt=m=>{const h=Math.floor(m/60),mm=m%60;return h>0?`${h}h ${mm}′`:`${mm}′`;};
   document.getElementById('sr-legend').innerHTML=items.map(it=>{
