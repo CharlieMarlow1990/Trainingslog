@@ -49,6 +49,17 @@
   --radius:10px;
   --radius-lg:14px;
 
+  /* === Hintergrund-Bild (vom Nutzer hochzuladen) === */
+  --bg-image:url("img/background.jpg");
+
+  /* === Liquid Glass — helle, matt-transparente Kästen === */
+  --glass-bg:rgba(248,246,241,.55);            /* matt-hell, leicht warm */
+  --glass-bg-strong:rgba(248,246,241,.72);     /* für Modals/Nav: höhere Deckkraft */
+  --glass-border:rgba(255,255,255,.55);        /* heller Chrome-Rand */
+  --glass-radius:22px;                          /* weiche, stark gerundete Ecken */
+  --glass-blur:18px;
+  --glass-shadow:0 8px 32px rgba(30,28,24,.20), 0 2px 8px rgba(30,28,24,.10), inset 0 1px 0 rgba(255,255,255,.7), inset 0 0 0 1px rgba(255,255,255,.10);
+
   /* === Typografie === */
   --font-serif:Georgia,"Iowan Old Style","Palatino Linotype","Times New Roman",serif;
   --font-sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -62,14 +73,60 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));}
 .wrap{max-width:980px;margin:0 auto;padding:1.25rem 1rem 2rem;}
+
+/* ===== Hintergrund-Ebenen (Parallax-Bild + Grain) ===== */
+#bg-layer{
+  position:fixed;left:0;right:0;top:0;
+  height:135vh;                                   /* höher als Viewport → Spielraum für Parallax */
+  z-index:-2;pointer-events:none;
+  background:var(--bg-image) center top/cover no-repeat, var(--bg);
+  will-change:transform;transform:translate3d(0,0,0);
+}
+/* kühle, leicht abdunkelnde Tönung, damit helle Glaskästen bei jedem Bild Kontrast haben */
+#bg-layer::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(24,26,32,.28),rgba(24,26,32,.14) 40%,rgba(24,26,32,.30));
+}
+#grain-layer{
+  position:fixed;inset:0;z-index:-1;pointer-events:none;
+  opacity:.09;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:160px 160px;
+}
+#app{background:transparent;}
+
+/* ===== Liquid-Glass-Kästen ===== */
+.glass{
+  position:relative;
+  background:var(--glass-bg);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);
+  backdrop-filter:blur(var(--glass-blur)) saturate(1.4);
+  border:1px solid var(--glass-border);
+  border-radius:var(--glass-radius);
+  box-shadow:var(--glass-shadow);
+}
+/* Specular-Streifen (Chrome-Glanz) am oberen Rand */
+.glass::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 45%);
+  mix-blend-mode:screen;opacity:.7;
+}
+/* Grafik-Inhalt (SVG/Canvas) über dem Specular-Layer halten */
+.glass>*{position:relative;z-index:1;}
+@media (prefers-reduced-motion:reduce){#bg-layer{transform:none!important;}}
+/* Fallback: ohne backdrop-filter-Support kräftigere Deckkraft für Lesbarkeit */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .glass{background:var(--glass-bg-strong);}
+}
+
 #auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;}
-.auth-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2.5rem 2rem;text-align:center;max-width:360px;width:100%;position:relative;overflow:hidden;box-shadow:0 4px 24px rgba(44,44,42,.10);}
+.auth-box{background:var(--glass-bg-strong);-webkit-backdrop-filter:blur(calc(var(--glass-blur) + 4px)) saturate(1.5);backdrop-filter:blur(calc(var(--glass-blur) + 4px)) saturate(1.5);border:1px solid var(--glass-border);border-radius:var(--glass-radius);padding:2.5rem 2rem;text-align:center;max-width:360px;width:100%;position:relative;overflow:hidden;box-shadow:var(--glass-shadow);}
 .auth-box::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent-gradient);}
 .auth-box h1{font-size:1.4rem;font-weight:600;margin:0 0 .5rem;}
 .auth-box p{font-size:.88rem;color:var(--text-muted);margin:0 0 1.75rem;}
 .btn-github{display:inline-flex;align-items:center;gap:.6rem;background:#24292e;color:#fff;border:none;border-radius:var(--radius);padding:.65rem 1.4rem;font-size:.95rem;font-weight:500;cursor:pointer;font-family:var(--font-sans);}
 .btn-github:hover{background:#1a1e22;}
-#bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:var(--surface);border-top:1px solid var(--border);display:flex;height:var(--nav-h);padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -1px 8px rgba(44,44,42,.06);}
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:var(--glass-bg-strong);-webkit-backdrop-filter:blur(calc(var(--glass-blur) + 4px)) saturate(1.5);backdrop-filter:blur(calc(var(--glass-blur) + 4px)) saturate(1.5);border-top:1px solid var(--glass-border);display:flex;height:var(--nav-h);padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -6px 24px rgba(30,28,24,.16),inset 0 1px 0 rgba(255,255,255,.6);}
 #bottom-nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:transparent;cursor:pointer;font-size:.6rem;color:var(--text-muted);padding:.25rem 0;font-family:var(--font-sans);position:relative;}
 #bottom-nav button.active{color:var(--accent);font-weight:600;}
 #bottom-nav button.active::before{content:"";position:absolute;top:0;left:25%;right:25%;height:2px;background:var(--accent-gradient);border-radius:0 0 2px 2px;}
@@ -86,7 +143,7 @@ header h1{font-size:1.4rem;font-weight:600;margin:0;letter-spacing:-.01em;}
 .page{display:none;}.page.active{display:block;}
 /* Editorial: Überschriften in Serif, Body/UI bleibt Sans */
 h1,h2,h3{font-family:var(--font-serif);letter-spacing:-.01em;}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.25rem;margin-bottom:1.25rem;}
+.card{background:var(--glass-bg);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border:1px solid var(--glass-border);border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);padding:1.1rem 1.25rem;margin-bottom:1.25rem;}
 .card h2{font-size:.92rem;font-weight:600;margin:0 0 .9rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
 .badge{font-size:.68rem;font-weight:500;font-family:var(--font-mono);color:var(--text-muted);background:var(--bg);border:1px solid var(--border);border-radius:100px;padding:.12rem .5rem;}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;}
@@ -150,7 +207,7 @@ button.ghost:hover{color:var(--text);background:var(--bg);border-color:var(--bor
 .modal-profile-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--bg);}
 .modal-profile-bar>div{height:100%;}
 .modal-profile-legend{display:flex;flex-wrap:wrap;gap:.5rem;font-size:.7rem;margin-top:.35rem;}
-.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.8rem 1rem;position:relative;overflow:hidden;}
+.metric{background:var(--glass-bg);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border:1px solid var(--glass-border);border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);padding:.8rem 1rem;position:relative;overflow:hidden;}
 .metric::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent-gradient);opacity:0;transition:opacity .2s;}
 .metric:hover::before{opacity:1;}
 .metric .m-label{font-size:.72rem;color:var(--text-muted);margin:0 0 .25rem;}
@@ -160,7 +217,7 @@ button.ghost:hover{color:var(--text);background:var(--bg);border-color:var(--bor
 .chart-box{position:relative;height:180px;}
 .workload-chart-box{position:relative;height:220px;}
 /* Einheitliche Papier-Panels für alle Visualisierungen (SVG via .wlc-paper, Canvas via .chart-dark) */
-.wlc-paper,.chart-dark{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;position:relative;overflow:hidden;}
+.wlc-paper,.chart-dark{background:var(--glass-bg);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border:1px solid var(--glass-border);border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);padding:1rem;position:relative;overflow:hidden;}
 .wlc-paper svg{width:100%;height:100%;display:block;}
 .chart-dark canvas{position:relative;z-index:1;}
 .legend{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:.5rem;font-size:.75rem;color:var(--text-muted);}
@@ -294,7 +351,7 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
 /* ── MODAL ── */
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:2rem 1rem;overflow-y:auto;}
 .modal-backdrop.open{display:flex;}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);max-width:480px;width:100%;padding:1.25rem;box-shadow:0 8px 32px rgba(0,0,0,.18);}
+.modal{background:var(--glass-bg-strong);-webkit-backdrop-filter:blur(calc(var(--glass-blur) + 6px)) saturate(1.5);backdrop-filter:blur(calc(var(--glass-blur) + 6px)) saturate(1.5);border:1px solid var(--glass-border);border-radius:var(--glass-radius);max-width:480px;width:100%;padding:1.25rem;box-shadow:var(--glass-shadow);}
 .modal h2{font-size:1rem;font-weight:600;margin:0 0 .85rem;display:flex;align-items:center;gap:.5rem;}
 .modal-close{margin-left:auto;background:transparent;border:none;font-size:1.05rem;cursor:pointer;color:var(--text-muted);padding:.1rem .3rem;}
 .modal-row{display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.85rem;gap:.5rem;}
@@ -367,9 +424,9 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 /* ── Anatomie-Collage (Zonenverteilung Log-Seite) ───────────────────────── */
 /* Bild ist NUR hinter den Balken sichtbar (via CSS-Mask). Der restliche
    Block-Hintergrund bleibt papierfarben neutral. */
-.zone-collage{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.25rem;margin:1rem 0;}
+.zone-collage{background:var(--glass-bg);color:var(--text);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border:1px solid var(--glass-border);border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);padding:1.1rem 1.25rem;margin:1rem 0;}
 /* Gemeinsamer Wochen-Rahmen (Log-Seite) */
-.week-summary{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.25rem 1.3rem;margin:1rem 0;}
+.week-summary{background:var(--glass-bg);color:var(--text);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border:1px solid var(--glass-border);border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);padding:1.1rem 1.25rem 1.3rem;margin:1rem 0;}
 .ws-nav{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:0.5px solid var(--border);}
 .ws-title{font-weight:500;font-size:1rem;color:var(--text);text-align:center;flex:1;}
 .ws-nav .icon{background:rgba(44,44,42,.06);border:none;color:var(--text);width:34px;height:34px;border-radius:8px;font-size:1.1rem;cursor:pointer;flex-shrink:0;}
@@ -416,7 +473,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 .zc-tot strong{font-weight:500;font-size:1rem;}
 .zc-empty{grid-column:1/-1;display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:.85rem;padding:2rem;}
 /* ── Sportart-Rose (Polar-Bar: Winkel=Zeit · Radius=Load) ─────────────────── */
-.sport-rose{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.25rem;margin:1rem 0;}
+.sport-rose{background:var(--glass-bg);color:var(--text);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border:1px solid var(--glass-border);border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);padding:1.1rem 1.25rem;margin:1rem 0;}
 .sr-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.85rem;padding-bottom:.5rem;border-bottom:0.5px solid var(--border);}
 .sr-h h2{font-weight:600;font-size:1.05rem;letter-spacing:-.01em;margin:0;color:var(--text);}
 .sr-week{font-style:italic;font-size:.78rem;color:var(--text-muted);}
@@ -439,6 +496,11 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 </style>
 </head>
 <body>
+
+<!-- Globale Hintergrund-Ebenen: Parallax-Bild + Film-Grain. Fixiert, hinter allem.
+     Bild-Pfad zentral über --bg-image (img/background.jpg) austauschbar. -->
+<div id="bg-layer" aria-hidden="true"></div>
+<div id="grain-layer" aria-hidden="true"></div>
 
 <div id="auth-screen" style="display:none;">
   <div class="auth-box">
@@ -5461,6 +5523,36 @@ loadCfg();
     if(event==='SIGNED_IN'&&session?.user)await showApp(session.user);
     else if(event==='SIGNED_OUT'){document.getElementById('auth-screen').style.display='';document.getElementById('app').style.display='none';}
   });
+})();
+</script>
+
+<!-- Parallax: Hintergrund scrollt langsamer als der Inhalt. Faktor an Bildhöhe angepasst. -->
+<script>
+(function(){
+  var bg=document.getElementById('bg-layer');
+  if(!bg)return;
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  if(reduce)return;
+  var k=0.4,ticking=false;
+  function recalc(){
+    var vh=window.innerHeight,
+        doc=Math.max(document.documentElement.scrollHeight,document.body.scrollHeight),
+        bgH=bg.offsetHeight,
+        scrollRange=doc-vh;
+    // Faktor so, dass der Bild-Überstand exakt über die Scrollstrecke aufgebraucht wird
+    k = scrollRange>0 ? Math.min(0.6,Math.max(0.15,(bgH-vh)/scrollRange)) : 0;
+  }
+  function update(){
+    ticking=false;
+    var y=window.pageYOffset||document.documentElement.scrollTop||0;
+    bg.style.transform='translate3d(0,'+(-y*k)+'px,0)';
+  }
+  function onScroll(){ if(!ticking){ticking=true;requestAnimationFrame(update);} }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  window.addEventListener('resize',function(){recalc();update();});
+  recalc();update();
+  // Höhe/Inhalt kann sich nach dem Laden ändern (Login, Daten) → periodisch nachziehen
+  setInterval(function(){recalc();},1500);
 })();
 </script>
 </body>
