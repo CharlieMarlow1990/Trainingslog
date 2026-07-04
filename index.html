@@ -438,16 +438,15 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 .week-summary .m-label{color:var(--text-muted);}
 .week-summary .m-value{color:var(--text);}
 /* Wochen-Workload Tagesbalken */
-.wd-col{display:flex;flex-direction:column;align-items:stretch;}
-.wd-val-row{height:22px;display:flex;align-items:center;justify-content:center;}
-.wd-val{font-size:.74rem;font-weight:600;color:var(--text);white-space:nowrap;}
-.wd-plan-val{color:var(--text-faint);font-weight:400;}
-.wd-bar-area{position:relative;flex:1;overflow:hidden;}
-.wd-bar-img{position:absolute;left:15%;width:70%;object-fit:cover;object-position:center;filter:grayscale(0.85) contrast(1.1);border-radius:3px 3px 0 0;}
+.wd-col{position:relative;display:flex;flex-direction:column;align-items:stretch;}
+.wd-plan-val{color:var(--text-faint)!important;font-weight:500!important;}
+.wd-bar-area{position:relative;flex:1;overflow:visible;}
+.wd-bar-img{position:absolute;left:22%;width:56%;object-fit:cover;object-position:center;filter:grayscale(0.85) contrast(1.1);border-radius:3px 3px 0 0;}
 .wd-bar-img.wd-plan{opacity:.32;filter:grayscale(1) contrast(.9);}
-.wd-bar-tint{position:absolute;left:15%;width:70%;border-radius:3px 3px 0 0;pointer-events:none;}
-.wd-bar-frame{position:absolute;left:15%;width:70%;border:1.5px solid;border-radius:3px 3px 0 0;pointer-events:none;}
-.wd-plan-edge{border-style:dashed;opacity:.55;}
+.wd-bar-tint{position:absolute;left:22%;width:56%;border-radius:3px 3px 0 0;pointer-events:none;}
+.wd-bar-cap{position:absolute;left:22%;width:56%;height:3px;border-radius:3px 3px 0 0;pointer-events:none;}
+.wd-plan-cap{opacity:.5;}
+.wd-bar-val{position:absolute;left:0;width:100%;text-align:center;font-size:.72rem;font-weight:600;color:var(--text);white-space:nowrap;}
 .wd-label{text-align:center;font-size:.72rem;color:var(--text-muted);padding-top:.35rem;}
 .wd-today{color:var(--text);font-weight:600;}
 /* Aufklappbare Karten */
@@ -667,7 +666,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
     <div class="ws-section">
       <h3 class="ws-h"><i class="ti ti-chart-bar"></i> Wochen-Workload</h3>
       <div class="zone-collage" style="margin:0;border:none;padding:0;background:none;">
-        <div class="zc-g" id="log-week-grid" style="grid-template-columns:repeat(7,1fr);height:220px;"></div>
+        <div class="zc-g" id="log-week-grid" style="grid-template-columns:repeat(7,1fr);gap:3px;height:280px;max-width:none;"></div>
         <div id="log-week-chart-legend" style="font-size:.7rem;color:var(--text-muted);margin-top:.6rem;display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;"></div>
       </div>
     </div>
@@ -675,7 +674,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
     <div class="ws-section">
       <h3 class="ws-h">Zonenverteilung</h3>
       <div class="zone-collage" style="margin:0;border:none;padding:0;background:none;">
-        <div class="zc-g" id="zc-grid"></div>
+        <div class="zc-g" id="zc-grid" style="grid-template-columns:repeat(3,1fr);gap:3px;height:280px;max-width:none;"></div>
         <div class="zc-f">
           <span id="zc-polar"></span>
           <span class="zc-tot" id="zc-total"></span>
@@ -2705,7 +2704,8 @@ function renderWeekWorkloadCollage(days,loads,planLoads,meta,means,sds){
   if(!grid)return;
   const dayLabels=['Mo','Di','Mi','Do','Fr','Sa','So'];
   const maxVal=Math.max(...loads,...planLoads,1);
-  const BH=200,RES_BOT=22,RES_TOP=22,BAR_AREA=BH-RES_BOT-RES_TOP;
+  // Balken höher ausziehen + oben Platz für die mitwandernde Wertzahl.
+  const BH=260,RES_BOT=4,RES_TOP=20,BAR_AREA=BH-RES_BOT-RES_TOP;
   const todayIso=toISODate(new Date());
 
   grid.innerHTML=days.map((d,i)=>{
@@ -2720,7 +2720,7 @@ function renderWeekWorkloadCollage(days,loads,planLoads,meta,means,sds){
 
     if(val===0||!sport){
       return `<div class="wd-col">
-        <div class="wd-bar-area">${val===0?'':''}</div>
+        <div class="wd-bar-area"></div>
         <div class="wd-label${isToday?' wd-today':''}">${label}</div>
       </div>`;
     }
@@ -2728,16 +2728,18 @@ function renderWeekWorkloadCollage(days,loads,planLoads,meta,means,sds){
     const slug=sport.toLowerCase();
     const edgeColor=trendbandPointColor(actLoad,means[i],sds[i]);
     const sportColor=sportCfg(sport).color||'#888';
-    const planAttr=showPlan?'plan':'';
+    // Wertzahl sitzt direkt über der Balkenoberkante (wandert mit der Höhe mit).
+    // Farbcodierung (über/im/unter Ø) als schmale Kappe oben statt Rahmen-Kasten.
     return `<div class="wd-col">
-      <div class="wd-val-row"><span class="wd-val ${planAttr?'wd-plan-val':''}">${val}</span></div>
       <div class="wd-bar-area">
         <img src="img/sport-${slug}.jpg" alt="" class="wd-bar-img ${showPlan?'wd-plan':''}"
           style="bottom:${RES_BOT}px;height:${barH}px;">
         <div class="wd-bar-tint" style="bottom:${RES_BOT}px;height:${barH}px;
-          background:${sportColor};opacity:${showPlan?0.12:0.28};"></div>
-        <div class="wd-bar-frame ${showPlan?'wd-plan-edge':''}"
-          style="bottom:${RES_BOT}px;height:${barH}px;border-color:${edgeColor};"></div>
+          background:${sportColor};opacity:${showPlan?0.14:0.30};"></div>
+        <div class="wd-bar-cap ${showPlan?'wd-plan-cap':''}"
+          style="bottom:${RES_BOT+barH-3}px;background:${edgeColor};"></div>
+        <div class="wd-bar-val ${showPlan?'wd-plan-val':''}"
+          style="bottom:${RES_BOT+barH+4}px;">${val}</div>
       </div>
       <div class="wd-label${isToday?' wd-today':''}">${label}</div>
     </div>`;
@@ -2769,8 +2771,9 @@ function renderZoneCollage(zt,ztPlan,range){
   // Zusammengefasste Zonenwerte
   const z12=z.Z1+z.Z2, z34=z.Z3+z.Z4, z5=z.Z5;
   const maxVal=Math.max(z12,z34,z5,1);
-  const BH=240,RES_BOT=26,RES_TOP=28,BAR_AREA=BH-RES_BOT-RES_TOP;
-  const BAR_W_PCT=52; // % Balkenbreite (Mitte zentriert → je 24% Rand links/rechts)
+  // Höhe = Grid-Höhe (280px, .ab füllt 100%), damit clip-path-Pixel exakt passen.
+  const BH=280,RES_BOT=24,RES_TOP=22,BAR_AREA=BH-RES_BOT-RES_TOP;
+  const BAR_W_PCT=56; // % Balkenbreite (schmaler) → je 22% Rand links/rechts
   const fmt=m=>{const h=Math.floor(m/60),mm=m%60;return h>0?`${h}h ${mm}′`:`${mm}′`;};
 
   // Verlaufsfarben pro Block
