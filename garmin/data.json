@@ -597,6 +597,32 @@
         "score": null,
         "level": null
       }
+    },
+    "2026-07-04": {
+      "sleep": {
+        "score": null,
+        "durationH": null,
+        "deepH": null,
+        "remH": null,
+        "awakeH": null
+      },
+      "hrv": {
+        "lastNightAvg": null,
+        "status": null
+      },
+      "restingHR": null,
+      "bodyBattery": {
+        "high": null,
+        "low": null
+      },
+      "stress": {
+        "avg": null
+      },
+      "steps": null,
+      "trainingReadiness": {
+        "score": null,
+        "level": null
+      }
     }
   },
   "workouts": [
@@ -1360,5 +1386,5 @@
       "calories": 335.0
     }
   ],
-  "generated": "2026-07-03T12:27:26+00:00"
+  "generated": "2026-07-04T11:06:33+00:00"
 }
