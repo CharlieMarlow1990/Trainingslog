@@ -955,6 +955,10 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
       <button class="primary" id="garmin-import-btn"><i class="ti ti-cloud-download"></i> Garmin-Aktivit&#xE4;ten importieren</button>
       <span class="status" id="garmin-import-status"></span>
     </div>
+    <div class="row" style="margin-top:.6rem;">
+      <button class="ghost" id="garmin-backfill-btn"><i class="ti ti-history"></i> HF-Verlauf f&#xFC;r bestehende Garmin-Tage nachziehen</button>
+      <span class="status" id="garmin-backfill-status"></span>
+    </div>
   </div>
 
   <!-- Trainingsprofil -->
@@ -5801,42 +5805,48 @@ function mapGarminSport(typeKey){
   const key=GARMIN_SPORT_MAP[typeKey]||'Sonstiges';
   return (cfg.sports||[]).some(s=>s.key===key)?key:'Sonstiges';
 }
+async function fetchGarminByDate(){
+  const res=await fetch('garmin/data.json?_='+Date.now());
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  const data=await res.json();
+  const workouts=(data&&data.workouts)||[];
+  const byDate={};
+  workouts.forEach(w=>{if(w&&w.date){(byDate[w.date]=byDate[w.date]||[]).push(w);}});
+  return byDate;
+}
+// Baut die App-Session-Felder aus den (ggf. mehreren) Garmin-Aktivitäten eines
+// Tages — gemeinsam genutzt von Neu-Import und HF-Verlauf-Nachzug.
+function buildGarminSessionFields(date,acts){
+  const primary=acts.slice().sort((a,b)=>(b.durationMin||0)-(a.durationMin||0))[0];
+  const duration=acts.reduce((s,a)=>s+(a.durationMin||0),0)||1;
+  const hrActs=acts.filter(a=>a.avgHr);
+  const wsum=hrActs.reduce((s,a)=>s+(a.durationMin||1),0);
+  const hr_avg=hrActs.length?Math.round(hrActs.reduce((s,a)=>s+a.avgHr*(a.durationMin||1),0)/wsum):null;
+  const maxHrs=acts.map(a=>a.maxHr).filter(x=>x);
+  const distKm=Math.round(acts.reduce((s,a)=>s+(a.distanceKm||0),0)*100)/100||null;
+  const note='Garmin-Sync'+(acts.length>1?' ('+acts.map(a=>a.type).join(', ')+')':'');
+  return{date,duration,sport:mapGarminSport(primary.type),zone:'-',
+    title:primary.name||null,note,
+    hr_avg,hr_max:maxHrs.length?Math.max(...maxHrs):null,
+    hr_series:primary.hrSeries?JSON.stringify(primary.hrSeries):null,
+    distance_km:distKm,elevation_m:null,avg_pace:null,
+    avg_power_w:null,peak_power_w:null,normalized_power_w:null};
+}
 async function importGarminActivities(){
   const btn=document.getElementById('garmin-import-btn');
   const st=document.getElementById('garmin-import-status');
   const orig=btn.innerHTML;btn.disabled=true;btn.textContent='Lade…';st.textContent='';
   try{
-    let data;
-    try{
-      const res=await fetch('garmin/data.json?_='+Date.now());
-      if(!res.ok)throw new Error('HTTP '+res.status);
-      data=await res.json();
-    }catch(e){st.textContent='garmin/data.json nicht gefunden ('+e.message+').';return;}
-    const workouts=(data&&data.workouts)||[];
-    if(!workouts.length){st.textContent='Keine Aktivitäten im Sync gefunden.';return;}
-    // Pro Tag aggregieren
-    const byDate={};
-    workouts.forEach(w=>{if(w&&w.date){(byDate[w.date]=byDate[w.date]||[]).push(w);}});
+    let byDate;
+    try{byDate=await fetchGarminByDate();}
+    catch(e){st.textContent='garmin/data.json nicht gefunden ('+e.message+').';return;}
+    if(!Object.keys(byDate).length){st.textContent='Keine Aktivitäten im Sync gefunden.';return;}
     const existing=new Set(sessions.map(s=>s.date));
     const rows=[];let skipped=0;
     Object.keys(byDate).sort().forEach(date=>{
       if(existing.has(date)){skipped++;return;}
-      const acts=byDate[date];
-      const primary=acts.slice().sort((a,b)=>(b.durationMin||0)-(a.durationMin||0))[0];
-      const duration=acts.reduce((s,a)=>s+(a.durationMin||0),0)||1;
-      const hrActs=acts.filter(a=>a.avgHr);
-      const wsum=hrActs.reduce((s,a)=>s+(a.durationMin||1),0);
-      const hr_avg=hrActs.length?Math.round(hrActs.reduce((s,a)=>s+a.avgHr*(a.durationMin||1),0)/wsum):null;
-      const maxHrs=acts.map(a=>a.maxHr).filter(x=>x);
-      const distKm=Math.round(acts.reduce((s,a)=>s+(a.distanceKm||0),0)*100)/100||null;
-      const note='Garmin-Sync'+(acts.length>1?' ('+acts.map(a=>a.type).join(', ')+')':'');
       // Spalten exakt wie beim regulären saveSession (Schema-treu)
-      const session={date,duration,sport:mapGarminSport(primary.type),zone:'-',
-        title:primary.name||null,note,
-        hr_avg,hr_max:maxHrs.length?Math.max(...maxHrs):null,
-        hr_series:primary.hrSeries?JSON.stringify(primary.hrSeries):null,
-        distance_km:distKm,elevation_m:null,avg_pace:null,
-        avg_power_w:null,peak_power_w:null,normalized_power_w:null,
+      const session={...buildGarminSessionFields(date,byDate[date]),
         user_id:currentUser.id,srpe:null,workload:null,workload_method:null};
       const wl=berechneWorkload(session);
       if(wl.value!=null){session.workload=wl.value;session.workload_method=wl.method;
@@ -5852,7 +5862,40 @@ async function importGarminActivities(){
   }catch(e){setSyncState('error');st.textContent='Fehler: '+(e.message||e);}
   finally{btn.disabled=false;btn.innerHTML=orig;}
 }
+// Ergänzt HF-Verlauf (hr_series) bei bereits importierten Garmin-Sync-Tagen, die
+// noch keinen haben (z.B. weil sie vor dem HF-Verlauf-Fix synchronisiert wurden).
+// Rührt nur Sessions an, deren Notiz mit "Garmin-Sync" beginnt — manuell erfasste
+// oder per FIT/GPX hochgeladene Einheiten bleiben unangetastet.
+async function backfillGarminHrSeries(){
+  const btn=document.getElementById('garmin-backfill-btn');
+  const st=document.getElementById('garmin-backfill-status');
+  const orig=btn.innerHTML;btn.disabled=true;btn.textContent='Lade…';st.textContent='';
+  try{
+    let byDate;
+    try{byDate=await fetchGarminByDate();}
+    catch(e){st.textContent='garmin/data.json nicht gefunden ('+e.message+').';return;}
+    const candidates=sessions.filter(s=>s.note&&s.note.startsWith('Garmin-Sync')&&!s.hr_series&&byDate[s.date]);
+    if(!candidates.length){st.textContent='Keine Garmin-Tage ohne HF-Verlauf gefunden.';return;}
+    let updated=0;
+    for(const s of candidates){
+      const fields=buildGarminSessionFields(s.date,byDate[s.date]);
+      if(!fields.hr_series)continue;
+      const patch={hr_series:fields.hr_series,hr_avg:fields.hr_avg??s.hr_avg,hr_max:fields.hr_max??s.hr_max};
+      const wl=berechneWorkload({...s,...patch});
+      if(wl.value!=null){patch.workload=wl.value;patch.workload_method=wl.method;
+        if(wl.method==='tss'){patch.tss=wl.tss;patch.intensity_factor=wl.intensityFactor;}}
+      const updatedSession=await DB.updateSession(s.id,patch);
+      const idx=sessions.findIndex(x=>x.id===s.id);
+      if(idx!==-1)sessions[idx]=updatedSession;
+      updated++;
+    }
+    st.textContent=updated?`✓ ${updated} Tag(e) mit HF-Verlauf ergänzt.`:'Keine passenden Aktivitäten mit HF-Verlauf gefunden.';
+    renderLog();
+  }catch(e){st.textContent='Fehler: '+(e.message||e);}
+  finally{btn.disabled=false;btn.innerHTML=orig;}
+}
 document.getElementById('garmin-import-btn')?.addEventListener('click',importGarminActivities);
+document.getElementById('garmin-backfill-btn')?.addEventListener('click',backfillGarminHrSeries);
 
 // Ordner verbinden (User-Geste)
 async function wfConnect(){
