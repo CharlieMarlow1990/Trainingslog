@@ -28,7 +28,9 @@ import base64
 import datetime as dt
 import json
 import os
+import random
 import sys
+import time
 
 def _Garmin():
     """Importiert die Bibliothek erst bei Bedarf (so klappt --help auch ohne Installation)."""
@@ -90,13 +92,41 @@ def connect_with_token():
 
 
 # ── Kleine, robuste Helfer ──────────────────────────────────────────────────
+# Drosselung + Retry/Backoff: der Sync macht inzwischen pro Aktivität einen
+# zusätzlichen Detail-Call (HF-Verlauf) — ohne Pause zwischen den Requests und
+# Rückversuche bei 429 droht Garmin die IP zu drosseln (siehe do_auth()).
+REQUEST_DELAY = float(os.environ.get("GARMIN_REQUEST_DELAY", "0.4"))  # Sek. Pause nach jedem Call
+MAX_RETRIES = int(os.environ.get("GARMIN_MAX_RETRIES", "4"))
+BACKOFF_BASE = float(os.environ.get("GARMIN_BACKOFF_BASE", "2.0"))    # Sek., verdoppelt sich je Versuch
+
+
+def _is_rate_limited(exc):
+    msg = str(exc).lower()
+    return "429" in msg or "too many" in msg or "rate limit" in msg
+
+
 def safe(fn, *args):
-    """Ruft eine Garmin-Methode auf; gibt None statt einer Exception zurück."""
-    try:
-        return fn(*args)
-    except Exception as e:  # noqa: BLE001 — ein fehlendes Feld darf den Lauf nicht abbrechen
-        print(f"  · {getattr(fn, '__name__', fn)} übersprungen ({e})")
-        return None
+    """Ruft eine Garmin-Methode auf: drosselt zwischen Aufrufen und versucht
+    bei 429/Rate-Limit mit exponentiellem Backoff (+ Jitter) erneut. Gibt am
+    Ende None statt einer Exception zurück, statt den ganzen Lauf abzubrechen."""
+    last_exc = None
+    for attempt in range(MAX_RETRIES + 1):
+        try:
+            result = fn(*args)
+            if REQUEST_DELAY > 0:
+                time.sleep(REQUEST_DELAY)
+            return result
+        except Exception as e:  # noqa: BLE001 — ein fehlendes Feld darf den Lauf nicht abbrechen
+            last_exc = e
+            if _is_rate_limited(e) and attempt < MAX_RETRIES:
+                wait = BACKOFF_BASE * (2 ** attempt) + random.uniform(0, 1)
+                print(f"  · {getattr(fn, '__name__', fn)}: gedrosselt (429), warte {wait:.1f}s "
+                      f"(Versuch {attempt + 1}/{MAX_RETRIES}) …")
+                time.sleep(wait)
+                continue
+            break
+    print(f"  · {getattr(fn, '__name__', fn)} übersprungen ({last_exc})")
+    return None
 
 
 def g(d, *keys, default=None):
