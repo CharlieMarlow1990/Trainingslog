@@ -574,58 +574,95 @@
     },
     "2026-07-03": {
       "sleep": {
-        "score": null,
-        "durationH": null,
-        "deepH": null,
-        "remH": null,
-        "awakeH": null
+        "score": 83,
+        "durationH": 7.9,
+        "deepH": 1.1,
+        "remH": 1.1,
+        "awakeH": 0.2
       },
       "hrv": {
-        "lastNightAvg": null,
-        "status": null
+        "lastNightAvg": 82,
+        "status": "NONE"
       },
-      "restingHR": null,
+      "restingHR": 45.0,
       "bodyBattery": {
-        "high": null,
-        "low": null
+        "high": 92,
+        "low": 23
       },
       "stress": {
-        "avg": null
+        "avg": 28
       },
-      "steps": null,
+      "steps": 3959,
       "trainingReadiness": {
-        "score": null,
-        "level": null
+        "score": 87,
+        "level": "HIGH"
       }
     },
     "2026-07-04": {
       "sleep": {
-        "score": null,
-        "durationH": null,
-        "deepH": null,
-        "remH": null,
-        "awakeH": null
+        "score": 73,
+        "durationH": 5.8,
+        "deepH": 0.9,
+        "remH": 1.2,
+        "awakeH": 0.0
       },
       "hrv": {
-        "lastNightAvg": null,
-        "status": null
+        "lastNightAvg": 87,
+        "status": "NONE"
       },
-      "restingHR": null,
+      "restingHR": 44.0,
       "bodyBattery": {
-        "high": null,
-        "low": null
+        "high": 85,
+        "low": 7
       },
       "stress": {
-        "avg": null
+        "avg": 36
       },
-      "steps": null,
+      "steps": 9653,
       "trainingReadiness": {
-        "score": null,
-        "level": null
+        "score": 74,
+        "level": "MODERATE"
+      }
+    },
+    "2026-07-05": {
+      "sleep": {
+        "score": 73,
+        "durationH": 9.8,
+        "deepH": 1.1,
+        "remH": 2.1,
+        "awakeH": 1.0
+      },
+      "hrv": {
+        "lastNightAvg": 83,
+        "status": "BALANCED"
+      },
+      "restingHR": 44.0,
+      "bodyBattery": {
+        "high": 87,
+        "low": 12
+      },
+      "stress": {
+        "avg": 20
+      },
+      "steps": 5604,
+      "trainingReadiness": {
+        "score": 83,
+        "level": "HIGH"
       }
     }
   },
   "workouts": [
+    {
+      "id": 23492107506,
+      "date": "2026-07-05",
+      "type": "virtual_ride",
+      "name": "Zwift - Aerobic Foundation Marathon",
+      "durationMin": 86,
+      "avgHr": 117.0,
+      "maxHr": 136.0,
+      "distanceKm": 31.95,
+      "calories": 609.0
+    },
     {
       "id": 23429424256,
       "date": "2026-06-30",
@@ -1386,5 +1423,5 @@
       "calories": 335.0
     }
   ],
-  "generated": "2026-07-04T11:06:33+00:00"
+  "generated": "2026-07-05T20:10:46+00:00"
 }
