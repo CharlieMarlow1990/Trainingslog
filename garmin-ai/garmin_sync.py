@@ -192,14 +192,58 @@ def collect_day(api, date):
     return iso, day
 
 
+def _hr_series(details):
+    """Wandelt die Antwort von get_activity_details() in [{hr, sec}, …] um —
+    dasselbe Format, das der clientseitige FIT/GPX-Parser erzeugt (hr =
+    Herzfrequenz, sec = Dauer dieses Abschnitts in Sekunden seit dem
+    vorherigen Punkt). Gibt None zurück, wenn kein HF-Kanal vorhanden ist."""
+    if not isinstance(details, dict):
+        return None
+    descriptors = details.get("metricDescriptors") or []
+    rows = details.get("activityDetailMetrics") or []
+    if not descriptors or not rows:
+        return None
+    hr_idx = ts_idx = None
+    for d in descriptors:
+        key = (d.get("key") or "")
+        idx = d.get("metricsIndex")
+        if key == "directHeartRate" or (hr_idx is None and "eartRate" in key):
+            hr_idx = idx
+        if key == "directTimestamp" or (ts_idx is None and "imestamp" in key):
+            ts_idx = idx
+    if hr_idx is None:
+        return None
+    points = []
+    for row in rows:
+        metrics = row.get("metrics") or []
+        if hr_idx >= len(metrics):
+            continue
+        hr = metrics[hr_idx]
+        ts = metrics[ts_idx] if ts_idx is not None and ts_idx < len(metrics) else None
+        if hr is None or hr <= 0:
+            continue
+        points.append((ts, hr))
+    if len(points) < 2:
+        return None
+    series = []
+    prev_ts = points[0][0]
+    for ts, hr in points[1:]:
+        sec = round((ts - prev_ts) / 1000) if ts is not None and prev_ts is not None else 1
+        series.append({"hr": round(hr), "sec": max(1, sec)})
+        prev_ts = ts
+    return series or None
+
+
 def collect_workouts(api, start, end):
     print(f"→ Workouts {start} … {end}")
     acts = safe(api.get_activities_by_date, start.isoformat(), end.isoformat()) or []
     out = []
     for a in acts:
         dur_s = a.get("duration") or 0
+        activity_id = a.get("activityId")
+        details = safe(api.get_activity_details, activity_id) if activity_id else None
         out.append({
-            "id": a.get("activityId"),
+            "id": activity_id,
             "date": (a.get("startTimeLocal") or "")[:10],
             "type": g(a, "activityType", "typeKey") or "unbekannt",
             "name": a.get("activityName"),
@@ -208,6 +252,7 @@ def collect_workouts(api, start, end):
             "maxHr": a.get("maxHR"),
             "distanceKm": round((a.get("distance") or 0) / 1000, 2) if a.get("distance") else None,
             "calories": a.get("calories"),
+            "hrSeries": _hr_series(details),
         })
     return out
 
