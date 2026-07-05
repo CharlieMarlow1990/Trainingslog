@@ -5834,6 +5834,7 @@ async function importGarminActivities(){
       const session={date,duration,sport:mapGarminSport(primary.type),zone:'-',
         title:primary.name||null,note,
         hr_avg,hr_max:maxHrs.length?Math.max(...maxHrs):null,
+        hr_series:primary.hrSeries?JSON.stringify(primary.hrSeries):null,
         distance_km:distKm,elevation_m:null,avg_pace:null,
         avg_power_w:null,peak_power_w:null,normalized_power_w:null,
         user_id:currentUser.id,srpe:null,workload:null,workload_method:null};
