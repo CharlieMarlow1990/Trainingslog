@@ -469,7 +469,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
    Block-Hintergrund bleibt papierfarben neutral. */
 .zone-collage{background:var(--glass-bg);color:var(--text);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border:1px solid var(--glass-border);border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);padding:1.1rem 1.25rem;margin:1rem 0;}
 /* Gemeinsamer Wochen-Rahmen (Log-Seite) */
-.week-summary{background:var(--glass-bg);color:var(--text);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border:1px solid var(--glass-border);border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);padding:1.1rem 1.25rem 1.3rem;margin:1rem 0;}.ws-nav{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:0.5px solid var(--border);}
+.week-summary{background:var(--glass-bg);color:var(--text);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border:1px solid var(--glass-border);border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);padding:1.1rem 1.25rem 1.3rem;margin:1rem 0;}.ws-nav{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:0.5px solid var(--border);position:sticky;top:0;z-index:5;background:var(--glass-bg);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);margin-left:-1.25rem;margin-right:-1.25rem;padding-left:1.25rem;padding-right:1.25rem;padding-top:.2rem;}
 .ws-title{font-weight:500;font-size:1rem;color:var(--text);text-align:center;flex:1;}
 .ws-nav .icon{background:rgba(44,44,42,.06);border:none;color:var(--text);width:34px;height:34px;border-radius:8px;font-size:1.1rem;cursor:pointer;flex-shrink:0;}
 .ws-nav .icon:hover{background:rgba(44,44,42,.12);}
@@ -1252,13 +1252,20 @@ const DB={
     else{await sb.from('training_profile').insert([{user_id:currentUser.id,content}]);}
   },
   async getConfig(){
-    const{data}=await sb.from('user_config').select('content').eq('user_id',currentUser.id).maybeSingle();
+    const{data,error}=await sb.from('user_config').select('content').eq('user_id',currentUser.id).maybeSingle();
+    if(error){console.warn('DB.getConfig:',error.message);return null;}
     return data?.content||null;
   },
   async saveConfig(content){
-    const{data}=await sb.from('user_config').select('user_id').eq('user_id',currentUser.id).maybeSingle();
-    if(data){await sb.from('user_config').update({content,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id);}
-    else{await sb.from('user_config').insert([{user_id:currentUser.id,content}]);}
+    const{data,error:selErr}=await sb.from('user_config').select('user_id').eq('user_id',currentUser.id).maybeSingle();
+    if(selErr){console.warn('DB.saveConfig (select):',selErr.message);return;}
+    if(data){
+      const{error}=await sb.from('user_config').update({content,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id);
+      if(error)console.warn('DB.saveConfig (update):',error.message);
+    }else{
+      const{error}=await sb.from('user_config').insert([{user_id:currentUser.id,content}]);
+      if(error)console.warn('DB.saveConfig (insert):',error.message);
+    }
   },
   async uploadIcon(sportKey,file){
     const ext=file.name.split('.').pop();
@@ -3042,18 +3049,18 @@ function renderSportRose(ws,range){
   // Mittelwinkel versetzt, große zuerst (unten), kleine zuletzt (oben) gezeichnet.
   // Geringer Offset + höhere Deckkraft, damit die Blobs als ein zusammenhängender,
   // zentrierter Glow wirken statt als einzelne Flecken am Rand.
-  const BLOB_MIN=54,BLOB_MAX=108,BLOB_OFFSET=10;
+  const BLOB_MIN=54,BLOB_MAX=108,BLOB_OFFSET=0;
   const blobEls=[...segs].sort((a,b)=>b.share-a.share).map(seg=>{
     const r=BLOB_MIN+(BLOB_MAX-BLOB_MIN)*Math.sqrt(seg.share);
     const ox=segs.length>1?BLOB_OFFSET*Math.cos(seg.midA):0;
     const oy=segs.length>1?BLOB_OFFSET*Math.sin(seg.midA):0;
-    return `<circle cx="${(cx+ox).toFixed(1)}" cy="${(cy+oy).toFixed(1)}" r="${r.toFixed(1)}" fill="${seg.color}" fill-opacity="0.85"/>`;
+    return `<circle cx="${(cx+ox).toFixed(1)}" cy="${(cy+oy).toFixed(1)}" r="${r.toFixed(1)}" fill="${seg.color}" fill-opacity="0.9"/>`;
   }).join('');
 
   // Ebene 2: klassisches Kreisdiagramm, keine Beschriftung — Weichzeichnung und
-  // Verzerrung entstehen rein über den Filter der umschließenden <g>. Kleine
+  // Verzerrung entstehen rein über den Filter der umschließenden <g>. Deutliche
   // Winkel-Lücke zwischen den Segmenten für die Ring-Optik (nicht bei nur 1 Segment).
-  const GAP_RAD=0.06;
+  const GAP_RAD=0.12;
   const wedgeEls=segs.map(seg=>{
     let{startA,endA}=seg;
     if(segs.length>1&&(endA-startA)>GAP_RAD*1.5){
