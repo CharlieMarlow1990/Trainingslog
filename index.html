@@ -1251,6 +1251,15 @@ const DB={
     if(data){await sb.from('training_profile').update({content,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id);}
     else{await sb.from('training_profile').insert([{user_id:currentUser.id,content}]);}
   },
+  async getConfig(){
+    const{data}=await sb.from('user_config').select('content').eq('user_id',currentUser.id).maybeSingle();
+    return data?.content||null;
+  },
+  async saveConfig(content){
+    const{data}=await sb.from('user_config').select('user_id').eq('user_id',currentUser.id).maybeSingle();
+    if(data){await sb.from('user_config').update({content,updated_at:new Date().toISOString()}).eq('user_id',currentUser.id);}
+    else{await sb.from('user_config').insert([{user_id:currentUser.id,content}]);}
+  },
   async uploadIcon(sportKey,file){
     const ext=file.name.split('.').pop();
     const path=`${currentUser.id}/${sportKey}.${ext}`;
@@ -1402,7 +1411,10 @@ function loadCfg(){
     }
   }catch(e){}
 }
-function saveCfg(){localStorage.setItem('tlog_cfg',JSON.stringify(cfg));}
+function saveCfg(){
+  localStorage.setItem('tlog_cfg',JSON.stringify(cfg));
+  if(currentUser)DB.saveConfig(cfg).catch(e=>console.warn('saveConfig:',e));
+}
 function isSportFreitext(key){
   const s=cfg.sports.find(x=>x.key===key);
   if(s&&typeof s.freitext==='boolean')return s.freitext;
@@ -2663,7 +2675,10 @@ function goToWeek(delta){
   weekOffset+=delta;
   renderLog();
   const el=document.querySelector('.week-summary');
-  if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+  if(el){
+    const top=el.getBoundingClientRect().top+window.scrollY-16;
+    window.scrollTo({top,behavior:'smooth'});
+  }
 }
 document.getElementById('t-prev').addEventListener('click',()=>goToWeek(-1));
 document.getElementById('t-next').addEventListener('click',()=>goToWeek(1));
@@ -3025,17 +3040,27 @@ function renderSportRose(ws,range){
 
   // Ebene 1: Blobs — Radius flächenproportional (sqrt), leicht Richtung Segment-
   // Mittelwinkel versetzt, große zuerst (unten), kleine zuletzt (oben) gezeichnet.
-  const BLOB_MIN=54,BLOB_MAX=100,BLOB_OFFSET=20;
+  // Geringer Offset + höhere Deckkraft, damit die Blobs als ein zusammenhängender,
+  // zentrierter Glow wirken statt als einzelne Flecken am Rand.
+  const BLOB_MIN=54,BLOB_MAX=108,BLOB_OFFSET=10;
   const blobEls=[...segs].sort((a,b)=>b.share-a.share).map(seg=>{
     const r=BLOB_MIN+(BLOB_MAX-BLOB_MIN)*Math.sqrt(seg.share);
     const ox=segs.length>1?BLOB_OFFSET*Math.cos(seg.midA):0;
     const oy=segs.length>1?BLOB_OFFSET*Math.sin(seg.midA):0;
-    return `<circle cx="${(cx+ox).toFixed(1)}" cy="${(cy+oy).toFixed(1)}" r="${r.toFixed(1)}" fill="${seg.color}" fill-opacity="0.78"/>`;
+    return `<circle cx="${(cx+ox).toFixed(1)}" cy="${(cy+oy).toFixed(1)}" r="${r.toFixed(1)}" fill="${seg.color}" fill-opacity="0.85"/>`;
   }).join('');
 
   // Ebene 2: klassisches Kreisdiagramm, keine Beschriftung — Weichzeichnung und
-  // Verzerrung entstehen rein über den Filter der umschließenden <g>.
-  const wedgeEls=segs.map(seg=>`<path d="${wedgePath(cx,cy,R,seg.startA,seg.endA)}" fill="${seg.color}"/>`).join('');
+  // Verzerrung entstehen rein über den Filter der umschließenden <g>. Kleine
+  // Winkel-Lücke zwischen den Segmenten für die Ring-Optik (nicht bei nur 1 Segment).
+  const GAP_RAD=0.06;
+  const wedgeEls=segs.map(seg=>{
+    let{startA,endA}=seg;
+    if(segs.length>1&&(endA-startA)>GAP_RAD*1.5){
+      startA+=GAP_RAD/2;endA-=GAP_RAD/2;
+    }
+    return `<path d="${wedgePath(cx,cy,R,startA,endA)}" fill="${seg.color}"/>`;
+  }).join('');
 
   const defs=`<defs>
     <filter id="sr-blob-blur" x="-80%" y="-80%" width="260%" height="260%">
@@ -5983,8 +6008,15 @@ async function showApp(user){
   document.getElementById('user-name').textContent=meta.user_name||meta.name||user.email||'';
   const av=document.getElementById('user-avatar');if(meta.avatar_url){av.src=meta.avatar_url;av.style.display='';}
   setSyncState('syncing');
-  [sessions,trainingProfile,templates]=await Promise.all([DB.getSessions(),DB.getProfile(),DB.getTemplates().catch(()=>[])]);
+  let remoteCfg=null;
+  [sessions,trainingProfile,templates,remoteCfg]=await Promise.all([DB.getSessions(),DB.getProfile(),DB.getTemplates().catch(()=>[]),DB.getConfig().catch(()=>null)]);
   setSyncState('ok');
+  if(remoteCfg){
+    Object.assign(cfg,remoteCfg);
+    localStorage.setItem('tlog_cfg',JSON.stringify(cfg));
+  }else{
+    DB.saveConfig(cfg).catch(e=>console.warn('saveConfig bootstrap:',e));
+  }
   document.getElementById('profile-content').value=trainingProfile;
   populateSelects();updateNoteLabel();
   initQuickNote();
