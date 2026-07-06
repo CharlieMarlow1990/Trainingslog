@@ -722,37 +722,10 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
     <div class="metrics metrics-3" id="log-acwr-cards"></div>
 
     <div class="ws-section">
-      <h3 class="ws-h"><i class="ti ti-chart-bar"></i> Wochen-Workload</h3>
-      <div class="zone-collage" style="margin:0;border:none;padding:0;background:none;box-shadow:none;border-radius:0;backdrop-filter:none;-webkit-backdrop-filter:none;">
-        <div class="zc-g" id="log-week-grid" style="grid-template-columns:repeat(7,1fr);gap:3px;height:280px;max-width:none;"></div>
-        <div id="log-week-chart-legend" style="font-size:.7rem;color:var(--text-muted);margin-top:.6rem;display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;"></div>
-      </div>
-    </div>
-
-    <div class="ws-section">
-      <h3 class="ws-h">Zonenverteilung</h3>
-      <div class="zone-collage" style="margin:0;border:none;padding:0;background:none;box-shadow:none;border-radius:0;backdrop-filter:none;-webkit-backdrop-filter:none;">
-        <div class="zc-g" id="zc-grid" style="grid-template-columns:repeat(3,1fr);gap:3px;height:280px;max-width:none;"></div>
-        <div class="zc-f">
-          <span id="zc-polar"></span>
-          <span class="zc-tot" id="zc-total"></span>
-          <span id="zc-status"></span>
-        </div>
-      </div>
-    </div>
-
-    <div class="ws-section">
-      <h3 class="ws-h">Sportarten</h3>
-      <div class="sport-rose" style="margin:0;border:none;padding:0;background:none;box-shadow:none;border-radius:0;backdrop-filter:none;-webkit-backdrop-filter:none;">
-        <div class="sr-body">
-          <div class="sr-svg-wrap"><svg id="sr-svg" viewBox="0 0 240 240"></svg></div>
-          <div class="sr-legend" id="sr-legend"></div>
-        </div>
-        <div class="sr-f">
-          <span class="sr-axes">Zeit pro Sportart</span>
-          <span class="sr-tot" id="sr-total"></span>
-        </div>
-      </div>
+      <h3 class="ws-h"><i class="ti ti-git-compare"></i> Wochenvergleich</h3>
+      <div id="weekly-growth-cards" class="metrics metrics-3" style="margin-bottom:.9rem;"></div>
+      <div class="workload-chart-box wlc-paper" style="height:200px;"><svg id="weekly-compare-chart" width="100%" height="100%"></svg></div>
+      <div id="weekly-compare-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
     </div>
   </div>
   <div class="card">
@@ -831,12 +804,6 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
         </div>
         <div class="workload-chart-box chart-dark" style="height:180px;"><canvas id="weekly-detail-chart"></canvas></div>
       </div>
-    </div>
-    <div class="card" style="margin-top:1rem;">
-      <h2><i class="ti ti-git-compare"></i> Wochenvergleich</h2>
-      <div id="weekly-growth-cards" class="metrics metrics-3" style="margin-bottom:.9rem;"></div>
-      <div class="workload-chart-box wlc-paper" style="height:200px;"><svg id="weekly-compare-chart" width="100%" height="100%"></svg></div>
-      <div id="weekly-compare-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
     </div>
     <div class="card" style="margin-top:1rem;">
       <h2><i class="ti ti-wave-sine"></i> Belastungsverteilung</h2>
@@ -2416,8 +2383,13 @@ function plannedSessions(){return sessions.filter(s=>isPlanned(s));}
 // Geplante Einheit: planned=true (boolean) ODER planned===1 (smallint-Fallback).
 // Eine geplante Einheit fließt NICHT in Ist-Auswertungen ein, wird aber visuell sichtbar gemacht.
 function isPlanned(s){return!!(s&&(s.planned===true||s.planned===1));}
-function actualSessions(){return sessions.filter(s=>!isPlanned(s));}
-function plannedSessions(){return sessions.filter(s=>isPlanned(s));}
+// Sondereintrag: Krankheit/Verletzung/Sonstiges statt einer Trainingseinheit.
+// Fließt nie in Workload-/ACWR-/Steigerungs-Statistiken ein.
+function isSpecialEntry(s){return!!(s&&s.category&&s.category!=='training');}
+const SPECIAL_CATEGORIES={illness:{label:'Krankheit',icon:'ti-thermometer',color:'#c4332e'},injury:{label:'Verletzung',icon:'ti-bandage',color:'#c4332e'},other:{label:'Sonstiges',icon:'ti-alert-circle',color:'#c4332e'}};
+function actualSessions(){return sessions.filter(s=>!isPlanned(s)&&!isSpecialEntry(s));}
+function plannedSessions(){return sessions.filter(s=>isPlanned(s)&&!isSpecialEntry(s));}
+function specialSessions(){return sessions.filter(isSpecialEntry);}
 
 function updateNoteLabel(){
   const sport=document.getElementById('t-sport').value;
@@ -2686,11 +2658,6 @@ document.getElementById('t-add').addEventListener('click',saveSession);
 function goToWeek(delta){
   weekOffset+=delta;
   renderLog();
-  const el=document.querySelector('.week-summary');
-  if(el){
-    const top=el.getBoundingClientRect().top+window.scrollY-16;
-    window.scrollTo({top,behavior:'smooth'});
-  }
 }
 document.getElementById('t-prev').addEventListener('click',()=>goToWeek(-1));
 document.getElementById('t-next').addEventListener('click',()=>goToWeek(1));
@@ -2803,6 +2770,14 @@ function buildDetailHTML(s){
   <div class="detail-field" style="margin-bottom:.65rem;"><label>${isFrei?'&#xDC;bungen':'Notiz'}</label>
     <textarea class="ed-note${isKraft?' note-expanded':''}" data-id="${s.id}" rows="${isKraft?6:2}">${esc(s.note||'')}</textarea>
     ${noteHistoryHTML}
+  </div>
+  <div class="detail-field" style="margin-bottom:.65rem;"><label>Anmerkungen</label>
+    <textarea class="ed-feedback" data-id="${s.id}" rows="2" placeholder="Wie war die Einheit? Knie zieht links, gut erholt, Pace leichter als erwartet …">${esc(s.feedback||'')}</textarea>
+    <div class="row" style="margin-top:.3rem;">
+      <button class="ghost ed-feedback-btn" data-id="${s.id}" style="padding:.2rem .55rem;font-size:.75rem;">Anmerkung speichern</button>
+      <span class="status feedback-status-${s.id}"></span>
+    </div>
+    ${s.feedback_hint?`<div class="feedback-hint-box" style="margin-top:.4rem;">${esc(s.feedback_hint)}</div>`:''}
   </div>
   ${workloadSection}
   ${powerSection}
@@ -3117,7 +3092,7 @@ function renderLog(){
   const tag=weekOffset===0?'<span class="current-tag">aktuelle Woche</span>':'';
   document.getElementById('t-weeklabel').innerHTML=fmtDate(range.start)+' – '+fmtDate(range.end)+tag;
   // Ist-Sessions (absolviert) und Soll-Sessions (geplant) für die Woche trennen
-  const allWS=sessions.filter(s=>inRange(s.date,range)).sort((a,b)=>a.date.localeCompare(b.date));
+  const allWS=sessions.filter(s=>inRange(s.date,range)&&!isSpecialEntry(s)).sort((a,b)=>a.date.localeCompare(b.date));
   const ws=allWS.filter(s=>!isPlanned(s));     // nur absolvierte → geht in alle Statistiken
   const wsPlanned=allWS.filter(s=>isPlanned(s)); // geplante → nur zur Anzeige als Soll
   const totalMin=ws.reduce((sum,s)=>sum+s.duration,0);
@@ -3140,60 +3115,8 @@ function renderLog(){
   // ── ACWR-Cards (gemeinsam mit Auswertungsseite) ────────────────────────────
   document.getElementById('log-acwr-cards').innerHTML=acwrCardsHTML(computeAcwrStats());
 
-  // ── Wochen-Workload-Chart, farbcodiert relativ zum Trend (Ø ±1 SD, 14 Tage) ─
-  const wlCalcStart=new Date(range.start);wlCalcStart.setDate(wlCalcStart.getDate()-(TRENDBAND_WINDOW+TRENDBAND_GAP_RESET));
-  const wlDays=[],wlLoads=[],wlPlanLoads=[],wlMeta=[];
-  for(let d=new Date(wlCalcStart);d<=range.end;d.setDate(d.getDate()+1)){
-    const iso=toISODate(d);
-    const dayAll=sessions.filter(s=>s.date===iso);
-    const dayActual=dayAll.filter(s=>!isPlanned(s));
-    const dayPlan=dayAll.filter(s=>isPlanned(s));
-    const actVals=dayActual.map(s=>berechneWorkload(s).value).filter(v=>v!=null);
-    const plnVals=dayPlan.map(s=>berechneWorkload(s).value).filter(v=>v!=null);
-    wlDays.push(new Date(d));
-    wlLoads.push(actVals.length>0?Math.round(actVals.reduce((a,b)=>a+b,0)):0);
-    wlPlanLoads.push(plnVals.length>0?Math.round(plnVals.reduce((a,b)=>a+b,0)):0);
-    wlMeta.push(dayAll.length>0?{
-      types:[...new Set(dayActual.map(s=>sportCfg(s.sport).label||s.sport))].join(', '),
-      planTypes:[...new Set(dayPlan.map(s=>sportCfg(s.sport).label||s.sport))].join(', '),
-      totalMin:dayActual.reduce((a,s)=>a+(s.duration||0),0),
-      // dominante Sportart (nach Dauer) für Bild-Hintergrund
-      mainSport:(()=>{
-        const byT={};dayActual.forEach(s=>{byT[s.sport]=(byT[s.sport]||0)+(s.duration||0);});
-        const e=Object.entries(byT).sort((a,b)=>b[1]-a[1])[0];
-        return e?e[0]:null;
-      })(),
-      mainPlanSport:(()=>{
-        const byT={};dayPlan.forEach(s=>{byT[s.sport]=(byT[s.sport]||0)+(s.duration||0);});
-        const e=Object.entries(byT).sort((a,b)=>b[1]-a[1])[0];
-        return e?e[0]:null;
-      })()
-    }:null);
-  }
-  const wlTS=trainingStats(wlLoads);
-  const sliceStart=wlDays.length-7;
-  const viewDays=wlDays.slice(sliceStart),viewLoads=wlLoads.slice(sliceStart),viewMeta=wlMeta.slice(sliceStart);
-  const viewPlanLoads=wlPlanLoads.slice(sliceStart);
-  const viewMean=wlTS.mean.slice(sliceStart),viewSd=wlTS.sd.slice(sliceStart);
-  const dayLabels=['Mo','Di','Mi','Do','Fr','Sa','So'];
-  const hasPlanBars=viewPlanLoads.some(v=>v>0);
-
-  // Wochen-Workload als Bild-Collage rendern (Balken mit Sportart-Hintergrund)
-  renderWeekWorkloadCollage(viewDays,viewLoads,viewPlanLoads,viewMeta,viewMean,viewSd);
-
-  // Plan-Zonen und Plan-Sportarten separat aggregieren
-  const ztPlan={};cfg.zones.forEach(z=>{ztPlan[z.key]=0;});
-  wsPlanned.forEach(s=>{if(ztPlan[s.zone]!==undefined)ztPlan[s.zone]+=s.duration;});
-  const stPlan={};wsPlanned.forEach(s=>{stPlan[s.sport]=(stPlan[s.sport]||0)+s.duration;});
-  const hasPlanZones=Object.values(ztPlan).some(v=>v>0);
-  const hasPlanSports=Object.keys(stPlan).length>0;
-
-  const zcols=cfg.zones.map(z=>z.color);
-  // Zonenverteilung als Anatomie-Collage rendern
-  renderZoneCollage(zt,ztPlan,range);
-
-  // Sportart-Verteilung als Polar-Bar-Chart (Winkel=Zeit, Radius=Load)
-  renderSportRose(ws,range);
+  // ── Wochenvergleichs-Chart (ersetzt Wochen-Workload/Zonenverteilung/Sportarten-Collagen) ─
+  renderWeeklyTrendChart();
 
   const listEl=document.getElementById('t-list');
   // Trennung: zukünftige geplante Einheiten oben, vergangene/absolvierte unten
@@ -3267,35 +3190,50 @@ function renderLog(){
       setTimeout(()=>renderLog(),600);
     }catch(e){setSyncState('error');console.error(e);}
   }));
+  listEl.querySelectorAll('.ed-feedback-btn').forEach(btn=>btn.addEventListener('click',()=>{
+    const id=btn.getAttribute('data-id');
+    const s=sessions.find(x=>String(x.id)===String(id));if(!s)return;
+    const ta=listEl.querySelector(`.ed-feedback[data-id="${id}"]`);
+    const statusEl=listEl.querySelector(`.feedback-status-${id}`);
+    if(!ta||!statusEl)return;
+    saveFeedbackFor(s,ta.value.trim(),statusEl);
+  }));
 }
 
 // ── KALENDER ──────────────────────────────────────────────────────────────────
 function renderCalCell(cellDate,isOutside,weekMode){
   const iso=toISODate(cellDate);const entries=byDate(iso);
   const isToday=isSameDate(cellDate,new Date());
-  // Vergangene Tage können nicht mehr geplant werden (nur heute und Zukunft)
+  // Vergangene Tage können nicht mehr geplant werden (nur heute und Zukunft),
+  // Sondereinträge (Krankheit/Verletzung/Sonstiges) können aber auch rückwirkend erfasst werden.
   const isPast=cellDate<new Date()&&!isToday;
   const isEmpty=entries.length===0;
-  const cls='cal-cell'+(isOutside?' outside':'')+(isToday?' today':'')+(isEmpty&&!isOutside&&!isPast?' cal-cell-empty':'');
+  const canOpen=!isOutside&&isEmpty;
+  const cls='cal-cell'+(isOutside?' outside':'')+(isToday?' today':'')+(canOpen?' cal-cell-empty':'');
   const dayLabel=weekMode?cellDate.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'}):cellDate.getDate();
   const chips=entries.map(s=>{
+    const special=isSpecialEntry(s);
     const sc=sportCfg(s.sport);
     const planned=isPlanned(s);
     const needsDetail=s.sport==='Kraft'&&(!s.note||!s.note.trim())&&!planned;
-    const label=weekMode?(s.title||s.sport+(s.zone!=='-'?' · '+zoneCfg(s.zone).label:'')):s.sport;
-    const iconHTML=sc.imgUrl?`<img class="cal-chip-icon" src="${esc(sc.imgUrl)}" style="width:11px;height:11px;border-radius:2px;object-fit:cover;">`:`<span class="cal-chip-icon">${sportIconHTML(s.sport,11)}</span>`;
+    const cat=special?(SPECIAL_CATEGORIES[s.category]||SPECIAL_CATEGORIES.other):null;
+    const label=special?cat.label:(weekMode?(s.title||s.sport+(s.zone!=='-'?' · '+zoneCfg(s.zone).label:'')):s.sport);
+    const iconHTML=special?`<span class="cal-chip-icon"><i class="ti ${cat.icon}"></i></span>`:(sc.imgUrl?`<img class="cal-chip-icon" src="${esc(sc.imgUrl)}" style="width:11px;height:11px;border-radius:2px;object-fit:cover;">`:`<span class="cal-chip-icon">${sportIconHTML(s.sport,11)}</span>`);
     const warnDot=needsDetail?'<span class="cal-chip-warn" title="Details fehlen"></span>':'';
-    const chipStyle=planned
+    const chipStyle=special
+      ?`background:${cat.color}22;color:${cat.color};border:1px solid ${cat.color}99;`
+      :planned
       ?`background:transparent;color:${sc.color};border:1px dashed ${sc.color}99;opacity:.7;`
       :`background:${sc.color}22;color:${sc.color};`;
     const plannedTitle=planned?' (geplant)':'';
-    return`<span class="cal-chip${needsDetail?' needs-detail':''}${planned?' planned':''}" data-session-id="${s.id}" style="${chipStyle}" title="${esc(s.sport+plannedTitle+(s.note?': '+s.note:needsDetail?' — Details fehlen':''))}">
-      ${warnDot}${iconHTML}<span class="cal-chip-label">${esc(label)}</span><span class="cal-dur">${fmtMin(s.duration)}</span></span>`;
+    const titleText=special?(cat.label+(s.note?': '+s.note:'')):(s.sport+plannedTitle+(s.note?': '+s.note:needsDetail?' — Details fehlen':''));
+    return`<span class="cal-chip${needsDetail?' needs-detail':''}${planned?' planned':''}" data-session-id="${s.id}" style="${chipStyle}" title="${esc(titleText)}">
+      ${warnDot}${iconHTML}<span class="cal-chip-label">${esc(label)}</span>${special?'':`<span class="cal-dur">${fmtMin(s.duration)}</span>`}</span>`;
   }).join('');
-  // Plus-Icon für planbare leere Zellen (heute + Zukunft)
-  const plusBtn=isEmpty&&!isOutside&&!isPast
-    ?`<span class="cal-add-btn" data-date="${iso}" title="Einheit planen">+</span>`:'';
-  return`<div class="${cls}" ${isEmpty&&!isOutside&&!isPast?`data-date="${iso}"`:''}><span class="cal-daynum">${dayLabel}</span><div class="cal-entries">${chips}</div>${plusBtn}</div>`;
+  // Plus-Icon für leere Zellen: Zukunft/heute → Training planen ODER Sondereintrag, Vergangenheit → nur Sondereintrag
+  const plusBtn=canOpen
+    ?`<span class="cal-add-btn" data-date="${iso}" title="${isPast?'Sondereintrag erfassen':'Einheit planen'}">+</span>`:'';
+  return`<div class="${cls}" ${canOpen?`data-date="${iso}"`:''}><span class="cal-daynum">${dayLabel}</span><div class="cal-entries">${chips}</div>${plusBtn}</div>`;
 }
 function renderCalendar(){
   const container=document.getElementById('cal-container');
@@ -3388,136 +3326,196 @@ async function generateFeedbackHint(session,feedbackText){
   }catch(e){return null;}
 }
 
+// Speichert Feedback/Anmerkung einer Session und stößt die KI-Analyse an.
+// Wird sowohl vom Kalender-Modal als auch vom Log-Detailpanel genutzt.
+async function saveFeedbackFor(session,feedbackText,statusEl,onHintReady){
+  if(!feedbackText){
+    await DB.updateSession(session.id,{feedback:null,feedback_hint:null});
+    const idx=sessions.findIndex(s=>String(s.id)===String(session.id));
+    if(idx>=0){sessions[idx].feedback=null;sessions[idx].feedback_hint=null;}
+    statusEl.textContent='Gelöscht';
+    setTimeout(()=>{statusEl.textContent='';},1500);
+    renderLog();return;
+  }
+  statusEl.textContent='Speichern…';
+  setSyncState('syncing');
+  try{
+    // Feedback sofort speichern
+    await DB.updateSession(session.id,{feedback:feedbackText,feedback_hint:null});
+    const idx=sessions.findIndex(s=>String(s.id)===String(session.id));
+    if(idx>=0){sessions[idx].feedback=feedbackText;sessions[idx].feedback_hint=null;}
+    statusEl.textContent='✓  KI analysiert…';
+    renderLog();
+    // KI-Hinweis asynchron generieren
+    const hint=await generateFeedbackHint(session,feedbackText);
+    if(hint){
+      await DB.updateSession(session.id,{feedback_hint:hint});
+      if(idx>=0)sessions[idx].feedback_hint=hint;
+      if(onHintReady)onHintReady(hint);
+      statusEl.textContent='✓ Gespeichert';
+      renderLog();
+    }else{
+      const hasKey=!!(ANTHROPIC_KEY||localStorage.getItem('tlog_anthropic_key'));
+      statusEl.textContent=hasKey?'✓ Gespeichert (KI-Hinweis konnte nicht generiert werden)':'✓ Gespeichert (kein API-Key → kein KI-Hinweis)';
+    }
+    setSyncState('ok');
+    setTimeout(()=>{statusEl.textContent='';},3000);
+  }catch(e){setSyncState('error');statusEl.textContent='Fehler: '+e.message;}
+}
+
 // Feedback-Handler für das Session-Modal
 function bindFeedbackHandler(session){
   const saveBtn=document.getElementById('modal-feedback-save');
   const statusEl=document.getElementById('modal-feedback-status');
   if(!saveBtn)return;
-  saveBtn.addEventListener('click',async()=>{
+  saveBtn.addEventListener('click',()=>{
     const feedbackText=document.getElementById('modal-feedback')?.value?.trim()||'';
-    if(!feedbackText){
-      // Feedback leeren
-      await DB.updateSession(session.id,{feedback:null,feedback_hint:null});
-      const idx=sessions.findIndex(s=>String(s.id)===String(session.id));
-      if(idx>=0){sessions[idx].feedback=null;sessions[idx].feedback_hint=null;}
-      statusEl.textContent='Gelöscht';
-      setTimeout(()=>{statusEl.textContent='';},1500);
-      renderLog();return;
-    }
-    statusEl.textContent='Speichern…';
-    setSyncState('syncing');
-    try{
-      // Feedback sofort speichern
-      await DB.updateSession(session.id,{feedback:feedbackText,feedback_hint:null});
-      const idx=sessions.findIndex(s=>String(s.id)===String(session.id));
-      if(idx>=0){sessions[idx].feedback=feedbackText;sessions[idx].feedback_hint=null;}
-      statusEl.textContent='✓  KI analysiert…';
-      renderLog();
-      // KI-Hinweis asynchron generieren
-      const hint=await generateFeedbackHint(session,feedbackText);
-      if(hint){
-        await DB.updateSession(session.id,{feedback_hint:hint});
-        if(idx>=0)sessions[idx].feedback_hint=hint;
-        const placeholder=document.getElementById('modal-feedback-hint-placeholder');
-        if(placeholder){
-          const box=document.createElement('div');
-          box.className='feedback-hint-box';
-          box.textContent=hint;
-          placeholder.replaceWith(box);
-        }
-        statusEl.textContent='✓ Gespeichert';
-        renderLog();
-      }else{
-        const hasKey=!!(ANTHROPIC_KEY||localStorage.getItem('tlog_anthropic_key'));
-        statusEl.textContent=hasKey?'✓ Gespeichert (KI-Hinweis konnte nicht generiert werden)':'✓ Gespeichert (kein API-Key → kein KI-Hinweis)';
+    saveFeedbackFor(session,feedbackText,statusEl,hint=>{
+      const placeholder=document.getElementById('modal-feedback-hint-placeholder');
+      if(placeholder){
+        const box=document.createElement('div');
+        box.className='feedback-hint-box';
+        box.textContent=hint;
+        placeholder.replaceWith(box);
       }
-      setSyncState('ok');
-      setTimeout(()=>{statusEl.textContent='';},3000);
-    }catch(e){setSyncState('error');statusEl.textContent='Fehler: '+e.message;}
+    });
   });
 }
-// Öffnet ein kompaktes Modal zum Anlegen einer geplanten Einheit für ein
-// ausgewähltes Datum. Teilt die Logik mit der Trainingsnotiz.
+// Öffnet ein kompaktes Modal zum Anlegen einer geplanten Einheit ODER eines
+// Sondereintrags (Krankheit/Verletzung/Sonstiges) für ein ausgewähltes Datum.
 function openCalPlanModal(iso){
   const modal=document.getElementById('cal-plan-modal');
   const d=new Date(iso+'T00:00:00');
   const dateLabel=d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
-  const sportOpts=cfg.sports.map(s=>`<option value="${s.key}">${sportIconText(s)?sportIconText(s)+" ":""}${s.label}</option>`).join('');
-  const zoneOpts=cfg.zones.map(z=>`<option value="${z.key}">${z.label}${z.hrMin&&z.hrMax?' ('+z.hrMin+'–'+z.hrMax+')':''}</option>`).join('');
-  document.getElementById('cal-plan-modal-content').innerHTML=`
-    <h2 style="margin-bottom:.15rem;"><i class="ti ti-calendar-plus"></i> Einheit planen</h2>
-    <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:.75rem;">${esc(dateLabel)}</p>
-    <div class="grid" style="margin-bottom:.6rem;">
-      <div class="field"><label>Sportart</label><select id="cp-sport">${sportOpts}</select></div>
-      <div class="field"><label>Zone</label><select id="cp-zone">${zoneOpts}</select></div>
-      <div class="field"><label>Name</label><input type="text" id="cp-title" placeholder="z.B. Oberkörper A"></div>
-      <div class="field"><label>Dauer (min)</label><input type="number" id="cp-duration" min="1" step="1" placeholder="60"></div>
-      <div class="field"><label>Gesch. sRPE</label><input type="number" id="cp-srpe" min="1" max="10" step="1" placeholder="–"></div>
-    </div>
-    <textarea id="cp-note" placeholder="Übungen / Notizen (optional)" style="width:100%;height:80px;padding:.5rem .6rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:.85rem;resize:vertical;"></textarea>
-    <div id="cp-estimate" style="display:none;margin-top:.5rem;padding:.5rem .6rem;background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--data-plum);border-radius:var(--radius);font-size:.76rem;color:var(--text-muted);"></div>
-    <div style="display:flex;gap:.5rem;margin-top:.7rem;">
-      <button class="primary" id="cp-save" style="flex:1;"><i class="ti ti-calendar-plus"></i> Als Plan speichern</button>
-      <button id="cp-close" style="padding:.55rem .9rem;"><i class="ti ti-x"></i></button>
-    </div>
-    <span class="status" id="cp-status" style="display:block;text-align:center;margin-top:.4rem;font-size:.78rem;"></span>`;
-  modal.classList.add('open');
+  const isPastDate=iso<toISODate(new Date());
+  let cpMode=isPastDate?'special':'training';
 
-  // Workload-Schätzung live aktualisieren
-  function cpEstimate(){
-    const sport=document.getElementById('cp-sport').value;
-    const dur=document.getElementById('cp-duration').value;
-    const zone=document.getElementById('cp-zone').value;
-    const est=estimatePlannedWorkload({sport,duration:dur?parseInt(dur):null,zone});
-    const box=document.getElementById('cp-estimate');
-    if(!est){box.style.display='none';return;}
-    const sc=sportCfg(sport);
-    box.style.display='';
-    box.innerHTML=`<span style="font-weight:600;color:${sc.color};">${sportIconHTML(sport,12)} ~${est.estimate} Punkte</span> <span style="color:var(--text-faint);">(${est.range[0]}–${est.range[1]})</span><br><span style="font-size:.68rem;">aus ${est.n} ähnlichen Einheiten</span>`;
+  function renderModal(){
+    const tabsHTML=isPastDate?'':`
+      <div class="row" style="margin-bottom:.6rem;gap:.4rem;">
+        <button id="cp-tab-training" class="${cpMode==='training'?'primary':'ghost'}" style="flex:1;font-size:.78rem;">Training planen</button>
+        <button id="cp-tab-special" class="${cpMode==='special'?'primary':'ghost'}" style="flex:1;font-size:.78rem;">Krankheit/Verletzung/Sonstiges</button>
+      </div>`;
+    const sportOpts=cfg.sports.map(s=>`<option value="${s.key}">${sportIconText(s)?sportIconText(s)+" ":""}${s.label}</option>`).join('');
+    const zoneOpts=cfg.zones.map(z=>`<option value="${z.key}">${z.label}${z.hrMin&&z.hrMax?' ('+z.hrMin+'\u2013'+z.hrMax+')':''}</option>`).join('');
+    const catOpts=Object.entries(SPECIAL_CATEGORIES).map(([k,c])=>`<option value="${k}">${c.label}</option>`).join('');
+    const formHTML=cpMode==='training'?`
+      <div class="grid" style="margin-bottom:.6rem;">
+        <div class="field"><label>Sportart</label><select id="cp-sport">${sportOpts}</select></div>
+        <div class="field"><label>Zone</label><select id="cp-zone">${zoneOpts}</select></div>
+        <div class="field"><label>Name</label><input type="text" id="cp-title" placeholder="z.B. Oberkörper A"></div>
+        <div class="field"><label>Dauer (min)</label><input type="number" id="cp-duration" min="1" step="1" placeholder="60"></div>
+        <div class="field"><label>Gesch. sRPE</label><input type="number" id="cp-srpe" min="1" max="10" step="1" placeholder="\u2013"></div>
+      </div>
+      <textarea id="cp-note" placeholder="Übungen / Notizen (optional)" style="width:100%;height:80px;padding:.5rem .6rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:.85rem;resize:vertical;"></textarea>
+      <div id="cp-estimate" style="display:none;margin-top:.5rem;padding:.5rem .6rem;background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--data-plum);border-radius:var(--radius);font-size:.76rem;color:var(--text-muted);"></div>
+      <div style="display:flex;gap:.5rem;margin-top:.7rem;">
+        <button class="primary" id="cp-save" style="flex:1;"><i class="ti ti-calendar-plus"></i> Als Plan speichern</button>
+        <button id="cp-close" style="padding:.55rem .9rem;"><i class="ti ti-x"></i></button>
+      </div>`:`
+      <div class="field" style="margin-bottom:.6rem;"><label>Kategorie</label><select id="cp-category">${catOpts}</select></div>
+      <textarea id="cp-special-note" placeholder="Notiz (optional)" style="width:100%;height:80px;padding:.5rem .6rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:.85rem;resize:vertical;"></textarea>
+      <div style="display:flex;gap:.5rem;margin-top:.7rem;">
+        <button class="primary" id="cp-save-special" style="flex:1;"><i class="ti ti-alert-circle"></i> Eintragen</button>
+        <button id="cp-close" style="padding:.55rem .9rem;"><i class="ti ti-x"></i></button>
+      </div>`;
+    document.getElementById('cal-plan-modal-content').innerHTML=`
+      <h2 style="margin-bottom:.15rem;"><i class="ti ti-calendar-plus"></i> ${cpMode==='training'?'Einheit planen':'Sondereintrag'}</h2>
+      <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:.75rem;">${esc(dateLabel)}</p>
+      ${tabsHTML}
+      ${formHTML}
+      <span class="status" id="cp-status" style="display:block;text-align:center;margin-top:.4rem;font-size:.78rem;"></span>`;
+    modal.classList.add('open');
+    bindHandlers();
   }
-  ['cp-sport','cp-duration','cp-zone','cp-srpe'].forEach(id=>{
-    const el=document.getElementById(id);
-    el.addEventListener('input',cpEstimate);
-    el.addEventListener('change',cpEstimate);
-  });
-  cpEstimate();
 
-  document.getElementById('cp-close').addEventListener('click',closeCalPlanModal);
-  modal.addEventListener('click',e=>{if(e.target===modal)closeCalPlanModal();});
+  function bindHandlers(){
+    document.getElementById('cp-close').addEventListener('click',closeCalPlanModal);
+    const tabT=document.getElementById('cp-tab-training'),tabS=document.getElementById('cp-tab-special');
+    if(tabT)tabT.addEventListener('click',()=>{cpMode='training';renderModal();});
+    if(tabS)tabS.addEventListener('click',()=>{cpMode='special';renderModal();});
 
-  document.getElementById('cp-save').addEventListener('click',async()=>{
-    const sport=document.getElementById('cp-sport').value;
-    const dur=document.getElementById('cp-duration').value;
-    const srpeVal=document.getElementById('cp-srpe').value;
-    const session={
-      date:iso,
-      duration:dur?parseInt(dur):1,
-      sport,
-      zone:document.getElementById('cp-zone').value,
-      title:document.getElementById('cp-title').value.trim()||null,
-      note:document.getElementById('cp-note').value.trim()||null,
-      planned:true,
-      srpe:srpeVal&&parseInt(srpeVal)>=1?parseInt(srpeVal):null,
-      user_id:currentUser?.id,hr_avg:null,hr_max:null
-    };
-    const wl=berechneWorkload(session);
-    let cpWorkload=wl.value,cpMethod=wl.method;
-    if(cpWorkload==null||cpMethod==='none'){
-      const est=estimatePlannedWorkload({sport,duration:session.duration,zone:session.zone,srpe:session.srpe});
-      if(est){cpWorkload=est.estimate;cpMethod='estimated';}
+    if(cpMode==='training'){
+      function cpEstimate(){
+        const sport=document.getElementById('cp-sport').value;
+        const dur=document.getElementById('cp-duration').value;
+        const zone=document.getElementById('cp-zone').value;
+        const est=estimatePlannedWorkload({sport,duration:dur?parseInt(dur):null,zone});
+        const box=document.getElementById('cp-estimate');
+        if(!est){box.style.display='none';return;}
+        const sc=sportCfg(sport);
+        box.style.display='';
+        box.innerHTML=`<span style="font-weight:600;color:${sc.color};">${sportIconHTML(sport,12)} ~${est.estimate} Punkte</span> <span style="color:var(--text-faint);">(${est.range[0]}\u2013${est.range[1]})</span><br><span style="font-size:.68rem;">aus ${est.n} ähnlichen Einheiten</span>`;
+      }
+      ['cp-sport','cp-duration','cp-zone','cp-srpe'].forEach(id=>{
+        const el=document.getElementById(id);
+        el.addEventListener('input',cpEstimate);
+        el.addEventListener('change',cpEstimate);
+      });
+      cpEstimate();
+
+      document.getElementById('cp-save').addEventListener('click',async()=>{
+        const sport=document.getElementById('cp-sport').value;
+        const dur=document.getElementById('cp-duration').value;
+        const srpeVal=document.getElementById('cp-srpe').value;
+        const session={
+          date:iso,
+          duration:dur?parseInt(dur):1,
+          sport,
+          zone:document.getElementById('cp-zone').value,
+          title:document.getElementById('cp-title').value.trim()||null,
+          note:document.getElementById('cp-note').value.trim()||null,
+          planned:true,
+          srpe:srpeVal&&parseInt(srpeVal)>=1?parseInt(srpeVal):null,
+          user_id:currentUser?.id,hr_avg:null,hr_max:null
+        };
+        const wl=berechneWorkload(session);
+        let cpWorkload=wl.value,cpMethod=wl.method;
+        if(cpWorkload==null||cpMethod==='none'){
+          const est=estimatePlannedWorkload({sport,duration:session.duration,zone:session.zone,srpe:session.srpe});
+          if(est){cpWorkload=est.estimate;cpMethod='estimated';}
+        }
+        session.workload=cpWorkload;session.workload_method=cpMethod;
+        const statusEl=document.getElementById('cp-status');
+        statusEl.textContent='Speichern\u2026';
+        setSyncState('syncing');
+        try{
+          const saved=await DB.addSession(session);
+          sessions.unshift(saved);
+          setSyncState('ok');
+          closeCalPlanModal();
+          renderCalendar();renderLog();
+        }catch(e){setSyncState('error');statusEl.textContent='Fehler: '+e.message;}
+      });
+    }else{
+      document.getElementById('cp-save-special').addEventListener('click',async()=>{
+        const category=document.getElementById('cp-category').value;
+        const session={
+          date:iso,
+          duration:0,
+          sport:null,
+          zone:'-',
+          category,
+          note:document.getElementById('cp-special-note').value.trim()||null,
+          planned:false,
+          user_id:currentUser?.id
+        };
+        const statusEl=document.getElementById('cp-status');
+        statusEl.textContent='Speichern\u2026';
+        setSyncState('syncing');
+        try{
+          const saved=await DB.addSession(session);
+          sessions.unshift(saved);
+          setSyncState('ok');
+          closeCalPlanModal();
+          renderCalendar();renderLog();
+        }catch(e){setSyncState('error');statusEl.textContent='Fehler: '+e.message;}
+      });
     }
-    session.workload=cpWorkload;session.workload_method=cpMethod;
-    const statusEl=document.getElementById('cp-status');
-    statusEl.textContent='Speichern\u2026';
-    setSyncState('syncing');
-    try{
-      const saved=await DB.addSession(session);
-      sessions.unshift(saved);
-      setSyncState('ok');
-      closeCalPlanModal();
-      renderCalendar();renderLog();
-    }catch(e){setSyncState('error');statusEl.textContent='Fehler: '+e.message;}
-  });
+  }
+
+  renderModal();
+  modal.addEventListener('click',e=>{if(e.target===modal)closeCalPlanModal();});
 }
 
 function closeCalPlanModal(){
@@ -3526,6 +3524,34 @@ function closeCalPlanModal(){
 function openSessionModal(id){
   const s=sessions.find(x=>String(x.id)===String(id));
   if(!s)return;
+  if(isSpecialEntry(s)){
+    const cat=SPECIAL_CATEGORIES[s.category]||SPECIAL_CATEGORIES.other;
+    const d=new Date(s.date+'T00:00:00');
+    const dateStr=d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+    document.getElementById('session-modal-content').innerHTML=`
+      <h2><i class="ti ${cat.icon}" style="color:${cat.color};"></i> <span style="color:${cat.color};">${cat.label}</span>
+        <button class="modal-close" id="modal-close-btn" title="Schließen"><i class="ti ti-x"></i></button>
+      </h2>
+      <div class="modal-row"><span class="ml">Datum</span><span class="mv">${dateStr}</span></div>
+      ${s.note?`<div class="modal-note">${esc(s.note)}</div>`:''}
+      <div class="modal-actions">
+        <button class="danger" id="modal-delete-btn">Löschen</button>
+      </div>`;
+    document.getElementById('session-modal').classList.add('open');
+    document.getElementById('modal-close-btn').addEventListener('click',closeSessionModal);
+    document.getElementById('modal-delete-btn').addEventListener('click',async()=>{
+      if(!confirm(cat.label+'-Eintrag wirklich löschen?'))return;
+      closeSessionModal();
+      setSyncState('syncing');
+      try{
+        await DB.deleteSession(s.id);
+        sessions=sessions.filter(x=>String(x.id)!==String(s.id));
+        setSyncState('ok');
+        renderCalendar();renderLog();
+      }catch(e){setSyncState('error');alert('Fehler: '+e.message);}
+    });
+    return;
+  }
   const sc=sportCfg(s.sport),zc=zoneCfg(s.zone,s.sport);
   const d=new Date(s.date+'T00:00:00');
   const dateStr=d.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
@@ -3958,7 +3984,6 @@ function renderAnalytics(){
 
   weeklyChartData=computeWeeklyTrendData(Math.max(28,acwrWeeks+4));
   renderWorkloadChart();
-  renderWeeklyTrendChart();
   renderMonotony();
 }
 
@@ -4052,10 +4077,19 @@ function renderWorkloadChart(){
     const ld=new Date(today);
     xLabels+='<text x="'+xAt(windowDays-1).toFixed(1)+'" y="'+(H-7)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="end">'+ld.getDate()+'.'+(ld.getMonth()+1)+'.</text>';
     const bp=bandPath?'<path d="'+bandPath+'" fill="url(#wlc-blob)" fill-opacity="0.75" filter="url(#wlc-glow)"/>':'';
-    svg.innerHTML=commonDefs+yLabels+xLabels+bp+dots;
+    // Krankheit/Verletzung/Sonstiges: rote Marker am Fuß der Achse, unabhängig von Workload-Werten.
+    const dispSpecial=specialSessions().filter(s=>s.date>=toISODate(displayStart)&&s.date<=toISODate(today));
+    const specialMarks=dispSpecial.map(s=>{
+      const di=dayIdx(s.date),x=xAt(di).toFixed(1),y=(padT+innerH-3).toFixed(1);
+      const cat=SPECIAL_CATEGORIES[s.category]||SPECIAL_CATEGORIES.other;
+      return '<circle cx="'+x+'" cy="'+y+'" r="'+(4*sizeFactor).toFixed(1)+'" fill="'+cat.color+'" stroke="'+PAPER+'" stroke-width="1.2" style="cursor:pointer;" data-sid="'+(s.id||'')+'" onclick="wlcDotClick(this)">'+
+             '<title>'+s.date+' · '+cat.label+(s.note?': '+s.note:'')+'</title></circle>';
+    }).join('');
+    svg.innerHTML=commonDefs+yLabels+xLabels+bp+dots+specialMarks;
     document.getElementById('workload-chart-legend').innerHTML=
       '<span style="color:var(--text);">Einheit (Größe = Workload)</span>'+
-      '<span style="color:var(--acwr-low);">Ø ±14 Tage · ±20%</span>';
+      '<span style="color:var(--acwr-low);">Ø ±14 Tage · ±20%</span>'+
+      (dispSpecial.length?'<span style="color:'+SPECIAL_CATEGORIES.illness.color+';">Krankheit/Verletzung/Sonstiges</span>':'');
     return;
   }
 
@@ -4259,8 +4293,8 @@ function computeWeeklyTrendData(totalWeeks){
       const day=new Date(wStart);day.setDate(day.getDate()+d);
       const iso=toISODate(day);
       const daySess=sessions.filter(s=>s.date===iso);
-      const actual=daySess.filter(s=>!isPlanned(s));
-      const planned=daySess.filter(s=>isPlanned(s));
+      const actual=daySess.filter(s=>!isPlanned(s)&&!isSpecialEntry(s));
+      const planned=daySess.filter(s=>isPlanned(s)&&!isSpecialEntry(s));
       const actVals=actual.map(s=>berechneWorkload(s).value).filter(v=>v!=null);
       const plnVals=planned.map(s=>berechneWorkload(s).value).filter(v=>v!=null);
       const dayLoad=actVals.length>0?Math.round(actVals.reduce((a,b)=>a+b,0)):0;
@@ -4379,10 +4413,11 @@ function renderWeeklyTrendChart(){
   const thisPath=buildPath(thisWeekVisible);
   const plannedPath=plannedCum?buildPath(plannedCum):'';
 
+  const dotSid=daySess=>{const s=(daySess||[]).find(x=>!isSpecialEntry(x))||(daySess||[])[0];return s?s.id:'';};
   const thisDots=currentWeek.daily.map((d,i)=>d>0&&thisWeekVisible[i]!=null
-    ?`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(thisWeekVisible[i]).toFixed(1)}" r="4" fill="${cssVar('--data-plum')}" stroke="${PAPER}" stroke-width="1.5"/>`:'').join('');
+    ?`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(thisWeekVisible[i]).toFixed(1)}" r="4" fill="${cssVar('--data-plum')}" stroke="${PAPER}" stroke-width="1.5" style="cursor:pointer;" data-sid="${dotSid(currentWeek.dailySessions[i])}" onclick="wtcDotClick(this)"/>`:'').join('');
   const prevDots=prevWeek?prevWeek.daily.map((d,i)=>d>0&&prevWeekCum
-    ?`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(prevWeekCum[i]).toFixed(1)}" r="3.5" fill="${cssVar('--text-muted')}" stroke="${PAPER}" stroke-width="1.2"/>`:'').join(''):'';
+    ?`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(prevWeekCum[i]).toFixed(1)}" r="3.5" fill="${cssVar('--text-muted')}" stroke="${PAPER}" stroke-width="1.2" style="cursor:pointer;" data-sid="${dotSid(prevWeek.dailySessions[i])}" onclick="wtcDotClick(this)"/>`:'').join(''):'';
   const plannedDots=plannedCum?currentWeek.dailyPlanned.map((p,i)=>p>0
     ?`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(plannedCum[i]).toFixed(1)}" r="3.5" fill="none" stroke="${cssVar('--orange-soft')}" stroke-width="1.5"/>`:'').join(''):'';
 
@@ -5634,6 +5669,11 @@ async function wfCheckPermission(handle,request=false){
 
 // Klick auf Workload-Punkt → Session-Detail-Modal öffnen
 function wlcDotClick(el){
+  const sid=el.getAttribute('data-sid');
+  if(sid)openSessionModal(sid);
+}
+// Klick auf einen Tages-Punkt im Wochenvergleichs-Chart öffnet die Einheiten-Details.
+function wtcDotClick(el){
   const sid=el.getAttribute('data-sid');
   if(sid)openSessionModal(sid);
 }
