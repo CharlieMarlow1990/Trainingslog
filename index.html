@@ -11,6 +11,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap">
 <style>
+@font-face{
+  font-family:"KrautType";
+  src:url("font/kraut-type-fuck11.ttf") format("truetype");
+  font-weight:normal;
+  font-style:normal;
+  font-display:swap;
+}
 :root{
   /* === Flächen — warmes Papier (Editorial) === */
   --bg:#F1EEE6;               /* Seite, etwas tiefer als Karte */
@@ -26,26 +33,23 @@
   --text-muted:#5f5e5a;
   --text-faint:#8a8881;
 
-  /* === Akzent — warm/editorial (Terrakotta) === */
+  /* === Akzent — warm/editorial (Terrakotta, Magenta/Gold-Verlauf, Gelb) === */
   --accent:#b8502f;                                            /* Primary (warm) */
   --accent-light:#efe2d6;                                      /* Soft Tint */
   --accent-text:#9a3f23;                                       /* Text auf accent-light */
   --accent-end:#d9803f;                                        /* Gradient-Endpunkt */
-  --accent-gradient:linear-gradient(135deg,#b8502f,#d9803f);   /* Signal-Gradient (warm) */
-  --orange:#c8603a;                                            /* Datenfarbe (Terrakotta) */
-  --orange-soft:#d79b46;                                       /* Datenfarbe (Ocker) */
-
-  /* === Daten-Palette (gedämpft, editorial) === */
-  --data-ochre:#d79b46;
-  --data-slate:#7c9bb5;
-  --data-olive:#6f8f3e;
-  --data-plum:#8c6db0;
-  --data-terracotta:#c8603a;
+  --accent-magenta:#a945a4;                                    /* Signal-Gradient Start */
+  --accent-gold:#f2af58;                                       /* Signal-Gradient Ende */
+  --accent-yellow:#f0e655;                                     /* Header-Gelb */
+  --accent-purple:#8c6db0;                                     /* Strain-/Chart-Akzent */
+  --accent-gradient:linear-gradient(135deg,var(--accent-magenta),var(--accent-gold));   /* Signal-Gradient */
+  --orange:#c8603a;                                            /* Akzentfarbe warm */
+  --orange-soft:#d79b46;                                       /* Akzentfarbe hell */
 
   /* === ACWR-Status === */
-  --acwr-low:#85a7c4;
-  --acwr-optimal:#6f8f3e;
-  --acwr-caution:#d99a2b;
+  --acwr-low:#77a5ce;
+  --acwr-optimal:#50ba80;
+  --acwr-caution:#ddcb58;
   --acwr-high:#c0453f;
 
   /* === Workload-Chart Band === */
@@ -66,8 +70,8 @@
   ;
 
   /* === Liquid Glass — helle, matt-transparente Kästen === */
-  --glass-bg:rgba(248,246,241,.55);            /* matt-hell, leicht warm */
-  --glass-bg-strong:rgba(248,246,241,.72);     /* für Modals/Nav: höhere Deckkraft */
+  --glass-bg:rgba(248,246,241,.75);            /* matt-hell, leicht warm */
+  --glass-bg-strong:rgba(248,246,241,.80);     /* für Modals/Nav: höhere Deckkraft */
   --glass-border:rgba(255,255,255,.55);        /* heller Chrome-Rand */
   --glass-radius:22px;                          /* weiche, stark gerundete Ecken */
   --glass-blur:18px;
@@ -76,6 +80,7 @@
   /* === Typografie === */
   --font-serif:Georgia,"Iowan Old Style","Palatino Linotype","Times New Roman",serif;
   --font-sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;  --font-mono:"SF Mono","Roboto Mono",Consolas,monospace;
+  --font-heading:"KrautType",var(--font-sans);
   /* Editorial-Kapitälchen für Section-Labels: uppercase + Sperrung */
   --caps:"letter-spacing:.10em;text-transform:uppercase;";
 
@@ -145,8 +150,10 @@ body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text
 #bottom-nav button.active{color:var(--text);font-weight:500;}
 #bottom-nav button.active::before{content:"";position:absolute;top:0;left:25%;right:25%;height:2px;background:var(--text);border-radius:0 0 2px 2px;}
 #bottom-nav button .nav-icon{font-size:1.2rem;line-height:1;}
-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:.75rem;}
-header h1{font-size:1.4rem;font-weight:600;margin:0;letter-spacing:-.01em;color:#f0e655;}
+header{display:flex;align-items:center;justify-content:center;margin-bottom:.9rem;padding:.85rem 0;border-bottom:1px solid var(--border);}
+header h1{font-family:var(--font-heading);font-size:2rem;font-weight:200;margin:0;letter-spacing:.12em;text-indent:.42em;word-spacing:.1em;color:var(--accent-yellow);text-align:center;}
+header.has-logo{background:url("img/training-log.png") top center/contain no-repeat;height:300px;margin-bottom:-170px;padding:0;border-bottom:none;}
+header.has-logo h1{width:1px;height:1px;overflow:hidden;position:absolute;white-space:nowrap;}
 .header-right{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;}
 .user-chip{display:flex;align-items:center;gap:.5rem;font-size:.82rem;color:var(--text-muted);}
 .user-chip img{width:26px;height:26px;border-radius:50%;object-fit:cover;}
@@ -157,6 +164,8 @@ header h1{font-size:1.4rem;font-weight:600;margin:0;letter-spacing:-.01em;color:
 .page{display:none;}.page.active{display:block;}
 /* Neo-Grotesk: Überschriften und Body/UI einheitlich in Sans (Inter) */
 h1,h2,h3{font-family:var(--font-sans);font-weight:600;letter-spacing:-.01em;}
+/* Überschriften auf allen Seiten außer Log: Inter, Großbuchstaben, luftig */
+.page:not(#page-log) h2,.page:not(#page-log) h3{font-family:var(--font-sans);text-transform:uppercase;letter-spacing:.08em;}
 .card{background:var(--glass-bg);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border:1px solid var(--glass-border);border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);padding:1.1rem 1.25rem;margin-bottom:1.25rem;}.card h2{font-size:.92rem;font-weight:600;margin:0 0 .9rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
 .badge{font-size:.68rem;font-weight:500;font-family:var(--font-mono);color:var(--text-muted);background:var(--bg);border:1px solid var(--border);border-radius:100px;padding:.12rem .5rem;}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;}
@@ -233,7 +242,7 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 @media(min-width:720px){#workload-chart-svg-box{height:340px;}}
 
 /* Log-Header: Garmin-Sync links, schwebender [+]-Button rechts oben */
-.log-header{display:flex;justify-content:space-between;align-items:center;margin:0 0 1.4rem;position:relative;gap:.6rem;flex-wrap:wrap;}
+.log-header{display:flex;justify-content:space-between;align-items:center;margin:0 0 .8rem;position:relative;gap:.6rem;flex-wrap:wrap;}
 .log-sync-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1.1rem;border-radius:999px;border:1px solid var(--text);background:transparent;color:var(--text);font-size:.82rem;cursor:pointer;transition:background .12s;}
 .log-sync-btn:hover:not(:disabled){background:rgba(44,44,42,.05);}
 .log-sync-btn:disabled{opacity:.4;cursor:not-allowed;}
@@ -252,14 +261,6 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .log-entry-card{position:relative;}
 .log-entry-card .card-close{position:absolute;top:.6rem;right:.6rem;width:28px;height:28px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;z-index:2;}
 .log-entry-card .card-close:hover{color:var(--text);border-color:var(--text);}
-
-/* Platzhalter-Zone: reserviert für spätere eigene Bilder, kein generiertes Motiv */
-.media-placeholder{
-  height:180px;border-radius:120px 30px 140px 40px;margin-bottom:2.5rem;
-  background:linear-gradient(120deg,rgba(91,141,214,.14),rgba(140,109,176,.14),rgba(214,123,160,.14));
-  display:flex;align-items:center;justify-content:center;
-  color:var(--text-faint);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;font-family:var(--font-sans);
-}
 
 /* Einheitliche Papier-Panels für alle Visualisierungen (SVG via .wlc-paper, Canvas via .chart-dark) */
 .wlc-paper,.chart-dark{background:var(--glass-bg);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border:1px solid var(--glass-border);border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);padding:1rem;position:relative;overflow:hidden;}
@@ -344,7 +345,11 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
 .sport-filter{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.85rem;}
 .sport-filter button{font-size:.75rem;padding:.25rem .6rem;border-radius:100px;}
 .sport-filter button.active{color:#fff;border-color:transparent;}
-.analytics-chart-box{position:relative;height:220px;margin-bottom:1.1rem;}
+.analytics-chart-box{position:relative;height:220px;margin:0 -.9rem 1.1rem;width:calc(100% + 1.8rem);padding:0;}
+.analytics-chart-scroll{position:relative;width:100%;height:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;padding:.6rem .35rem;box-sizing:border-box;}
+.analytics-chart-scroll svg{display:block;height:100%;}
+.analytics-chart-box::after{content:'';position:absolute;top:0;left:0;bottom:0;width:24px;pointer-events:none;background:linear-gradient(to right,var(--glass-bg),transparent);border-radius:var(--glass-radius) 0 0 var(--glass-radius);}
+.analytics-yaxis-fixed{position:absolute;top:0;right:0;height:100%;pointer-events:none;z-index:2;}
 .analytics-table{width:100%;border-collapse:collapse;font-size:.82rem;}
 .analytics-table th{font-size:.72rem;color:var(--text-muted);font-weight:600;text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--border);}
 .analytics-table td{padding:.4rem .5rem;border-bottom:1px solid var(--border);}
@@ -426,11 +431,11 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 .lib-template-preview{font-size:.72rem;color:var(--text-muted);margin-top:.35rem;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 /* Feedback: Anmerkung + KI-Hinweis im Session-Modal */
 .feedback-section{margin-top:.75rem;border-top:1px solid var(--border);padding-top:.7rem;}
-.feedback-hint-box{margin-top:.5rem;padding:.55rem .65rem;background:rgba(140,109,176,.08);border:1px solid rgba(140,109,176,.22);border-left:3px solid var(--data-plum);border-radius:var(--radius);font-size:.78rem;line-height:1.5;color:var(--text);}
-.feedback-hint-box::before{content:"\e7f6  ";font-family:"tabler-icons";color:var(--data-plum);font-size:.85em;}
+.feedback-hint-box{margin-top:.5rem;padding:.55rem .65rem;background:rgba(140,109,176,.08);border:1px solid rgba(140,109,176,.22);border-left:3px solid var(--accent-purple);border-radius:var(--radius);font-size:.78rem;line-height:1.5;color:var(--text);}
+.feedback-hint-box::before{content:"\e7f6  ";font-family:"tabler-icons";color:var(--accent-purple);font-size:.85em;}
 /* Feedback-Vorschau in Log-Liste */
 .entry-feedback{font-size:.72rem;color:var(--text-muted);font-style:italic;margin:.15rem 0 0 0;padding-left:.1rem;}
-.entry-feedback-hint{font-size:.7rem;color:var(--data-plum);margin:.1rem 0 0;}
+.entry-feedback-hint{font-size:.7rem;color:var(--accent-purple);margin:.1rem 0 0;}
 .cal-cell-empty{cursor:pointer;transition:background .15s;}
 .cal-cell-empty:hover{background:var(--surface);}
 .cal-add-btn{position:absolute;bottom:.2rem;right:.25rem;width:18px;height:18px;border-radius:50%;background:var(--border);color:var(--text-muted);font-size:.9rem;line-height:18px;text-align:center;cursor:pointer;opacity:0;transition:opacity .15s;display:flex;align-items:center;justify-content:center;}
@@ -470,7 +475,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
    Block-Hintergrund bleibt papierfarben neutral. */
 .zone-collage{background:var(--glass-bg);color:var(--text);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border:1px solid var(--glass-border);border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);padding:1.1rem 1.25rem;margin:1rem 0;}
 /* Gemeinsamer Wochen-Rahmen (Log-Seite) */
-.week-summary{background:var(--glass-bg);color:var(--text);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border:1px solid var(--glass-border);border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);padding:1.1rem 1.25rem 1.3rem;margin:1rem 0;}.ws-nav{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:0.5px solid var(--border);position:sticky;top:0;z-index:5;background:var(--glass-bg);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);margin-left:-1.25rem;margin-right:-1.25rem;padding-left:1.25rem;padding-right:1.25rem;padding-top:.2rem;}
+.week-summary{background:var(--glass-bg);color:var(--text);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border:1px solid var(--glass-border);border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);padding:1.1rem 1.25rem 1.3rem;margin:1rem 0;}.ws-nav{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:0.5px solid var(--border);position:sticky;top:0;z-index:5;padding-top:.2rem;}
 .ws-title{font-weight:500;font-size:1rem;color:var(--text);text-align:center;flex:1;}
 .ws-nav .icon{background:rgba(44,44,42,.06);border:none;color:var(--text);width:34px;height:34px;border-radius:8px;font-size:1.1rem;cursor:pointer;flex-shrink:0;}
 .ws-nav .icon:hover{background:rgba(44,44,42,.12);}
@@ -480,6 +485,19 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 .week-summary .metric{background:none;}
 .week-summary .m-label{color:var(--text-muted);}
 .week-summary .m-value{color:var(--text);}
+.weekly-compare-box{height:200px;}
+/* Mobile: Kacheln unter der Wochennavigation verkleinern, damit die Tiles UND
+   der Wochenvergleichschart gemeinsam ohne Scrollen auf den Bildschirm passen */
+@media(max-width:600px){
+  .week-summary{padding:.9rem 1rem 1.1rem;}
+  .week-summary .metrics{gap:.4rem;margin-bottom:.7rem;}
+  .week-summary .metric{padding:.5rem .55rem;}
+  .week-summary .m-label{font-size:.6rem;margin:0 0 .15rem;}
+  .week-summary .m-value{font-size:1rem;}
+  .week-summary .ws-section{margin-top:.9rem;}
+  .week-summary .ws-h{font-size:.85rem;margin-bottom:.45rem;}
+  .weekly-compare-box{height:150px;}
+}
 /* Wochen-Workload Tagesbalken */
 .wd-col{position:relative;display:flex;flex-direction:column;align-items:stretch;}
 .wd-plan-val{color:var(--text-faint)!important;font-weight:500!important;}
@@ -533,6 +551,8 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 @media(max-width:520px){
   .sr-body{grid-template-columns:1fr;gap:.8rem;}
   .sr-svg-wrap{max-width:240px;}
+  header h1{font-size:1.05rem;letter-spacing:.28em;text-indent:.28em;word-spacing:.35em;}
+  header.has-logo{height:170px;margin-bottom:-90px;}
 }
 </style>
 </head>
@@ -565,16 +585,8 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 </nav>
 
 <div class="wrap">
-<header>
-<h1>TRAINING LOG</h1>
-  <div class="header-right">
-    <span class="sync-dot" id="sync-dot"></span>
-    <div class="user-chip">
-      <img id="user-avatar" src="" alt="" style="display:none;">
-      <span id="user-name"></span>
-    </div>
-    <button class="ghost" id="btn-logout">Abmelden</button>
-  </div>
+<header id="main-header" class="has-logo">
+<h1 id="page-title">Training Log</h1>
 </header>
 
 <!-- LOG -->
@@ -627,7 +639,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
         <input type="checkbox" id="qn-planned" style="width:auto;margin:0;">
         <span>Als geplante Einheit markieren <span style="font-size:.7rem;color:var(--text-faint);">(noch nicht absolviert)</span></span>
       </label>
-      <div id="qn-estimate" style="display:none;margin-top:.6rem;padding:.55rem .65rem;background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--data-plum);border-radius:var(--radius);font-size:.78rem;color:var(--text-muted);"></div>
+      <div id="qn-estimate" style="display:none;margin-top:.6rem;padding:.55rem .65rem;background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--accent-purple);border-radius:var(--radius);font-size:.78rem;color:var(--text-muted);"></div>
       <div style="display:flex;gap:.5rem;margin-top:.6rem;">
         <button class="primary" id="qn-save-btn" style="flex:1;"><i class="ti ti-check"></i> Speichern</button>
         <button id="qn-clear-btn" style="padding:.55rem .9rem;">Leeren</button>
@@ -724,7 +736,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
     <div class="ws-section">
       <h3 class="ws-h"><i class="ti ti-git-compare"></i> Wochenvergleich</h3>
       <div id="weekly-growth-cards" class="metrics metrics-3" style="margin-bottom:.9rem;"></div>
-      <div class="workload-chart-box wlc-paper" style="height:200px;"><svg id="weekly-compare-chart" width="100%" height="100%"></svg></div>
+      <div class="workload-chart-box wlc-paper weekly-compare-box"><svg id="weekly-compare-chart" width="100%" height="100%"></svg></div>
       <div id="weekly-compare-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
     </div>
   </div>
@@ -755,18 +767,20 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 
 <!-- ANALYTICS -->
 <div class="page canvas-page" id="page-analytics">
-  <div class="media-placeholder">Platz für ein eigenes Bild — Sportart, Motivation, Portrait …</div>
   <div class="card">
     <h2><i class="ti ti-chart-area"></i> Verteilung über Zeit</h2>
-    <p style="font-size:.74rem;color:var(--text-muted);margin:-.2rem 0 .7rem;">Entwicklung deiner Trainingsverteilung über 12 Wochen — auf einen Blick, ohne zwischen Zeiträumen zu wechseln.</p>
+    <p style="font-size:.74rem;color:var(--text-muted);margin:-.2rem 0 .7rem;">Entwicklung deiner Trainingsverteilung über 16 Wochen — scroll horizontal, um weiter zurückzugehen.</p>
     <div class="analytics-tabs" id="analytics-mode-tabs">
       <button class="active" data-mode="time-sport-abs">Zeit · Sportart</button>
       <button data-mode="time-zone">Zeit · Zonen</button>
 
     </div>
     <div class="sport-filter" id="analytics-sport-filter"></div>
-    <div class="analytics-chart-box chart-dark" id="analytics-chart-box" style="height:260px;">
-      <svg id="analytics-chart-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg>
+    <div class="analytics-chart-box chart-dark" id="analytics-chart-box" style="height:340px;">
+      <div class="analytics-chart-scroll" id="analytics-chart-scroll">
+        <svg id="analytics-chart-svg"></svg>
+      </div>
+      <svg id="analytics-yaxis-svg" class="analytics-yaxis-fixed"></svg>
     </div>
     <div id="analytics-mode-hint" style="font-size:.72rem;color:var(--text-faint);margin-top:.4rem;text-align:center;"></div>
     <div id="analytics-table-wrap"></div>
@@ -804,6 +818,18 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
         </div>
         <div class="workload-chart-box chart-dark" style="height:180px;"><canvas id="weekly-detail-chart"></canvas></div>
       </div>
+    </div>
+    <div class="card" style="margin-top:1rem;">
+      <h2><i class="ti ti-chart-line"></i> Aufschlüsselung nach Kategorie</h2>
+      <p style="font-size:.74rem;color:var(--text-muted);margin:-.3rem 0 .7rem;">Entwicklung einzelner Kategorien über die Zeit — Metrik(en) auswählen und Zeitraum wechseln.</p>
+      <div class="sport-filter" id="breakdown-metric-filter"></div>
+      <div class="tab-bar" id="breakdown-weeks-tabs" style="margin:.6rem 0;">
+        <button class="active" data-weeks="4">4 W</button>
+        <button data-weeks="8">8 W</button>
+        <button data-weeks="13">3 M</button>
+        <button data-weeks="26">6 M</button>
+      </div>
+      <div class="workload-chart-box chart-dark" style="height:240px;"><canvas id="category-breakdown-chart"></canvas></div>
     </div>
     <div class="card" style="margin-top:1rem;">
       <h2><i class="ti ti-wave-sine"></i> Belastungsverteilung</h2>
@@ -892,6 +918,21 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 
 <!-- EINSTELLUNGEN -->
 <div class="page" id="page-settings-page">
+  <!-- Konto & GitHub-Status -->
+  <div class="card">
+    <h2><i class="ti ti-brand-github"></i> Konto</h2>
+    <div class="row" style="align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <span class="sync-dot" id="sync-dot"></span>
+        <div class="user-chip">
+          <img id="user-avatar" src="" alt="" style="display:none;">
+          <span id="user-name"></span>
+        </div>
+      </div>
+      <button class="ghost" id="btn-logout">Abmelden</button>
+    </div>
+  </div>
+
   <!-- GPX-Watch-Folder -->
   <div class="card" id="watch-folder-card">
     <h2><i class="ti ti-folder"></i> Datei-Ordner</h2>
@@ -1304,7 +1345,7 @@ let sessions=[],chart1=null,chart2=null,analyticsChart=null,workloadChart=null,l
 // Alle Charts sitzen jetzt in dunklen .chart-dark Containern (var(--surface-dark)).
 // Globale Defaults sorgen für helle, lesbare Achsen/Legenden ohne jede Chart-
 // Konfiguration einzeln anfassen zu müssen.
-// Liest ein CSS-Design-Token (z.B. '--data-plum') als konkreten Farbwert aus.
+// Liest ein CSS-Design-Token (z.B. '--accent-purple') als konkreten Farbwert aus.
 // Charts/SVG brauchen echte Farben statt var(); so bleibt die Editorial-Palette
 // die einzige Quelle der Wahrheit.
 const cssVar=(name,fallback='')=>{
@@ -1358,6 +1399,7 @@ let libFilters={goal:null,modality:null,duration:null,search:''};
 let currentUser=null,trainingProfile='';
 let activePage='log';
 let analyticsPeriod='week',analyticsMetric='time',analyticsActiveSports=new Set();
+let analyticsChartScrolledOnce=false;
 let analyticsMode='time-sport-abs'; // time-sport-abs | time-zone
 let cfg={sports:JSON.parse(JSON.stringify(DEFAULT_SPORTS)),zones:JSON.parse(JSON.stringify(DEFAULT_ZONES)),sportZones:{},hrMax:192,hrRest:40,ftp:200,radMethod:'tss'};
 let chatHistory=[];
@@ -1365,6 +1407,17 @@ let pendingGpxData=null;
 let pendingGpxMulti=[];
 let pendingSrpe=null;
 let acwrWeeks=4;
+let breakdownWeeks=4;
+let breakdownActiveMetrics=new Set(['kmLauf']);
+let categoryBreakdownChart=null;
+const BREAKDOWN_METRICS=[
+  {key:'kmLauf',label:'km (Lauf)',sportKey:'Lauf',axis:'km',unit:'km'},
+  {key:'minRad',label:'Zeit (Rad)',sportKey:'Rad',axis:'min',unit:'min'},
+  {key:'minKraft',label:'Zeit (Kraft)',sportKey:'Kraft',axis:'min',unit:'min'},
+  {key:'minCapacity',label:'Zeit (Capacity)',sportKey:'Capacity',axis:'min',unit:'min'},
+  {key:'minAndere',label:'Zeit (Andere)',sportKey:null,axis:'min',unit:'min'}
+];
+function breakdownMetricColor(m){return m.sportKey?sportCfg(m.sportKey).color:'#5f5e5a';}
 
 function loadCfg(){
   try{
@@ -1387,6 +1440,7 @@ function loadCfg(){
           else cfg.sports.push(JSON.parse(JSON.stringify(ds)));
         }
       });
+      if(migrateSportIcons())saveCfg();
     }
   }catch(e){}
 }
@@ -1402,7 +1456,21 @@ function isSportFreitext(key){
 function sportCfg(key){
   const found=cfg.sports.find(s=>s.key===key);
   if(found)return found;
-  return{color:'#a8a59a',icon:'&#x26A1;',label:key,imgUrl:null,freitext:false};
+  return{color:'#a8a59a',icon:'ti-bolt',label:key,imgUrl:null,freitext:false};
+}
+// Alte gespeicherte Configs (localStorage oder Supabase) hatten Emoji-Icons statt
+// Tabler-Icon-Klassen. Bekannte Sportarten auf ihr Tabler-Icon migrieren, unbekannte
+// auf ein generisches Icon. Gibt true zurück, wenn etwas geändert wurde.
+function migrateSportIcons(){
+  let migrated=false;
+  (cfg.sports||[]).forEach(s=>{
+    if(typeof s.icon==='string' && s.icon.startsWith('ti-'))return;
+    if(s.imgUrl)return;
+    const ds=DEFAULT_SPORTS.find(d=>d.key===s.key);
+    s.icon=ds?ds.icon:(s.key==='Sonstiges'?'ti-bolt':'ti-medal');
+    migrated=true;
+  });
+  return migrated;
 }
 // Zonen-Auflösung pro Modalität: Lauf/Rad bekommen ggf. eigene Profile.
 // Andere Sportarten (oder Modalitäten ohne eigenes Profil) nutzen die globale Liste.
@@ -2018,11 +2086,15 @@ document.getElementById('qn-save-btn').addEventListener('click',async()=>{
     setTimeout(()=>{statusEl.textContent='';},3500);
   }catch(e){setSyncState('error');statusEl.textContent='Fehler: '+e.message;}
 });
+const pageTitles={log:'Training Log',calendar:'Kalender',analytics:'Auswertung',library:'Bibliothek',ai:'KI',
+'settings-page':'Einstellungen'};
 function showPage(key){
   activePage=key;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('#bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===key));
   const el=document.getElementById('page-'+key);if(el)el.classList.add('active');
+  const titleEl=document.getElementById('page-title');if(titleEl)titleEl.textContent=pageTitles[key]||'Training Log';
+  const headerEl=document.getElementById('main-header');if(headerEl)headerEl.classList.toggle('has-logo',key==='log');
   if(key==='calendar')renderCalendar();
   if(key==='analytics')renderAnalytics();
   if(key==='settings-page')renderSettingsInline();
@@ -3408,7 +3480,7 @@ function openCalPlanModal(iso){
         <div class="field"><label>Gesch. sRPE</label><input type="number" id="cp-srpe" min="1" max="10" step="1" placeholder="\u2013"></div>
       </div>
       <textarea id="cp-note" placeholder="Übungen / Notizen (optional)" style="width:100%;height:80px;padding:.5rem .6rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:.85rem;resize:vertical;"></textarea>
-      <div id="cp-estimate" style="display:none;margin-top:.5rem;padding:.5rem .6rem;background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--data-plum);border-radius:var(--radius);font-size:.76rem;color:var(--text-muted);"></div>
+      <div id="cp-estimate" style="display:none;margin-top:.5rem;padding:.5rem .6rem;background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--accent-purple);border-radius:var(--radius);font-size:.76rem;color:var(--text-muted);"></div>
       <div style="display:flex;gap:.5rem;margin-top:.7rem;">
         <button class="primary" id="cp-save" style="flex:1;"><i class="ti ti-calendar-plus"></i> Als Plan speichern</button>
         <button id="cp-close" style="padding:.55rem .9rem;"><i class="ti ti-x"></i></button>
@@ -3830,22 +3902,34 @@ function muteColor(hex,satMul,lightMix,lightTarget){
 // auf den Stapelgrenzen machen die Kategorien trotzdem klar erkennbar.
 function renderAnalyticsAreaChart(labels,datasets,getColor){
   const svg=document.getElementById('analytics-chart-svg');
+  const yaxisSvg=document.getElementById('analytics-yaxis-svg');
   const box=document.getElementById('analytics-chart-box');
+  const scrollEl=document.getElementById('analytics-chart-scroll');
   const legendEl=document.getElementById('analytics-table-wrap');
   if(!svg)return;
-  const W=(box&&box.clientWidth)||svg.clientWidth||360;
+  const WEEK_PX=90,yaxisW=44;
+  const n=labels.length;
   const H=(box&&box.clientHeight)||svg.clientHeight||220;
+  const viewportW=(scrollEl&&scrollEl.clientWidth)||(box&&box.clientWidth)||360;
+  const padL=18,padR=6,padT=10,padB=22;
+  const W=Math.max(Math.max(n-1,0)*WEEK_PX+padL+padR,viewportW);
+  svg.setAttribute('width',W);
+  svg.setAttribute('height',H);
   svg.setAttribute('viewBox','0 0 '+W+' '+H);
+  if(yaxisSvg){
+    yaxisSvg.setAttribute('width',yaxisW);
+    yaxisSvg.setAttribute('height',H);
+    yaxisSvg.setAttribute('viewBox','0 0 '+yaxisW+' '+H);
+  }
   const allVals=datasets.flatMap(ds=>ds.data);
   if(datasets.length===0||allVals.every(v=>v<=0)){
     svg.innerHTML='<text x="50%" y="50%" text-anchor="middle" fill="'+cssVar('--text-faint')+'" font-family="'+cssVar('--font-sans')+'" font-size="12">Keine Daten im Zeitraum</text>';
+    if(yaxisSvg)yaxisSvg.innerHTML='';
     if(legendEl)legendEl.innerHTML='';
     return;
   }
-  const padL=32,padR=10,padT=10,padB=22;
   const innerW=W-padL-padR,innerH=H-padT-padB;
-  const n=labels.length;
-  const xAt=i=>padL+(n<=1?0:(i/(n-1))*innerW);
+  const xAt=i=>padL+i*WEEK_PX;
   // maxY = größte Stapel-Gesamtsumme über alle X-Punkte
   const stackTotals=Array.from({length:n},(_,i)=>datasets.reduce((a,ds)=>a+Math.max(0,ds.data[i]||0),0));
   const maxY=Math.max(...stackTotals,1)*1.15;
@@ -3853,16 +3937,26 @@ function renderAnalyticsAreaChart(labels,datasets,getColor){
   const baseline=padT+innerH;
   const axF=cssVar('--font-sans'),axC=cssVar('--text-muted');
 
-  const yLabels=Array.from({length:4},(_,i)=>{
+  const gridLines=Array.from({length:4},(_,i)=>{
     const v=Math.round(maxY/3*i);const y=yAt(v);
-    return'<text x="'+(padL-6)+'" y="'+(y+3)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="end">'+fmtMinShort(v)+'</text>'+
-          '<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="rgba(44,44,42,0.06)" stroke-width="0.5"/>';
+    return'<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="rgba(44,44,42,0.06)" stroke-width="0.5"/>';
   }).join('');
-  const step=Math.max(1,Math.round(n/7));
+  const yAxisLabels=Array.from({length:4},(_,i)=>{
+    const v=Math.round(maxY/3*i);const y=yAt(v);
+    return'<text x="'+(yaxisW-6)+'" y="'+(y+3)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="end">'+fmtMinShort(v)+'</text>';
+  }).join('');
+  const labelStep=1;
   let xLabels='';
-  for(let i=0;i<n;i+=step){
+  for(let i=0;i<n;i+=labelStep){
     xLabels+='<text x="'+xAt(i).toFixed(1)+'" y="'+(H-6)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="middle">'+labels[i]+'</text>';
   }
+  // Linkes Chartende: vertikale Achslinie markiert den Beginn der Zeitreihe.
+  const startAxisLine='<line x1="'+padL+'" y1="'+padT+'" x2="'+padL+'" y2="'+baseline+'" stroke="'+axC+'" stroke-width="1" opacity="0.35"/>';
+  // Rechtes Chartende: gestrichelte Markierung + Label am aktuellen Tag (letzter Datenpunkt).
+  const todayX=xAt(n-1);
+  const accentCol=cssVar('--accent');
+  const todayMarker='<line x1="'+todayX.toFixed(1)+'" y1="'+padT+'" x2="'+todayX.toFixed(1)+'" y2="'+baseline+'" stroke="'+accentCol+'" stroke-width="1" stroke-dasharray="3,3" opacity="0.55"/>'+
+    '<text x="'+todayX.toFixed(1)+'" y="'+(padT+8)+'" font-family="'+axF+'" font-size="8" fill="'+accentCol+'" text-anchor="middle">Heute</text>';
 
   // Glatte Kurve durch eine Punktfolge [{x,y},…] via Catmull-Rom → kubische Béziers.
   // Ergibt organische, runde Verläufe statt eckiger Polylinien. Kein Overshoot dank
@@ -3902,7 +3996,7 @@ function renderAnalyticsAreaChart(labels,datasets,getColor){
   });
 
   const defs='<defs>'+gradDefs.join('')+
-    '<filter id="analytics-area-blur" x="-25%" y="-50%" width="150%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>'+
+    '<filter id="analytics-area-blur" x="-15%" y="-30%" width="130%" height="160%"><feGaussianBlur stdDeviation="6"/></filter>'+
     '<filter id="analytics-grain" x="0" y="0" width="100%" height="100%">'+
       '<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" result="noise"/>'+
       '<feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.04 0"/>'+
@@ -3910,7 +4004,21 @@ function renderAnalyticsAreaChart(labels,datasets,getColor){
   '</defs>';
   const grain='<rect x="'+padL+'" y="'+padT+'" width="'+innerW+'" height="'+innerH+'" filter="url(#analytics-grain)" pointer-events="none"/>';
 
-  svg.innerHTML=defs+yLabels+xLabels+'<g>'+fills.join('')+'</g>'+lines.join('')+grain;
+  svg.innerHTML=defs+gridLines+startAxisLine+xLabels+'<g>'+fills.join('')+'</g>'+lines.join('')+todayMarker+grain;
+
+  if(yaxisSvg){
+    const fadeCol=cssVar('--glass-bg-strong')||cssVar('--glass-bg');
+    yaxisSvg.innerHTML='<defs><linearGradient id="analytics-yaxis-fade" x1="0" y1="0" x2="1" y2="0">'+
+      '<stop offset="0%" stop-color="'+fadeCol+'" stop-opacity="0"/>'+
+      '<stop offset="60%" stop-color="'+fadeCol+'" stop-opacity="1"/>'+
+    '</linearGradient></defs>'+
+    '<rect x="0" y="0" width="'+yaxisW+'" height="'+H+'" fill="url(#analytics-yaxis-fade)"/>'+yAxisLabels;
+  }
+
+  if(scrollEl&&!analyticsChartScrolledOnce){
+    scrollEl.scrollLeft=scrollEl.scrollWidth;
+    analyticsChartScrolledOnce=true;
+  }
 
   if(legendEl){
     legendEl.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:.6rem 1rem;justify-content:center;margin-top:.7rem;">'+
@@ -3921,7 +4029,7 @@ function renderAnalyticsAreaChart(labels,datasets,getColor){
 }
 function renderAnalytics(){
   const CORE_SPORTS=['Lauf','Rad','Kraft'];
-  const WEEKS=12;
+  const WEEKS=16;
   const now=new Date();
   const weekBuckets=[];
   for(let i=WEEKS-1;i>=0;i--){
@@ -3985,6 +4093,7 @@ function renderAnalytics(){
   weeklyChartData=computeWeeklyTrendData(Math.max(28,acwrWeeks+4));
   renderWorkloadChart();
   renderMonotony();
+  renderCategoryBreakdownChart();
 }
 
 // ── WORKLOAD-PROGRESSIONS-CHART (Punkte + Glow-Band) ─────────────────────────
@@ -4266,27 +4375,104 @@ function renderMonotony(){
           grid:{color:'rgba(44,44,42,.07)'},ticks:{font:{size:10}},
           title:{display:true,text:'Monotonie',font:{size:9},color:cssVar('--orange-soft')}},
         yStrain:{position:'right',beginAtZero:true,grid:{display:false},
-          ticks:{font:{size:10}},title:{display:true,text:'Strain',font:{size:9},color:cssVar('--data-plum')}}
+          ticks:{font:{size:10}},title:{display:true,text:'Strain',font:{size:9},color:cssVar('--accent-purple')}}
       }
     }
   });
   // Referenzlinie bei Monotonie 2.0 visuell andeuten via Legende
   document.getElementById('monotony-legend').innerHTML=
     '<span style="color:var(--orange-soft);">Monotonie</span>'+
-    '<span style="color:var(--data-plum);">Strain</span>'+
+    '<span style="color:var(--accent-purple);">Strain</span>'+
     '<span style="color:var(--acwr-optimal);">&lt;1.5 gut</span>'+
     '<span style="color:var(--acwr-caution);">1.5–2.0 moderat</span>'+
     '<span style="color:var(--acwr-high);">&gt;2.0 kritisch</span>';
 }
 
+// Aufschlüsselung nach Kategorie: km (Lauf) sowie Trainingszeit (Rad/Kraft/Capacity/Andere)
+// pro Woche, für den Kategorie-Aufschlüsselungs-Chart unter Workload-Progression.
+function computeCategoryBreakdown(weeksCount){
+  const now=new Date();
+  const weeks=[];
+  const CORE=['Lauf','Rad','Kraft','Capacity'];
+  for(let w=weeksCount-1;w>=0;w--){
+    const wStart=startOfWeek(new Date(now));wStart.setDate(wStart.getDate()-w*7);
+    const wEnd=new Date(wStart);wEnd.setDate(wEnd.getDate()+6);
+    const sIso=toISODate(wStart),eIso=toISODate(wEnd);
+    const weekSessions=actualSessions().filter(s=>s.date>=sIso&&s.date<=eIso);
+    weeks.push({
+      start:wStart,
+      kmLauf:weekSessions.filter(s=>s.sport==='Lauf').reduce((a,s)=>a+(s.distance_km||0),0),
+      minRad:weekSessions.filter(s=>s.sport==='Rad').reduce((a,s)=>a+(s.duration||0),0),
+      minKraft:weekSessions.filter(s=>s.sport==='Kraft').reduce((a,s)=>a+(s.duration||0),0),
+      minCapacity:weekSessions.filter(s=>s.sport==='Capacity').reduce((a,s)=>a+(s.duration||0),0),
+      minAndere:weekSessions.filter(s=>!CORE.includes(s.sport)).reduce((a,s)=>a+(s.duration||0),0)
+    });
+  }
+  return weeks;
+}
+
+function renderCategoryBreakdownChart(){
+  document.getElementById('breakdown-metric-filter').innerHTML=BREAKDOWN_METRICS.map(m=>{
+    const active=breakdownActiveMetrics.has(m.key);
+    const color=breakdownMetricColor(m);
+    return`<button class="${active?'active':''}" style="${active?'background:'+color+';border-color:'+color+';':''}" data-metric="${m.key}">${m.label}</button>`;
+  }).join('');
+  document.getElementById('breakdown-metric-filter').querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{
+    const key=btn.dataset.metric;
+    if(breakdownActiveMetrics.has(key))breakdownActiveMetrics.delete(key);
+    else breakdownActiveMetrics.add(key);
+    renderCategoryBreakdownChart();
+  }));
+
+  const weeks=computeCategoryBreakdown(breakdownWeeks);
+  const labels=weeks.map(w=>(w.start.getMonth()+1)+'/'+w.start.getDate());
+  const active=BREAKDOWN_METRICS.filter(m=>breakdownActiveMetrics.has(m.key));
+  const hasKm=active.some(m=>m.axis==='km');
+  const hasMin=active.some(m=>m.axis==='min');
+
+  if(categoryBreakdownChart)categoryBreakdownChart.destroy();
+  categoryBreakdownChart=new Chart(document.getElementById('category-breakdown-chart'),{
+    type:'line',
+    data:{labels,datasets:active.map(m=>{
+      const color=breakdownMetricColor(m);
+      return{label:m.label,data:weeks.map(w=>Math.round(w[m.key]*10)/10),
+        yAxisID:m.axis==='km'?'yKm':'yMin',
+        borderColor:color,backgroundColor:color,
+        borderWidth:2.5,pointRadius:3,pointHoverRadius:6,tension:0.3,spanGaps:true,
+        _glow:true,_glowColor:color,_glowBlur:6};
+    })},
+    options:{responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{
+          label:ctx=>{
+            const m=active[ctx.datasetIndex];
+            return`${m.label}: ${ctx.parsed.y} ${m.unit}`;
+          }
+        }}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:8}},
+        yKm:{display:hasKm,position:'left',beginAtZero:true,
+          grid:{color:'rgba(44,44,42,.07)'},ticks:{font:{size:10}},
+          title:{display:true,text:'km',font:{size:9},color:sportCfg('Lauf').color}},
+        yMin:{display:hasMin,position:'right',beginAtZero:true,
+          grid:{display:false},ticks:{font:{size:10}},
+          title:{display:true,text:'Minuten',font:{size:9},color:'var(--text-muted)'}}
+      }
+    }
+  });
+}
+
 // Aggregiert jede der letzten 12 Wochen: Summe (einheitliches Stressor-Modell)
 // + Tagesaufschlüsselung Mo–So, für den Drill-down beim Klick auf einen Punkt.
-function computeWeeklyTrendData(totalWeeks){
+function computeWeeklyTrendData(totalWeeks,endOffset){
   totalWeeks=totalWeeks||12;
+  endOffset=endOffset||0;
   const now=new Date();
   const weeks=[];
   for(let w=totalWeeks-1;w>=0;w--){
-    const wStart=startOfWeek(new Date(now));wStart.setDate(wStart.getDate()-w*7);
+    const wStart=startOfWeek(new Date(now));wStart.setDate(wStart.getDate()-(w-endOffset)*7);
     const daily=[],dailyPlanned=[],dailySessions=[];
     let total=0,plannedTotal=0;
     for(let d=0;d<7;d++){
@@ -4316,7 +4502,9 @@ function renderWeeklyTrendChart(){
   if(weeklyTrendChart&&weeklyTrendChart.destroy){weeklyTrendChart.destroy();weeklyTrendChart=null;}
   const wcc=document.getElementById('weekly-compare-chart');
   if(!wcc)return;
-  const weeks=weeklyChartData&&weeklyChartData.length?weeklyChartData:computeWeeklyTrendData(12);
+  // An die auf der Log-Seite ausgewählte Woche gekoppelt (weekOffset), nicht an
+  // die global gecachten Analytics-Daten (die immer an "heute" verankert sind).
+  const weeks=computeWeeklyTrendData(12,weekOffset);
   // (legacy Chart.js Trend-Block entfernt)
 
   // ── Steigerungskennzahlen (nur abgeschlossene Wochen) ─────────────────────
@@ -4326,19 +4514,12 @@ function renderWeeklyTrendChart(){
   // wo sie ein verlässliches Bild gibt (Wochenstruktur/Tag spielt keine Rolle mehr).
   const nWeeks=weeks.length;
   const currentWeek=weeks[nWeeks-1];
+  const vorwoche=weeks[nWeeks-2]||null;
   const completedWeeks=weeks.slice(0,nWeeks-1).filter(w=>w.total>0);
 
-  // Letzte abgeschlossene Woche vs. Durchschnitt der davor liegenden (bis zu 4)
-  let lastCompletedDeviation=null,refAvg=0,lastCompletedTotal=null;
-  if(completedWeeks.length>=1){
-    const lastCompleted=completedWeeks[completedWeeks.length-1];
-    lastCompletedTotal=lastCompleted.total;
-    const before=completedWeeks.slice(-5,-1); // bis zu 4 Wochen davor
-    if(before.length>0){
-      refAvg=before.reduce((a,w)=>a+w.total,0)/before.length;
-      if(refAvg>0)lastCompletedDeviation=Math.round((lastCompleted.total-refAvg)/refAvg*1000)/10;
-    }
-  }
+  // "Letzte Woche"-Karte: letzte abgeschlossene Woche (unabhängig von der Auswahl)
+  const lastCompletedTotal=completedWeeks.length>0?completedWeeks[completedWeeks.length-1].total:null;
+
   // refAvg für das Band im Vergleichschart: Durchschnitt der letzten bis zu 4 abgeschlossenen Wochen
   const bandRefWeeks=completedWeeks.slice(-4);
   const bandRefAvg=bandRefWeeks.length>0?bandRefWeeks.reduce((a,w)=>a+w.total,0)/bandRefWeeks.length:0;
@@ -4359,13 +4540,36 @@ function renderWeeklyTrendChart(){
     return'Stabil / moderat';
   }
   const fmtPct=p=>p==null?'\u2014':(p>=0?'+':'')+p+'%';
-  // Tagesindex für die kumulierte Grafik unten
+  // Tagesindex für die kumulierte Grafik unten: bei der aktuellen Woche der reale
+  // Wochentag, bei einer vergangenen ausgewählten Woche die volle Woche (7),
+  // bei einer zukünftigen ausgewählten Woche noch kein Ist-Tag (0).
   const today=new Date();
-  const dow=(today.getDay()+6)%7+1;
+  const dow=weekOffset===0?(today.getDay()+6)%7+1:(weekOffset<0?7:0);
+  const curLabel=weekOffset===0?'Diese Woche':(weekOffset<0?'Ausgewählte Woche':'Geplante Woche');
+  const curSub=weekOffset===0?`bisher (Tag ${dow}/7)`:(weekOffset<0?'abgeschlossen':'geplant');
+
+  // Steigerung zur Vorwoche: ausgewählte Woche vs. unmittelbare Vorwoche.
+  // Bei der laufenden, noch unvollständigen Woche wird tageweise akkumuliert
+  // verglichen (Tag 1 vs. Tag 1 der Vorwoche, Tag 2 vs. Tag 2 usw.), damit die
+  // Hochrechnung fair bleibt. Ohne Einheiten in der laufenden Woche oder ohne
+  // Ist-Daten in einer geplanten (zukünftigen) Woche bleibt die Kennzahl leer.
+  const isCurrentInProgress=weekOffset===0&&dow<7;
+  let steigerungDeviation=null,isProjected=false;
+  if(weekOffset>0||(isCurrentInProgress&&currentWeek.total===0)){
+    // geplante Woche ohne Ist-Daten bzw. laufende Woche noch ohne Einheiten
+  }else if(vorwoche){
+    const days=isCurrentInProgress?dow:7;
+    const curAcc=currentWeek.daily.slice(0,days).reduce((a,b)=>a+b,0);
+    const prevAcc=vorwoche.daily.slice(0,days).reduce((a,b)=>a+b,0);
+    if(prevAcc>0){
+      steigerungDeviation=Math.round((curAcc-prevAcc)/prevAcc*1000)/10;
+      isProjected=isCurrentInProgress;
+    }
+  }
   document.getElementById('weekly-growth-cards').innerHTML=`
-    <div class="metric"><p class="m-label">Letzte Woche vs. Schnitt</p><p class="m-value" style="color:${growthColor(lastCompletedDeviation)};">${fmtPct(lastCompletedDeviation)}</p><p style="font-size:.64rem;color:${growthColor(lastCompletedDeviation)};margin:.1rem 0 0;font-weight:600;">${growthLabel(lastCompletedDeviation)}</p></div>
+    <div class="metric"><p class="m-label">Steigerung zur Vorwoche</p><p class="m-value" style="color:${growthColor(steigerungDeviation)};">${fmtPct(steigerungDeviation)}</p><p style="font-size:.64rem;color:${growthColor(steigerungDeviation)};margin:.1rem 0 0;font-weight:600;">${isProjected?'Hochger. ':''}${growthLabel(steigerungDeviation)}</p></div>
     <div class="metric"><p class="m-label">Letzte Woche</p><p class="m-value">${lastCompletedTotal!=null?lastCompletedTotal:'\u2014'}</p><p style="font-size:.64rem;color:var(--text-faint);margin:.1rem 0 0;">abgeschlossen</p></div>
-    <div class="metric"><p class="m-label">Diese Woche</p><p class="m-value" style="font-size:1.1rem;color:var(--data-plum);">${currentWeek.total}</p><p style="font-size:.64rem;color:var(--text-faint);margin:.1rem 0 0;">bisher (Tag ${dow}/7)</p></div>`;
+    <div class="metric"><p class="m-label">${curLabel}</p><p class="m-value" style="font-size:1.1rem;color:var(--accent-purple);">${currentWeek.total}</p><p style="font-size:.64rem;color:var(--text-faint);margin:.1rem 0 0;">${curSub}</p></div>`;
 
   // ── Wochenvergleich-Chart (SVG Glow-Ästhetik) ────────────────────────────
   if(weeklyCompareChart&&weeklyCompareChart.destroy)weeklyCompareChart.destroy();
@@ -4376,7 +4580,7 @@ function renderWeeklyTrendChart(){
   const dayLabels2=['Mo.','Di.','Mi.','Do.','Fr.','Sa.','So.'];
   const thisWeekCum=buildCumulative(currentWeek);
   const thisWeekVisible=thisWeekCum.map((v,i)=>i<dow?v:null);
-  const prevWeek=weeks[nWeeks-2]||null;
+  const prevWeek=vorwoche;
   const prevWeekCum=prevWeek?buildCumulative(prevWeek):null;
   const bandLoVal=bandRefAvg>0?Math.round(bandRefAvg*0.8):null;
   const bandHiVal=bandRefAvg>0?Math.round(bandRefAvg*1.3):null;
@@ -4415,7 +4619,7 @@ function renderWeeklyTrendChart(){
 
   const dotSid=daySess=>{const s=(daySess||[]).find(x=>!isSpecialEntry(x))||(daySess||[])[0];return s?s.id:'';};
   const thisDots=currentWeek.daily.map((d,i)=>d>0&&thisWeekVisible[i]!=null
-    ?`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(thisWeekVisible[i]).toFixed(1)}" r="4" fill="${cssVar('--data-plum')}" stroke="${PAPER}" stroke-width="1.5" style="cursor:pointer;" data-sid="${dotSid(currentWeek.dailySessions[i])}" onclick="wtcDotClick(this)"/>`:'').join('');
+    ?`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(thisWeekVisible[i]).toFixed(1)}" r="4" fill="${cssVar('--accent-purple')}" stroke="${PAPER}" stroke-width="1.5" style="cursor:pointer;" data-sid="${dotSid(currentWeek.dailySessions[i])}" onclick="wtcDotClick(this)"/>`:'').join('');
   const prevDots=prevWeek?prevWeek.daily.map((d,i)=>d>0&&prevWeekCum
     ?`<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(prevWeekCum[i]).toFixed(1)}" r="3.5" fill="${cssVar('--text-muted')}" stroke="${PAPER}" stroke-width="1.2" style="cursor:pointer;" data-sid="${dotSid(prevWeek.dailySessions[i])}" onclick="wtcDotClick(this)"/>`:'').join(''):'';
   const plannedDots=plannedCum?currentWeek.dailyPlanned.map((p,i)=>p>0
@@ -4432,18 +4636,18 @@ function renderWeeklyTrendChart(){
   wcc.innerHTML=`<defs>
     <filter id="wc-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5"/></filter>
     <linearGradient id="wc-blob" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${cssVar('--wlc-band')}" stop-opacity="0.95"/>
-      <stop offset="100%" stop-color="${cssVar('--wlc-band')}" stop-opacity="0.55"/>
+      <stop offset="0%" stop-color="${cssVar('--wlc-band')}" stop-opacity="1.25"/>
+      <stop offset="100%" stop-color="${cssVar('--wlc-band')}" stop-opacity="1,15"/>
     </linearGradient>
   </defs>
   ${yLabels2}${xLabels2}${bandSvg}
   ${prevPath?`<path d="${prevPath}" fill="none" stroke="${cssVar('--text-muted')}" stroke-width="1.5" stroke-opacity="0.7"/>`:''}
   ${plannedPath?`<path d="${plannedPath}" fill="none" stroke="${cssVar('--orange-soft')}" stroke-width="1.8" stroke-dasharray="5,4" stroke-opacity="0.9"/>`:''}
-  ${thisPath?`<path d="${thisPath}" fill="none" stroke="${cssVar('--data-plum')}" stroke-width="2"/>`:''}
+  ${thisPath?`<path d="${thisPath}" fill="none" stroke="${cssVar('--accent-purple')}" stroke-width="2"/>`:''}
   ${prevDots}${plannedDots}${thisDots}`;
 
   document.getElementById('weekly-compare-legend').innerHTML=
-    `<span style="color:var(--data-plum);">Diese Woche</span>`+
+    `<span style="color:var(--accent-purple);">${curLabel}</span>`+
     (prevWeekCum?`<span style="color:var(--text-muted);">Letzte Woche</span>`:'')+
     (plannedCum?`<span style="color:var(--orange-soft);">Geplant (Ist+Plan)</span>`:'')+
     (bandLoCum?`<span style="color:var(--acwr-low);">Empfohlener Bereich</span>`:'');
@@ -4467,7 +4671,7 @@ function openWeeklyDetail(idx){
     type:'bar',
     data:{labels:dayLabels,datasets:[{
       data:w.daily,
-      backgroundColor:w.daily.map(v=>v>0?cssVar('--data-plum'):'rgba(140,109,176,.18)'),
+      backgroundColor:w.daily.map(v=>v>0?cssVar('--accent-purple'):'rgba(140,109,176,.18)'),
       borderRadius:4,maxBarThickness:44
     }]},
     options:{responsive:true,maintainAspectRatio:false,
@@ -4512,6 +4716,7 @@ document.getElementById('analytics-mode-tabs').querySelectorAll('button').forEac
 document.getElementById('analytics-period-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{analyticsPeriod=btn.dataset.period;document.getElementById('analytics-period-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnalytics();});});
 document.getElementById('analytics-metric-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{analyticsMetric=btn.dataset.metric;document.getElementById('analytics-metric-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnalytics();});});
 document.getElementById('acwr-weeks-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{acwrWeeks=parseInt(btn.dataset.weeks);document.getElementById('acwr-weeks-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnalytics();});});
+document.getElementById('breakdown-weeks-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{breakdownWeeks=parseInt(btn.dataset.weeks);document.getElementById('breakdown-weeks-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderCategoryBreakdownChart();});});
 let _wlcResizeTimer=null;
 window.addEventListener('resize',()=>{clearTimeout(_wlcResizeTimer);_wlcResizeTimer=setTimeout(()=>{const p=document.getElementById('page-analytics');if(p&&p.classList.contains('active')&&document.getElementById('workload-chart-svg'))renderAnalytics();},180);});
 
@@ -4834,7 +5039,7 @@ function addNewSport(){
   // Standardfarbe-Palette
   const palette=['#7c8ea3','#5b9bd5','#6fa86f','#c4544a','#b07cc6','#f0c674','#e8975c','#5fa8a8'];
   const color=palette[cfg.sports.length%palette.length];
-  cfg.sports.push({key,label,color,icon:'&#x1F3C5;',imgUrl:null,freitext:false});
+  cfg.sports.push({key,label,color,icon:'ti-medal',imgUrl:null,freitext:false});
   saveCfg();populateSelects();renderSettingsInline();
 }
 
@@ -6111,6 +6316,7 @@ async function showApp(user){
   setSyncState('ok');
   if(remoteCfg){
     Object.assign(cfg,remoteCfg);
+    if(migrateSportIcons())DB.saveConfig(cfg).catch(e=>console.warn('saveConfig migrate:',e));
     localStorage.setItem('tlog_cfg',JSON.stringify(cfg));
   }else{
     DB.saveConfig(cfg).catch(e=>console.warn('saveConfig bootstrap:',e));
