@@ -30,8 +30,8 @@
 
   /* === Text === */
   --text:#2c2c2a;
-  --text-muted:#5f5e5a;
-  --text-faint:#8a8881;
+  --text-muted:#4d4c47;
+  --text-faint:#6b6960;
 
   /* === Akzent — warm/editorial (Terrakotta, Magenta/Gold-Verlauf, Gelb) === */
   --accent:#b8502f;                                            /* Primary (warm) */
@@ -91,7 +91,7 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));}
-.wrap{max-width:980px;margin:0 auto;padding:1.25rem 1rem 2rem;}
+.wrap{max-width:980px;margin:0 auto;padding:0 1rem 2rem;}
 
 /* ===== Hintergrund-Ebenen (Parallax-Bild + Grain) ===== */
 #bg-layer{
@@ -152,8 +152,10 @@ body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text
 #bottom-nav button .nav-icon{font-size:1.2rem;line-height:1;}
 header{display:flex;align-items:center;justify-content:center;margin-bottom:.9rem;padding:.85rem 0;border-bottom:1px solid var(--border);}
 header h1{font-family:var(--font-heading);font-size:2rem;font-weight:200;margin:0;letter-spacing:.12em;text-indent:.42em;word-spacing:.1em;color:var(--accent-yellow);text-align:center;}
-header.has-logo{background:url("img/training-log.png") top center/contain no-repeat;height:300px;margin-bottom:-170px;padding:0;border-bottom:none;}
+header.has-logo{background:url("img/training-log.png") top center/contain no-repeat;height:160px;margin-top:12px;margin-bottom:-24px;padding:0;border-bottom:none;will-change:transform;position:relative;z-index:0;}
 header.has-logo h1{width:1px;height:1px;overflow:hidden;position:absolute;white-space:nowrap;}
+/* Seiten-Überschriften (alle Seiten außer Log): Inter statt Logo-Font, Großbuchstaben, luftig */
+header:not(.has-logo) h1{font-family:var(--font-sans);font-size:1.5rem;font-weight:600;letter-spacing:.16em;text-indent:0;word-spacing:0;text-transform:uppercase;filter:blur(.4px);}
 .header-right{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;}
 .user-chip{display:flex;align-items:center;gap:.5rem;font-size:.82rem;color:var(--text-muted);}
 .user-chip img{width:26px;height:26px;border-radius:50%;object-fit:cover;}
@@ -161,7 +163,7 @@ header.has-logo h1{width:1px;height:1px;overflow:hidden;position:absolute;white-
 .sync-dot.syncing{background:#e85d2f;box-shadow:0 0 0 3px rgba(232,93,47,.15);animation:pulse 1s infinite;}
 .sync-dot.error{background:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.12);}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.page{display:none;}.page.active{display:block;}
+.page{display:none;position:relative;z-index:1;}.page.active{display:block;}
 /* Neo-Grotesk: Überschriften und Body/UI einheitlich in Sans (Inter) */
 h1,h2,h3{font-family:var(--font-sans);font-weight:600;letter-spacing:-.01em;}
 /* Überschriften auf allen Seiten außer Log: Inter, Großbuchstaben, luftig */
@@ -210,6 +212,10 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .current-tag{font-size:.68rem;color:var(--accent-text);background:var(--accent-light);border-radius:100px;padding:.08rem .45rem;margin-left:.35rem;}
 .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:.75rem;margin-bottom:1.25rem;}
 .metrics-3{grid-template-columns:repeat(3,1fr);}
+.metrics-5{grid-template-columns:repeat(5,1fr);}
+.metrics-5 .metric{padding:.4rem .35rem;}
+.metrics-5 .m-label{font-size:.58rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.metrics-5 .m-value{font-size:.95rem;}
 .acwr-group-label{font-size:.7rem;font-weight:600;color:var(--text-muted);margin:0 0 .4rem;}
 .acwr-group-label:not(:first-child){margin-top:.2rem;}
 .weekly-detail-box{margin-top:.9rem;padding-top:.8rem;border-top:1px solid var(--border);animation:wdFadeIn .2s ease;}
@@ -231,7 +237,7 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .modal-profile-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--bg);}
 .modal-profile-bar>div{height:100%;}
 .modal-profile-legend{display:flex;flex-wrap:wrap;gap:.5rem;font-size:.7rem;margin-top:.35rem;}
-.metric{background:var(--glass-bg);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border:1px solid var(--glass-border);border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);padding:.8rem 1rem;position:relative;overflow:hidden;}
+.metric{background:var(--glass-bg);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border:1px solid var(--glass-border);border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);padding:.8rem 1rem;position:relative;overflow:hidden;text-align:center;}
 .metric::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent-gradient);opacity:0;transition:opacity .2s;}
 .metric:hover::before{opacity:1;}
 .metric .m-label{font-size:.72rem;color:var(--text-muted);margin:0 0 .25rem;}
@@ -240,17 +246,20 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .chart-box{position:relative;height:180px;}
 .workload-chart-box{position:relative;height:220px;}
 @media(min-width:720px){#workload-chart-svg-box{height:340px;}}
+.rp-bars{display:flex;align-items:flex-end;gap:3px;height:100%;}
+.rp-bar-col{flex:1;height:100%;display:flex;align-items:flex-end;}
+.rp-bar{width:100%;border-radius:0;min-height:2px;}
 
 /* Log-Header: Garmin-Sync links, schwebender [+]-Button rechts oben */
 .log-header{display:flex;justify-content:space-between;align-items:center;margin:0 0 .8rem;position:relative;gap:.6rem;flex-wrap:wrap;}
-.log-sync-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1.1rem;border-radius:999px;border:1px solid var(--text);background:transparent;color:var(--text);font-size:.82rem;cursor:pointer;transition:background .12s;}
-.log-sync-btn:hover:not(:disabled){background:rgba(44,44,42,.05);}
+.log-sync-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1.1rem;border-radius:999px;border:2px solid var(--accent-yellow);background:transparent;color:var(--accent-yellow);font-size:.82rem;font-weight:600;cursor:pointer;transition:background .12s,filter .12s;filter:blur(.4px);}
+.log-sync-btn:hover:not(:disabled){background:rgba(44,44,42,.05);filter:blur(0);}
 .log-sync-btn:disabled{opacity:.4;cursor:not-allowed;}
 .log-sync-btn.syncing i{animation:spin 1s linear infinite;}
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .log-actions{position:relative;}
-.log-add-fab{width:44px;height:44px;border-radius:999px;border:1px solid var(--text);background:var(--text);color:var(--surface);display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;font-size:1.15rem;transition:filter .12s;}
-.log-add-fab:hover{filter:brightness(1.1);}
+.log-add-fab{width:44px;height:44px;border-radius:999px;border:1px solid var(--accent-yellow);background:var(--accent-yellow);color:var(--text);display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;font-size:1.15rem;transition:filter .12s;filter:blur(.4px);}
+.log-add-fab:hover{filter:brightness(1.1);background:var(--accent-yellow);}
 .log-add-fab.open{transform:rotate(45deg);}
 .log-add-menu{position:absolute;top:52px;right:0;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(44,44,42,.14);padding:.4rem;z-index:60;display:flex;flex-direction:column;gap:.2rem;}
 .log-add-menu[hidden]{display:none;}
@@ -380,7 +389,7 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
 .color-pick{width:34px;height:34px;padding:2px;border:1px solid var(--border-strong);border-radius:8px;cursor:pointer;}
 .emoji-pick{width:52px;text-align:center;font-size:1rem;padding:.3rem;}
 .sport-img-preview{width:34px;height:34px;border-radius:6px;object-fit:cover;border:1px solid var(--border);}
-.zone-row{display:grid;grid-template-columns:1fr 72px 72px 34px;gap:.4rem;align-items:center;margin-bottom:.45rem;}
+.zone-row{display:grid;grid-template-columns:1fr 60px 60px 34px 56px;gap:.4rem;align-items:center;margin-bottom:.45rem;}
 .zone-row input{font-size:.82rem;}
 .zone-color-pick{width:30px;height:30px;padding:2px;border:1px solid var(--border-strong);border-radius:6px;cursor:pointer;}
 
@@ -486,6 +495,14 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 .week-summary .m-label{color:var(--text-muted);}
 .week-summary .m-value{color:var(--text);}
 .weekly-compare-box{height:200px;}
+/* Chart-Umschalter (Wochenvergleich ⇄ Lastverteilung) */
+.ws-chart-switch{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin:0 0 .3rem;}
+.ws-chart-switch .ws-h{margin:0;text-align:center;flex:1;}
+.ws-arrow{flex-shrink:0;}
+.ws-chart-dots{display:flex;justify-content:center;gap:.4rem;margin:0 0 .7rem;}
+.ws-dot{width:6px;height:6px;border-radius:50%;background:var(--text-faint);opacity:.4;transition:opacity .2s ease,background .2s ease;}
+.ws-dot.active{opacity:1;background:var(--accent-purple);}
+.ld-bar{cursor:pointer;}
 /* Mobile: Kacheln unter der Wochennavigation verkleinern, damit die Tiles UND
    der Wochenvergleichschart gemeinsam ohne Scrollen auf den Bildschirm passen */
 @media(max-width:600px){
@@ -494,6 +511,9 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
   .week-summary .metric{padding:.5rem .55rem;}
   .week-summary .m-label{font-size:.6rem;margin:0 0 .15rem;}
   .week-summary .m-value{font-size:1rem;}
+  .week-summary .metrics-5 .metric{padding:.32rem .22rem;}
+  .week-summary .metrics-5 .m-label{font-size:.5rem;margin:0 0 .1rem;}
+  .week-summary .metrics-5 .m-value{font-size:.8rem;}
   .week-summary .ws-section{margin-top:.9rem;}
   .week-summary .ws-h{font-size:.85rem;margin-bottom:.45rem;}
   .weekly-compare-box{height:150px;}
@@ -552,7 +572,8 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
   .sr-body{grid-template-columns:1fr;gap:.8rem;}
   .sr-svg-wrap{max-width:240px;}
   header h1{font-size:1.05rem;letter-spacing:.28em;text-indent:.28em;word-spacing:.35em;}
-  header.has-logo{height:170px;margin-bottom:-90px;}
+  header.has-logo{height:90px;margin-top:8px;margin-bottom:-14px;}
+  header:not(.has-logo) h1{font-size:1.15rem;letter-spacing:.18em;text-indent:0;word-spacing:0;}
 }
 </style>
 </head>
@@ -726,18 +747,37 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
       <span class="ws-title" id="t-weeklabel"></span>
       <button class="icon" id="t-next"><i class="ti ti-arrow-right"></i></button>
     </div>
-    <div class="metrics">
-      <div class="metric"><p class="m-label">Gesamtzeit</p><p class="m-value" id="m-total">0:00</p></div>
-      <div class="metric"><p class="m-label">Einheiten</p><p class="m-value" id="m-count">0</p></div>
-      <div class="metric"><p class="m-label">Z1+2 / Z4+5</p><p class="m-value" id="m-polar" style="font-size:1.1rem;"><span style="color:#16a34a;">0</span><span style="color:var(--text-faint);">/</span><span style="color:#e85d2f;">0</span><span style="font-size:.8rem;color:var(--text-faint);">%</span></p></div>
+    <div class="metrics metrics-5">
+      <div class="metric"><p class="m-label">Gesamtzeit</p><p class="m-value" id="m-total">0:00</p><p style="font-size:.62rem;color:var(--text-faint);margin:.1rem 0 0;" id="m-count">0 Einheiten</p></div>
+      <div class="metric"><p class="m-label">Z1+2/Z4+5</p><p class="m-value" id="m-polar"><span style="color:#16a34a;">0</span><span style="color:var(--text-faint);">/</span><span style="color:#e85d2f;">0</span><span style="font-size:.72rem;color:var(--text-faint);">%</span></p></div>
+      <span id="log-acwr-cards" style="display:contents;"></span>
+      <div class="metric" id="recovery-pressure-toggle" style="cursor:pointer;" onclick="toggleCard('recovery-pressure-body','recovery-pressure-chevron')">
+        <p class="m-label">Regeneration <i class="ti ti-chevron-down collapse-chevron" id="recovery-pressure-chevron" style="font-size:.6rem;"></i></p>
+        <p class="m-value" id="recovery-pressure-label" style="font-size:.95rem;">&#x2014;</p>
+      </div>
     </div>
-    <div class="metrics metrics-3" id="log-acwr-cards"></div>
+    <div id="recovery-pressure-body" style="display:none;margin-bottom:.9rem;">
+      <p id="recovery-pressure-driver" style="font-size:.72rem;margin:0 0 .5rem;font-weight:600;"></p>
+      <div class="workload-chart-box wlc-paper" id="recovery-sparkline-box" style="height:52px;padding:.3rem .5rem;"></div>
+      <div class="metrics metrics-3" id="recovery-subsignal-cards" style="margin-top:.7rem;"></div>
+    </div>
 
     <div class="ws-section">
-      <h3 class="ws-h"><i class="ti ti-git-compare"></i> Wochenvergleich</h3>
-      <div id="weekly-growth-cards" class="metrics metrics-3" style="margin-bottom:.9rem;"></div>
-      <div class="workload-chart-box wlc-paper weekly-compare-box"><svg id="weekly-compare-chart" width="100%" height="100%"></svg></div>
-      <div id="weekly-compare-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
+      <div class="ws-chart-switch">
+        <button class="icon ws-arrow" id="ws-chart-prev" aria-label="Vorheriger Chart"><i class="ti ti-arrow-left"></i></button>
+        <h3 class="ws-h" id="ws-chart-title"><i class="ti ti-git-compare"></i> Wochenvergleich</h3>
+        <button class="icon ws-arrow" id="ws-chart-next" aria-label="Nächster Chart"><i class="ti ti-arrow-right"></i></button>
+      </div>
+      <div class="ws-chart-dots"><span class="ws-dot" data-view="compare"></span><span class="ws-dot" data-view="distribution"></span></div>
+      <div class="ws-chart-panel" data-view="compare">
+        <div id="weekly-growth-cards" class="metrics metrics-3" style="margin-bottom:.9rem;"></div>
+        <div class="workload-chart-box wlc-paper weekly-compare-box"><svg id="weekly-compare-chart" width="100%" height="100%"></svg></div>
+        <div id="weekly-compare-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
+      </div>
+      <div class="ws-chart-panel" data-view="distribution" hidden>
+        <div class="workload-chart-box wlc-paper weekly-compare-box"><svg id="weekly-load-dist-chart" width="100%" height="100%"></svg></div>
+        <div id="weekly-load-dist-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;align-items:center;"></div>
+      </div>
     </div>
   </div>
   <div class="card">
@@ -1327,13 +1367,18 @@ const DEFAULT_SPORTS=[
   {key:'Kampfsport',label:'Kampfsport',color:'#8c6db0',icon:'ti-karate',imgUrl:null,freitext:true},
   {key:'Sonstiges',label:'Sonstiges',color:'#5f5e5a',icon:'ti-bolt',imgUrl:null,freitext:true}
 ];
+// recoveryFactor: "Regenerationsstunden"-Kosten pro Trainingsminute in dieser Zone,
+// genutzt von der Recovery-Debt-Berechnung (Recovery Pressure). UNKALIBRIERTER
+// Platzhalter — nur monoton steigend nach Intensität, keine physiologische Grundlage
+// (bisher keine HRV-/Ruhe-HF-Daten zur Kalibrierung vorhanden). In den Einstellungen
+// pro Zone anpassbar.
 const DEFAULT_ZONES=[
-  {key:'Z1',label:'Zone 1',hrMin:null,hrMax:null,color:'#b3c7d8'},
-  {key:'Z2',label:'Zone 2',hrMin:null,hrMax:null,color:'#7c9bb5'},
-  {key:'Z3',label:'Zone 3',hrMin:null,hrMax:null,color:'#d79b46'},
-  {key:'Z4',label:'Zone 4',hrMin:null,hrMax:null,color:'#c8603a'},
-  {key:'Z5',label:'Zone 5',hrMin:null,hrMax:null,color:'#9a3f23'},
-  {key:'-',label:'Keine Zone',hrMin:null,hrMax:null,color:'#c9c6bc'}
+  {key:'Z1',label:'Zone 1',hrMin:null,hrMax:null,color:'#b3c7d8',recoveryFactor:0.05},
+  {key:'Z2',label:'Zone 2',hrMin:null,hrMax:null,color:'#7c9bb5',recoveryFactor:0.10},
+  {key:'Z3',label:'Zone 3',hrMin:null,hrMax:null,color:'#d79b46',recoveryFactor:0.20},
+  {key:'Z4',label:'Zone 4',hrMin:null,hrMax:null,color:'#c8603a',recoveryFactor:0.35},
+  {key:'Z5',label:'Zone 5',hrMin:null,hrMax:null,color:'#9a3f23',recoveryFactor:0.55},
+  {key:'-',label:'Keine Zone',hrMin:null,hrMax:null,color:'#c9c6bc',recoveryFactor:0.15}
 ];
 // Backwards-Compat: alte Configs ohne freitext-Flag pro Sport
 const FREITEXT=['Kraft','Kampfsport','Sonstiges'];
@@ -1379,6 +1424,7 @@ const glowPlugin={
 Chart.register(glowPlugin);
 let weekOffset=0,calMode='month',monthOffset=0,logListCount=8;
 let weeklyCompareChart=null;
+let logChartView='compare';   // aktive Log-Chart-Ansicht: 'compare' | 'distribution'
 let monotonyChart=null;
 
 // ── BIBLIOTHEK ────────────────────────────────────────────────────────────────
@@ -1440,6 +1486,16 @@ function loadCfg(){
           else cfg.sports.push(JSON.parse(JSON.stringify(ds)));
         }
       });
+      // Alte gespeicherte Configs kennen recoveryFactor (Recovery Pressure) noch nicht —
+      // fehlenden Wert anhand des Zonen-Keys aus DEFAULT_ZONES nachtragen.
+      const backfillRecoveryFactor=z=>{
+        if(z.recoveryFactor==null){
+          const dz=DEFAULT_ZONES.find(d=>d.key===z.key);
+          z.recoveryFactor=dz?dz.recoveryFactor:0.15;
+        }
+      };
+      (cfg.zones||[]).forEach(backfillRecoveryFactor);
+      Object.values(cfg.sportZones||{}).forEach(list=>Array.isArray(list)&&list.forEach(backfillRecoveryFactor));
       if(migrateSportIcons())saveCfg();
     }
   }catch(e){}
@@ -1621,14 +1677,6 @@ function modalityIndicator(session){
 }
 
 // ── ACWR ──────────────────────────────────────────────────────────────────────
-function calcChronic(weeklyLoads){
-  return weeklyLoads.map((_,i)=>{
-    const start=Math.max(0,i-3);
-    const slice=weeklyLoads.slice(start,i+1).filter(v=>v!=null);
-    if(slice.length===0)return null;
-    return Math.round(slice.reduce((a,b)=>a+b,0)/slice.length);
-  });
-}
 function acwrColor(weekLoad,chronicLoad){
   if(!chronicLoad||chronicLoad<=0)return cssVar('--text-faint','#8a8881');
   const r=weekLoad/chronicLoad;
@@ -1647,77 +1695,231 @@ function acwrStatus(acwr){
 
 function fmtWorkload(v){return v!=null?String(Math.round(v)):'&#x2014;';}
 
-// ── ACWR-STATS (gemeinsam genutzt von Log- und Auswertungsseite) ──────────────
-// Einheitliches Stressor-Modell: jede Einheit (TRIMP/TSS/sRPE) wird gleich
-// behandelt und in eine gemeinsame Tages-/Wochensumme addiert.
-function computeAcwrStats(){
-  const totalWeeksLookback=12;
-  const now4=new Date();
-  const allWeekLoads=[];
-  for(let w=totalWeeksLookback-1;w>=0;w--){
-    const wStart=startOfWeek(new Date(now4));wStart.setDate(wStart.getDate()-w*7);
-    const wEnd=new Date(wStart);wEnd.setDate(wEnd.getDate()+6);wEnd.setHours(23,59,59);
-    const wSessions=actualSessions().filter(s=>inRange(s.date,{start:wStart,end:wEnd}));
-    const vals=wSessions.map(s=>berechneWorkload(s).value).filter(v=>v!=null);
-    allWeekLoads.push(vals.length>0?Math.round(vals.reduce((a,b)=>a+b,0)):null);
+// Läuft von asOf rückwärts, bis ein Tag mit tatsächlich absolvierter (nicht geplanter/
+// Sonder-)Einheit gefunden wird — asOf selbst zählt, falls dort schon trainiert wurde.
+// Verhindert, dass die ACWR-Karten am aktuellen Tag vor dem ersten Eintrag "leer" wirken.
+function lastCompletedTrainingDate(asOf){
+  const d=new Date(asOf);d.setHours(0,0,0,0);
+  for(let i=0;i<400;i++){
+    const iso=toISODate(d);
+    if(sessions.some(s=>s.date===iso&&!isPlanned(s)&&!isSpecialEntry(s)))return new Date(d);
+    d.setDate(d.getDate()-1);
   }
-  const fullChronic=calcChronic(allWeekLoads.map(v=>v==null?0:v));
-  const currentLoad=allWeekLoads[allWeekLoads.length-1];
-  const currentChronic=fullChronic[fullChronic.length-1]||0;
-  const currentAcwr=(currentLoad!=null&&currentChronic>0)?currentLoad/currentChronic:null;
-  const currentStatus=currentAcwr!=null?acwrStatus(currentAcwr):{label:'Keine Daten',color:'#888780'};
-  return{currentLoad,currentChronic,currentAcwr,currentStatus};
+  return new Date(asOf); // Fallback: keine Trainingshistorie vorhanden
+}
+
+// Baut eine tagesgenaue Lastserie zwischen start/end (inklusive), egal ob Ruhetag oder
+// nicht. Ruhetage erscheinen als {actualLoad:0, plannedLoad:0, sessions:[]}, NICHT als
+// Lücke — alle Downstream-Konsumenten (Monotonie, ACWR, Recovery Pressure) brauchen
+// einen dichten Tages-Vektor mit expliziten Nullen für Ruhetage. Kanonische Quelle für
+// alle tagesbasierten Aggregationen (löst die vormals dreifach duplizierte Tagesschleife
+// in computeMonotonyStrain/computeWeeklyTrendData/computeAcwrStats ab).
+function buildDailyLoadSeries({start,end,includePlanned=false,includeSpecial=false}){
+  const out=[];
+  const cur=new Date(start);cur.setHours(0,0,0,0);
+  const endD=new Date(end);endD.setHours(0,0,0,0);
+  while(cur<=endD){
+    const iso=toISODate(cur);
+    const daySess=sessions.filter(s=>s.date===iso);
+    const actual=daySess.filter(s=>!isPlanned(s)&&!isSpecialEntry(s));
+    const planned=includePlanned?daySess.filter(s=>isPlanned(s)&&!isSpecialEntry(s)):[];
+    const special=includeSpecial?daySess.filter(isSpecialEntry):[];
+    const actVals=actual.map(s=>berechneWorkload(s).value).filter(v=>v!=null);
+    const plnVals=planned.map(s=>berechneWorkload(s).value).filter(v=>v!=null);
+    out.push({
+      iso,
+      actualLoad:actVals.length>0?Math.round(actVals.reduce((a,b)=>a+b,0)*10)/10:0,
+      plannedLoad:plnVals.length>0?Math.round(plnVals.reduce((a,b)=>a+b,0)*10)/10:0,
+      sessions:actual.concat(planned,special)
+    });
+    cur.setDate(cur.getDate()+1);
+  }
+  return out;
+}
+
+// ── ACWR-STATS (gemeinsam genutzt von Log- und Auswertungsseite) ──────────────
+// Rollierendes ACWR: 7-Tage-Akutlast / Ø-Tageslast der letzten 28 Tage (auf 7-Tage-Basis
+// skaliert), für JEDEN Tag neu berechnet — nicht mehr an Kalenderwochen-Grenzen gebunden
+// (löst das "bucketed ACWR"-Problem: eine Wochenend-Lastspitze wurde vorher an der
+// Mo/So-Grenze durchgeschnitten und dadurch verdünnt statt korrekt erfasst).
+function computeAcwrRollingSeries(days,asOf){
+  days=days||90;
+  const today=asOf?new Date(asOf):new Date();today.setHours(0,0,0,0);
+  const start=new Date(today);start.setDate(start.getDate()-(days-1)-27); // 27 Tage Vorlauf für Chronic
+  const series=buildDailyLoadSeries({start,end:today});
+  const loads=series.map(d=>d.actualLoad);
+  const out=[];
+  for(let i=0;i<series.length;i++){
+    const acuteSlice=loads.slice(Math.max(0,i-6),i+1);
+    const chronicSlice=loads.slice(Math.max(0,i-27),i+1);
+    const acute=acuteSlice.reduce((a,b)=>a+b,0);
+    const n=chronicSlice.length;
+    const chronic=n>=7?Math.round((chronicSlice.reduce((a,b)=>a+b,0)/n)*7):null;
+    out.push({iso:series[i].iso,acute:Math.round(acute),chronic,acwr:(chronic&&chronic>0)?acute/chronic:null});
+  }
+  const cutoffIso=toISODate(new Date(today.getTime()-(days-1)*86400000));
+  return out.filter(d=>d.iso>=cutoffIso);
+}
+// asOf: Stichtag, auf den sich "letzte 7 Tage"/"chronische Last" beziehen — Standard: heute.
+// Wird von der Log-Seite mit dem Ende der jeweils per Wochennavigation ausgewählten Woche
+// aufgerufen, damit die Karten die angezeigte Woche widerspiegeln statt immer "heute".
+function computeAcwrStatsRolling(asOf){
+  const cur=computeAcwrRollingSeries(1,asOf).slice(-1)[0]||{acute:null,chronic:null,acwr:null};
+  const currentStatus=cur.acwr!=null?acwrStatus(cur.acwr):{label:'Keine Daten',color:'#888780'};
+  return{currentLoad:cur.acute,currentChronic:cur.chronic,currentAcwr:cur.acwr,currentStatus};
 }
 function acwrCardsHTML(stats){
   return`
-    <div class="metric"><p class="m-label">Aktuelle Woche</p><p class="m-value">${stats.currentLoad!=null?stats.currentLoad:'&#x2014;'}</p><p style="font-size:.66rem;color:var(--text-faint);margin:.1rem 0 0;">Punkte</p></div>
-    <div class="metric"><p class="m-label">Chronische Last</p><p class="m-value">${stats.currentChronic>0?stats.currentChronic:'&#x2014;'}</p><p style="font-size:.66rem;color:var(--text-faint);margin:.1rem 0 0;">&#xD8; 4 Wochen</p></div>
+    <div class="metric"><p class="m-label">Letzte 7 Tage</p><p class="m-value">${stats.currentLoad!=null?stats.currentLoad:'&#x2014;'}</p><p style="font-size:.66rem;color:var(--text-faint);margin:.1rem 0 0;">Punkte</p></div>
+    <div class="metric"><p class="m-label">Chronische Last</p><p class="m-value">${stats.currentChronic>0?stats.currentChronic:'&#x2014;'}</p><p style="font-size:.66rem;color:var(--text-faint);margin:.1rem 0 0;">&#xD8; letzte 28 Tage</p></div>
     <div class="metric"><p class="m-label">ACWR</p><p class="m-value" style="color:${stats.currentStatus.color};">${stats.currentAcwr!=null?stats.currentAcwr.toFixed(2):'&#x2014;'}</p><p style="font-size:.66rem;color:${stats.currentStatus.color};margin:.1rem 0 0;font-weight:600;">${stats.currentStatus.label}</p></div>`;
 }
-
-// Monotonie & Strain nach Foster (1998): Bewertung der Belastungsverteilung INNERHALB
-// der Woche, ergänzend zu ACWR (das nur die Gesamtmenge bewertet).
-// Monotonie = Wochenmittel der Tageslast / SD der Tageslast (Ruhetage zählen als 0).
-// Hohe Monotonie (>2.0) bei hoher Last gilt als Marker für Übertraining/Verletzungsrisiko,
-// weil gleichförmige Belastung ohne Erholungsvariation den Körper nicht ausreichend regenerieren lässt.
-// Strain = Wochensumme × Monotonie — gewichtet die Gesamtlast mit ihrer Gleichförmigkeit.
-function computeMonotonyStrain(weeksBack){
-  weeksBack=weeksBack||8;
-  const now=new Date();
-  const result=[];
-  for(let w=weeksBack-1;w>=0;w--){
-    const wStart=startOfWeek(new Date(now));wStart.setDate(wStart.getDate()-w*7);
-    const daily=[];
-    for(let d=0;d<7;d++){
-      const day=new Date(wStart);day.setDate(day.getDate()+d);
-      const iso=toISODate(day);
-      const daySess=actualSessions().filter(s=>s.date===iso);
-      const vals=daySess.map(s=>berechneWorkload(s).value).filter(v=>v!=null);
-      daily.push(vals.length>0?vals.reduce((a,b)=>a+b,0):0);
-    }
-    const sum=daily.reduce((a,b)=>a+b,0);
-    const mean=sum/7;
-    const variance=daily.reduce((a,v)=>a+(v-mean)**2,0)/7;
-    const sd=Math.sqrt(variance);
-    // Monotonie nur sinnvoll wenn Training stattfand
-    const monotony=(sum>0&&sd>0)?mean/sd:(sum>0?7:0); // sd=0 bei identischer Tageslast → max. Monotonie
-    const strain=Math.round(sum*monotony);
-    result.push({
-      weekStart:wStart,
-      sum:Math.round(sum),
-      monotony:Math.round(monotony*100)/100,
-      strain,
-      trainingDays:daily.filter(v=>v>0).length
-    });
+// Kompakte 2-Karten-Variante für die Log-Seite: Last (7T/Ø28T) zusammengelegt + ACWR.
+// Zeigt nur EINEN ACWR-Wert: "heute", falls heute bereits trainiert wurde, sonst den
+// letzten abgeschlossenen Trainingstag (Label "Vortag") — ein leerer "heute"-Tag soll
+// den Wert nicht künstlich verwässern. dayStats/dayBeforeStats teilen sich denselben
+// Bezugstag (dayStats) bzw. den Vortag davon (für den Trendpfeil), isToday markiert,
+// ob der Bezugstag der reale heutige Tag ist.
+function acwrCardsHTMLCompact(dayStats,dayBeforeStats,isToday){
+  const load7=dayStats.currentLoad!=null?dayStats.currentLoad:'&#x2014;';
+  const chronic=dayStats.currentChronic>0?dayStats.currentChronic:'&#x2014;';
+  const dayLabel=isToday?'heute':'Vortag';
+  let arrow='';
+  if(dayStats.currentAcwr!=null&&dayBeforeStats&&dayBeforeStats.currentAcwr!=null){
+    const delta=dayStats.currentAcwr-dayBeforeStats.currentAcwr;
+    // 0.3 ACWR-Differenz ≈ voller Ausschlag (±75°); negativ = Pfeil dreht nach oben.
+    const angle=Math.max(-75,Math.min(75,-(delta/0.3)*75));
+    arrow=`<i class="ti ti-arrow-right" style="display:inline-block;transform:rotate(${angle.toFixed(0)}deg);color:${dayStats.currentStatus.color};font-size:.72rem;margin-left:.25rem;vertical-align:.05em;"></i>`;
   }
-  return result;
+  return`
+    <div class="metric"><p class="m-label">Load 7T</p><p class="m-value">${load7}<span style="font-size:.7rem;color:var(--text-faint);"> / &#xD8;${chronic}</span></p></div>
+    <div class="metric"><p class="m-label">ACWR</p><p class="m-value" style="color:${dayStats.currentStatus.color};">${dayStats.currentAcwr!=null?dayStats.currentAcwr.toFixed(2):'&#x2014;'}${arrow}</p><p style="font-size:.62rem;color:${dayStats.currentStatus.color};margin:.1rem 0 0;font-weight:600;">${dayStats.currentStatus.label}<span style="color:var(--text-faint);font-weight:500;"> &#183; ${dayLabel}</span></p></div>`;
 }
 
-function monotonyStatus(m){
-  if(m==null||m===0)return{label:'Keine Daten',color:'#888780'};
-  if(m<1.5)return{label:'Gut variiert',color:cssVar('--acwr-optimal')};
-  if(m<2.0)return{label:'Moderat',color:cssVar('--acwr-caution')};
-  return{label:'Zu gleichförmig',color:cssVar('--acwr-high')};
+// ── RECOVERY PRESSURE ──────────────────────────────────────────────────────────
+// Erkennt anhaltende Trainingsdichte OHNE ausreichende Erholung — ergänzend zu ACWR
+// (das nur akute Lastspitzen relativ zur chronischen Basis erkennt). Kombiniert
+// mehrere Sub-Signale über eine Worst-Case-Logik (max. Schweregrad gewinnt):
+//   A) Monotonie (Foster) — bereits oben vorhanden, siehe computeMonotonyStrain/monotonyStatus
+//   B) Ruhetage-Streak — Tage am Stück ohne Pause
+//   C) Erholungsschuld — kumulierte Regenerations-Bilanz
+// Ein 4. Sub-Signal (Ruhe-HF, sobald Garmin-Sync die Daten liefert) kann später einfach
+// als weiteres Element im signals-Array von combine() ergänzt werden.
+
+// Sub-Signal B: Ruhetage-Streak. Reine Tageszählung, braucht keine historische
+// Kalibrierung (im Gegensatz zu C).
+const REST_STREAK_YELLOW=5; // ab 5 Tagen ohne Pause: gelb
+const REST_STREAK_RED=7;    // ab 7 Tagen ohne Pause: rot
+function computeRestStreak(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const lookbackDays=REST_STREAK_RED+7; // Puffer über die rote Schwelle hinaus
+  const start=new Date(today);start.setDate(start.getDate()-lookbackDays+1);
+  const series=buildDailyLoadSeries({start,end:today});
+  let streak=0;
+  for(let i=series.length-1;i>=0;i--){
+    if(series[i].actualLoad>0)streak++;
+    else break;
+  }
+  return{streak};
+}
+function restStreakStatus(streak){
+  if(streak==null)return{label:'Keine Daten',color:'#888780',severity:null};
+  if(streak<REST_STREAK_YELLOW)return{label:'Im Takt',color:cssVar('--acwr-optimal'),severity:0};
+  if(streak<REST_STREAK_RED)return{label:'Mehr Ruhe nötig',color:cssVar('--acwr-caution'),severity:1};
+  return{label:'Ruhepausen fehlen',color:cssVar('--acwr-high'),severity:2};
+}
+
+// Sub-Signal C: Erholungsschuld — kumulierte Differenz zwischen "Regenerationsstunden
+// verbraucht" (gewichtet nach Zonenintensität via recoveryFactor) und "Regenerations-
+// stunden regeneriert" (fixer Tagesbetrag). Negative Schuld wird bei 0 gekappt (kein
+// "Erholungsguthaben" ansammelbar — konservativ).
+//
+// ACHTUNG: REGEN_PER_DAY und die recoveryFactor-Defaults in DEFAULT_ZONES sind
+// UNKALIBRIERTE Platzhalter ohne physiologische Grundlage (kein Garmin-/HRV-Datensatz
+// vorhanden). Anpassen, sobald reale Belastungs-/Erholungsmuster beobachtbar sind.
+const REGEN_PER_DAY=1.2;   // "Regenerationsstunden", die der Körper pro Tag regeneriert — GUESS
+const DEBT_WINDOW_DAYS=21; // Rückblickfenster für die Schuld-Akkumulation
+const DEBT_YELLOW=3;       // Schuld-Schwelle für Gelb — GUESS, an REGEN_PER_DAY gekoppelt
+const DEBT_RED=8;          // Schuld-Schwelle für Rot — GUESS, an REGEN_PER_DAY gekoppelt
+
+// Recovery-Kosten eines Tages in "Regenerationsstunden": bevorzugt Zonen-Minuten
+// (zoneProfileMin, wenn HF-Verlauf vorhanden), sonst Fallback: einheitlicher
+// "Keine Zone"-Faktor auf die volle Dauer (für sRPE-only/Freitext-Einheiten ohne HF-Daten).
+function dayRecoveryCost(daySessions){
+  let cost=0;
+  daySessions.forEach(s=>{
+    const zp=zoneProfileMin(s); // [Z1..Z5] Minuten, oder null
+    if(zp){
+      const zones=zonesFor(s.sport);
+      const factors=['Z1','Z2','Z3','Z4','Z5'].map(k=>{
+        const z=zones.find(zz=>zz.key===k);
+        return(z&&z.recoveryFactor!=null)?z.recoveryFactor:0.15;
+      });
+      cost+=zp.reduce((a,min,i)=>a+min*factors[i],0);
+    }else{
+      const noZone=zoneCfg('-',s.sport);
+      const factor=(noZone&&noZone.recoveryFactor!=null)?noZone.recoveryFactor:0.15;
+      cost+=(s.duration||0)*factor;
+    }
+  });
+  return cost;
+}
+function computeRecoveryDebt(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const start=new Date(today);start.setDate(start.getDate()-DEBT_WINDOW_DAYS+1);
+  const series=buildDailyLoadSeries({start,end:today});
+  let debt=0;
+  const debtSeries=[];
+  series.forEach(d=>{
+    const cost=dayRecoveryCost(d.sessions);
+    debt=Math.max(0,debt+cost-REGEN_PER_DAY);
+    debtSeries.push({iso:d.iso,debt:Math.round(debt*100)/100});
+  });
+  return{debt:Math.round(debt*100)/100,series:debtSeries};
+}
+function recoveryDebtStatus(debt){
+  if(debt==null)return{label:'Keine Daten',color:'#888780',severity:null};
+  if(debt<DEBT_YELLOW)return{label:'Im Rahmen',color:cssVar('--acwr-optimal'),severity:0};
+  if(debt<DEBT_RED)return{label:'Mehr Erholung nötig',color:cssVar('--acwr-caution'),severity:1};
+  return{label:'Stark erhöht',color:cssVar('--acwr-high'),severity:2};
+}
+
+// Kombiniert die Sub-Signale zum Gesamtstatus: schlechtester Fall gewinnt (max. Schweregrad).
+// signals: Array von {key,label,severity} — severity 0=grün,1=gelb,2=rot,null=keine Daten.
+// Ein neues Sub-Signal (z.B. später Ruhe-HF) wird einfach als weiteres Element im
+// signals-Array übergeben, combine() selbst braucht dafür keine Änderung.
+function combine(signals){
+  const valid=signals.filter(s=>s.severity!=null);
+  if(valid.length===0)return{severity:null,label:'Keine Daten',color:'#888780',driver:null};
+  const worst=valid.reduce((a,b)=>b.severity>a.severity?b:a);
+  const SEV_COLOR=[cssVar('--acwr-optimal'),cssVar('--acwr-caution'),cssVar('--acwr-high')];
+  const SEV_LABEL=['Im Rahmen','Achtung','Stark erhöht'];
+  return{severity:worst.severity,label:SEV_LABEL[worst.severity],color:SEV_COLOR[worst.severity],driver:worst.label,signals:valid};
+}
+
+function computeRecoveryPressure(){
+  const mono=computeMonotonyStrain(1)[0];
+  const monoStat=monotonyStatus(mono.monotony);
+  const monoSeverity=mono.monotony===0?null:(mono.monotony<1.5?0:mono.monotony<2.0?1:2);
+
+  const rest=computeRestStreak();
+  const restStat=restStreakStatus(rest.streak);
+
+  const debt=computeRecoveryDebt();
+  const debtStat=recoveryDebtStatus(debt.debt);
+
+  const signals=[
+    {key:'monotony',label:'wenig Abwechslung',severity:monoSeverity},
+    {key:'restStreak',label:'Ruhepausen fehlen',severity:restStat.severity},
+    {key:'recoveryDebt',label:'Erholungsrückstand',severity:debtStat.severity}
+    // Sub-Signal D (Ruhe-HF) käme hier als weiteres Objekt dazu, sobald Garmin-Sync verfügbar ist.
+  ];
+  return{
+    ...combine(signals),
+    monotony:{data:mono,status:monoStat},
+    restStreak:{data:rest,status:restStat},
+    recoveryDebt:{data:debt,status:debtStat}
+  };
 }
 
 // HF-Drift (kardiovaskuläres Decoupling-Näherung): Vergleicht die durchschnittliche
@@ -2444,14 +2646,6 @@ function populateSelects(){
 // erweiterte Notizfeld + Verknüpfungs-Workflow wie Kraft.
 function isSportLinkable(key){return key==='Kraft'||key==='Capacity';}
 
-// Plan-Status: geplante Einheit ist eine Soll-Vorgabe, die noch nicht absolviert wurde.
-// Wird durch FIT-Verknüpfung oder manuelles "als ausgeführt markieren" auf planned=false gesetzt.
-function isPlanned(s){return s&&s.planned===true;}
-// Gibt nur tatsächlich absolvierte Einheiten zurück — Basis für ALLE Workload-,
-// ACWR- und Steigerungs-Statistiken. Geplante Einheiten werden separat angezeigt.
-function actualSessions(){return sessions.filter(s=>!isPlanned(s));}
-function plannedSessions(){return sessions.filter(s=>isPlanned(s));}
-
 // Geplante Einheit: planned=true (boolean) ODER planned===1 (smallint-Fallback).
 // Eine geplante Einheit fließt NICHT in Ist-Auswertungen ein, wird aber visuell sichtbar gemacht.
 function isPlanned(s){return!!(s&&(s.planned===true||s.planned===1));}
@@ -2733,6 +2927,15 @@ function goToWeek(delta){
 }
 document.getElementById('t-prev').addEventListener('click',()=>goToWeek(-1));
 document.getElementById('t-next').addEventListener('click',()=>goToWeek(1));
+// Log-Chart-Umschalter (Wochenvergleich ⇄ Lastverteilung)
+function cycleLogChartView(dir){
+  const order=['compare','distribution'];
+  let i=order.indexOf(logChartView);
+  setLogChartView(order[(i+dir+order.length)%order.length]);
+}
+document.getElementById('ws-chart-prev').addEventListener('click',()=>cycleLogChartView(-1));
+document.getElementById('ws-chart-next').addEventListener('click',()=>cycleLogChartView(1));
+document.querySelectorAll('.ws-dot').forEach(d=>d.addEventListener('click',()=>setLogChartView(d.getAttribute('data-view'))));
 
 function toggleDetail(id){const el=document.getElementById('detail-'+id);if(el)el.classList.toggle('open');}
 // Öffnet das Detail einer Session und springt direkt ins Notizfeld —
@@ -3173,7 +3376,7 @@ function renderLog(){
   const sollHint=wsPlanned.length>0
     ?`<span style="font-size:.66rem;color:#9d92be;margin-left:.3rem;">+ ${fmtMin(totalMinPlan)} geplant</span>`:'';
   document.getElementById('m-total').innerHTML=fmtMin(totalMin)+sollHint;
-  document.getElementById('m-count').textContent=ws.length+(wsPlanned.length>0?' ('+wsPlanned.length+' gep.)':'');
+  document.getElementById('m-count').textContent=ws.length+(wsPlanned.length>0?' ('+wsPlanned.length+' gep.)':'')+' Einheiten';
   // Zonenverteilung: nur absolvierte Einheiten
   const zt={};cfg.zones.forEach(z=>{zt[z.key]=0;});
   ws.forEach(s=>{if(zt[s.zone]!==undefined)zt[s.zone]+=s.duration;});
@@ -3184,11 +3387,19 @@ function renderLog(){
   const highPct=zonedTotal>0?Math.round(((zt[z4k]||0)+(zt[z5k]||0))/zonedTotal*100):0;
   document.getElementById('m-polar').innerHTML=
     `<span style="color:#16a34a;">${lowPct}</span><span style="color:var(--text-faint);">/</span><span style="color:#e85d2f;">${highPct}</span><span style="font-size:.8rem;color:var(--text-faint);">%</span>`;
-  // ── ACWR-Cards (gemeinsam mit Auswertungsseite) ────────────────────────────
-  document.getElementById('log-acwr-cards').innerHTML=acwrCardsHTML(computeAcwrStats());
+  // ── ACWR-Cards ──────────────────────────────────────────────────────────────
+  // asOf = Ende der per Wochennavigation ausgewählten Woche (auf "heute" gekappt, da für
+  // zukünftige/geplante Wochen noch keine Ist-Last existiert) — sonst würden die Karten
+  // beim Zurückblättern immer die heutige statt die angezeigte Woche widerspiegeln.
+  const acwrCapped=range.end<new Date()?range.end:new Date();
+  const acwrAsOf=lastCompletedTrainingDate(acwrCapped);
+  const acwrDayBefore=new Date(acwrAsOf);acwrDayBefore.setDate(acwrDayBefore.getDate()-1);
+  const acwrIsToday=toISODate(acwrAsOf)===toISODate(new Date());
+  document.getElementById('log-acwr-cards').innerHTML=acwrCardsHTMLCompact(computeAcwrStatsRolling(acwrAsOf),computeAcwrStatsRolling(acwrDayBefore),acwrIsToday);
+  renderRecoveryPressure();
 
-  // ── Wochenvergleichs-Chart (ersetzt Wochen-Workload/Zonenverteilung/Sportarten-Collagen) ─
-  renderWeeklyTrendChart();
+  // ── Log-Chart (Wochenvergleich ⇄ Lastverteilung, umschaltbar) ──────────────
+  setLogChartView(logChartView);
 
   const listEl=document.getElementById('t-list');
   // Trennung: zukünftige geplante Einheiten oben, vergangene/absolvierte unten
@@ -4103,8 +4314,9 @@ function renderAnalytics(){
 function renderWorkloadChart(){
   const svg=document.getElementById('workload-chart-svg');
   if(!svg)return;
-  document.getElementById('acwr-cards').innerHTML=acwrCardsHTML(computeAcwrStats());
+  document.getElementById('acwr-cards').innerHTML=acwrCardsHTML(computeAcwrStatsRolling());
   const detailBox=document.getElementById('weekly-detail-box');
+  const legendEl=document.getElementById('workload-chart-legend');
   const windowDays=acwrWeeks*7;
   const weekMode=acwrWeeks>8;
   const today=new Date();today.setHours(23,59,59,999);
@@ -4119,7 +4331,7 @@ function renderWorkloadChart(){
   const sizeFactor=Math.max(1,Math.min(2.4,H/220));
   const emptyMsg=()=>{
     svg.innerHTML='<text x="50%" y="50%" text-anchor="middle" fill="'+cssVar('--text-faint')+'" font-family="'+cssVar('--font-sans')+'" font-size="12">Keine Trainingsdaten im Zeitraum</text>';
-    document.getElementById('workload-chart-legend').innerHTML='';
+    if(legendEl)legendEl.innerHTML='';
     if(detailBox)detailBox.style.display='none';
   };
   const commonDefs='<defs>'+
@@ -4195,7 +4407,7 @@ function renderWorkloadChart(){
              '<title>'+s.date+' · '+cat.label+(s.note?': '+s.note:'')+'</title></circle>';
     }).join('');
     svg.innerHTML=commonDefs+yLabels+xLabels+bp+dots+specialMarks;
-    document.getElementById('workload-chart-legend').innerHTML=
+    if(legendEl)legendEl.innerHTML=
       '<span style="color:var(--text);">Einheit (Größe = Workload)</span>'+
       '<span style="color:var(--acwr-low);">Ø ±14 Tage · ±20%</span>'+
       (dispSpecial.length?'<span style="color:'+SPECIAL_CATEGORIES.illness.color+';">Krankheit/Verletzung/Sonstiges</span>':'');
@@ -4250,7 +4462,7 @@ function renderWorkloadChart(){
   });
   const bp=bandPath?'<path d="'+bandPath+'" fill="url(#wlc-blob)" fill-opacity="0.75" filter="url(#wlc-glow)"/>':'';
   svg.innerHTML=commonDefs+yLabels+xLabels+bp+dots;
-  document.getElementById('workload-chart-legend').innerHTML=
+  if(legendEl)legendEl.innerHTML=
     '<span style="color:var(--text);">Woche (Größe = Wochensumme)</span>'+
     '<span style="color:var(--acwr-low);">Ø letzte 3 Wochen · ±20%</span>';
 }
@@ -4270,16 +4482,16 @@ function wlcWeekClick(el){
 function computeMonotonyStrain(weeksBack){
   weeksBack=weeksBack||8;
   const now=new Date();
+  const wStart0=startOfWeek(new Date(now));wStart0.setDate(wStart0.getDate()-(weeksBack-1)*7);
+  const wEndLast=new Date(startOfWeek(new Date(now)));wEndLast.setDate(wEndLast.getDate()+6);
+  const byIso=new Map(buildDailyLoadSeries({start:wStart0,end:wEndLast}).map(d=>[d.iso,d.actualLoad]));
   const result=[];
   for(let w=weeksBack-1;w>=0;w--){
     const wStart=startOfWeek(new Date(now));wStart.setDate(wStart.getDate()-w*7);
     const daily=[];
     for(let d=0;d<7;d++){
       const day=new Date(wStart);day.setDate(day.getDate()+d);
-      const iso=toISODate(day);
-      const daySess=actualSessions().filter(s=>s.date===iso);
-      const vals=daySess.map(s=>berechneWorkload(s).value).filter(v=>v!=null);
-      daily.push(vals.length>0?vals.reduce((a,b)=>a+b,0):0);
+      daily.push(byIso.get(toISODate(day))||0);
     }
     const sum=daily.reduce((a,b)=>a+b,0);
     const mean=sum/7;
@@ -4326,6 +4538,65 @@ function computeHrDrift(session){
   if(hr1<=0)return null;
   const driftPct=Math.round(((hr2-hr1)/hr1)*1000)/10;
   return{hr1:Math.round(hr1),hr2:Math.round(hr2),driftPct};
+}
+
+// Leichtgewichtiger Bar-Sparkline für die letzten `days` Tage — reine CSS-Flexbox-
+// Balken statt SVG-viewBox-Skalierung, dadurch unabhängig von Container-Seitenverhältnis
+// und ohne die Verzerrungsgefahr, die die wiederverwendete renderWorkloadChart-SVG bei
+// kleinen/versteckten Containern hatte. Ruhetage bleiben als Null-Balken sichtbar.
+// Farb-/Formsprache von renderWeeklyLoadDistribution() ("Lastverteilung", Log-Seite)
+// übernommen: violett→orange je nach Verhältnis zur typischen Tageslast (LOADDIST_*/
+// loadDistColor), eckige Balken mit Farbverlauf zur Spitze, gedämpfte Ruhetag-Stubs.
+// Bewusst ohne die volle SVG-Maschinerie (Grain-Overlay, Optimum-Band, Clip-Paths) —
+// für einen 52px hohen 14-Tage-Streifen wäre das visuelles Rauschen statt Klarheit.
+function renderRecoveryBarSparkline(container,days){
+  if(!container)return;
+  days=days||14;
+  const today=new Date();today.setHours(0,0,0,0);
+  const start=new Date(today);start.setDate(start.getDate()-days+1);
+  const series=buildDailyLoadSeries({start,end:today});
+  const maxLoad=Math.max(...series.map(d=>d.actualLoad),1);
+  // Gleiche Referenz wie ACWR: chronische (28-Tage-Ø) Last ÷ 7 als "typische Tageslast".
+  // Fallback für neue Nutzer ohne Historie, analog renderWeeklyLoadDistribution.
+  const chronic=computeAcwrStatsRolling().currentChronic;
+  const dailyTarget=chronic>0?chronic/7:(maxLoad>0?maxLoad/1.15:0);
+  const purpleCss=`rgb(${LOADDIST_PURPLE.join(',')})`;
+  const bars=series.map(d=>{
+    const isRest=d.actualLoad<=0;
+    const dateLabel=new Date(d.iso+'T00:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'numeric'});
+    if(isRest){
+      return`<div class="rp-bar-col" title="${dateLabel} · Ruhetag"><div class="rp-bar" style="height:3%;background:${purpleCss};opacity:.3;"></div></div>`;
+    }
+    const pct=Math.max(6,Math.round((d.actualLoad/maxLoad)*100));
+    const r=dailyTarget>0?d.actualLoad/dailyTarget:0;
+    const tipColor=loadDistColor(r);
+    const bg=`linear-gradient(to top, ${purpleCss} 50%, ${tipColor} 100%)`;
+    return`<div class="rp-bar-col" title="${dateLabel} · Tageslast ${d.actualLoad} Pkt"><div class="rp-bar" style="height:${pct}%;background:${bg};"></div></div>`;
+  }).join('');
+  container.innerHTML=`<div class="rp-bars">${bars}</div>`;
+}
+
+// Recovery Pressure: kompakte Ampel im Collapse-Toggle + aufklappbare Details
+// (Sparkline, Sub-Signal-Karten). Auf der Log-Seite platziert, damit der Regenerations-
+// bedarf ohne Seitenwechsel direkt sichtbar ist.
+function renderRecoveryPressure(){
+  const rp=computeRecoveryPressure();
+  const overallColor=rp.color||'#888780';
+  const labelEl=document.getElementById('recovery-pressure-label');
+  if(labelEl){labelEl.textContent=rp.label||'—';labelEl.style.color=overallColor;}
+  const driverEl=document.getElementById('recovery-pressure-driver');
+  if(driverEl){
+    driverEl.textContent=rp.driver?'Treiber: '+rp.driver:'';
+    driverEl.style.color=overallColor;
+  }
+
+  const subEl=document.getElementById('recovery-subsignal-cards');
+  if(subEl)subEl.innerHTML=`
+    <div class="metric"><p class="m-label">Belastungswechsel</p><p class="m-value" style="color:${rp.monotony.status.color};">${rp.monotony.data.monotony>0?rp.monotony.data.monotony.toFixed(2)+'×':'&#x2014;'}</p><p style="font-size:.64rem;color:${rp.monotony.status.color};margin:.1rem 0 0;font-weight:600;">${rp.monotony.status.label}</p><p style="font-size:.58rem;color:var(--text-faint);margin:.12rem 0 0;">weniger Abwechslung</p></div>
+    <div class="metric"><p class="m-label">Ruhepausen</p><p class="m-value" style="color:${rp.restStreak.status.color};">${rp.restStreak.data.streak}<span style="font-size:.72rem;"> Tage</span></p><p style="font-size:.64rem;color:${rp.restStreak.status.color};margin:.1rem 0 0;font-weight:600;">${rp.restStreak.status.label}</p><p style="font-size:.58rem;color:var(--text-faint);margin:.12rem 0 0;">ohne Pause</p></div>
+    <div class="metric"><p class="m-label">Erholungsrückstand</p><p class="m-value" style="color:${rp.recoveryDebt.status.color};">${rp.recoveryDebt.data.debt}<span style="font-size:.72rem;"> h</span></p><p style="font-size:.64rem;color:${rp.recoveryDebt.status.color};margin:.1rem 0 0;font-weight:600;">${rp.recoveryDebt.status.label}</p><p style="font-size:.58rem;color:var(--text-faint);margin:.12rem 0 0;">über 3 Wochen</p></div>`;
+
+  renderRecoveryBarSparkline(document.getElementById('recovery-sparkline-box'),14);
 }
 
 // Monotonie & Strain (Foster) — Belastungsverteilung über die letzten 8 Wochen
@@ -4470,6 +4741,10 @@ function computeWeeklyTrendData(totalWeeks,endOffset){
   totalWeeks=totalWeeks||12;
   endOffset=endOffset||0;
   const now=new Date();
+  const wStart0=startOfWeek(new Date(now));wStart0.setDate(wStart0.getDate()-(totalWeeks-1-endOffset)*7);
+  const wEndLast=new Date(startOfWeek(new Date(now)));wEndLast.setDate(wEndLast.getDate()+6-endOffset*7);
+  const series=buildDailyLoadSeries({start:wStart0,end:wEndLast,includePlanned:true,includeSpecial:true});
+  const byIso=new Map(series.map(d=>[d.iso,d]));
   const weeks=[];
   for(let w=totalWeeks-1;w>=0;w--){
     const wStart=startOfWeek(new Date(now));wStart.setDate(wStart.getDate()-(w-endOffset)*7);
@@ -4477,17 +4752,12 @@ function computeWeeklyTrendData(totalWeeks,endOffset){
     let total=0,plannedTotal=0;
     for(let d=0;d<7;d++){
       const day=new Date(wStart);day.setDate(day.getDate()+d);
-      const iso=toISODate(day);
-      const daySess=sessions.filter(s=>s.date===iso);
-      const actual=daySess.filter(s=>!isPlanned(s)&&!isSpecialEntry(s));
-      const planned=daySess.filter(s=>isPlanned(s)&&!isSpecialEntry(s));
-      const actVals=actual.map(s=>berechneWorkload(s).value).filter(v=>v!=null);
-      const plnVals=planned.map(s=>berechneWorkload(s).value).filter(v=>v!=null);
-      const dayLoad=actVals.length>0?Math.round(actVals.reduce((a,b)=>a+b,0)):0;
-      const dayPlanLoad=plnVals.length>0?Math.round(plnVals.reduce((a,b)=>a+b,0)):0;
+      const rec=byIso.get(toISODate(day))||{actualLoad:0,plannedLoad:0,sessions:[]};
+      const dayLoad=Math.round(rec.actualLoad);
+      const dayPlanLoad=Math.round(rec.plannedLoad);
       daily.push(dayLoad);
       dailyPlanned.push(dayPlanLoad);
-      dailySessions.push(daySess);
+      dailySessions.push(rec.sessions);
       total+=dayLoad;
       plannedTotal+=dayPlanLoad;
     }
@@ -4554,22 +4824,28 @@ function renderWeeklyTrendChart(){
   // Hochrechnung fair bleibt. Ohne Einheiten in der laufenden Woche oder ohne
   // Ist-Daten in einer geplanten (zukünftigen) Woche bleibt die Kennzahl leer.
   const isCurrentInProgress=weekOffset===0&&dow<7;
-  let steigerungDeviation=null,isProjected=false;
+  // Wie beim ACWR-Vergleich (acwrIsToday/dayLabel): ein leerer "heute"-Tag soll den
+  // Vergleich nicht k\u00fcnstlich verw\u00e4ssern. Ist heute schon trainiert worden, flie\u00dft der
+  // volle heutige Tag ein ("heute"), sonst wird nur bis zum Vortag akkumuliert ("Vortag").
+  const trainedToday=isCurrentInProgress&&sessions.some(s=>s.date===toISODate(today)&&!isPlanned(s)&&!isSpecialEntry(s));
+  let steigerungDeviation=null,isProjected=false,steigerungDayLabel='';
   if(weekOffset>0||(isCurrentInProgress&&currentWeek.total===0)){
     // geplante Woche ohne Ist-Daten bzw. laufende Woche noch ohne Einheiten
   }else if(vorwoche){
-    const days=isCurrentInProgress?dow:7;
+    const days=isCurrentInProgress?(trainedToday?dow:Math.max(0,dow-1)):7;
     const curAcc=currentWeek.daily.slice(0,days).reduce((a,b)=>a+b,0);
     const prevAcc=vorwoche.daily.slice(0,days).reduce((a,b)=>a+b,0);
     if(prevAcc>0){
       steigerungDeviation=Math.round((curAcc-prevAcc)/prevAcc*1000)/10;
       isProjected=isCurrentInProgress;
+      if(isCurrentInProgress)steigerungDayLabel=trainedToday?'heute':'Vortag';
     }
   }
+  const steigerungDaySpan=steigerungDayLabel?` <span style="color:var(--text-faint);font-weight:500;">&#183; ${steigerungDayLabel}</span>`:'';
   document.getElementById('weekly-growth-cards').innerHTML=`
-    <div class="metric"><p class="m-label">Steigerung zur Vorwoche</p><p class="m-value" style="color:${growthColor(steigerungDeviation)};">${fmtPct(steigerungDeviation)}</p><p style="font-size:.64rem;color:${growthColor(steigerungDeviation)};margin:.1rem 0 0;font-weight:600;">${isProjected?'Hochger. ':''}${growthLabel(steigerungDeviation)}</p></div>
+    <div class="metric"><p class="m-label">${curLabel}</p><p class="m-value" style="color:var(--accent-purple);">${currentWeek.total}</p><p style="font-size:.64rem;color:var(--text-faint);margin:.1rem 0 0;">${curSub}</p></div>
     <div class="metric"><p class="m-label">Letzte Woche</p><p class="m-value">${lastCompletedTotal!=null?lastCompletedTotal:'\u2014'}</p><p style="font-size:.64rem;color:var(--text-faint);margin:.1rem 0 0;">abgeschlossen</p></div>
-    <div class="metric"><p class="m-label">${curLabel}</p><p class="m-value" style="font-size:1.1rem;color:var(--accent-purple);">${currentWeek.total}</p><p style="font-size:.64rem;color:var(--text-faint);margin:.1rem 0 0;">${curSub}</p></div>`;
+    <div class="metric"><p class="m-label">Steigerung zur Vorwoche</p><p class="m-value" style="color:${growthColor(steigerungDeviation)};">${fmtPct(steigerungDeviation)}</p><p style="font-size:.64rem;color:${growthColor(steigerungDeviation)};margin:.1rem 0 0;font-weight:600;">${isProjected?'Hochger. ':''}${growthLabel(steigerungDeviation)}${steigerungDaySpan}</p></div>`;
 
   // ── Wochenvergleich-Chart (SVG Glow-Ästhetik) ────────────────────────────
   if(weeklyCompareChart&&weeklyCompareChart.destroy)weeklyCompareChart.destroy();
@@ -4651,6 +4927,185 @@ function renderWeeklyTrendChart(){
     (prevWeekCum?`<span style="color:var(--text-muted);">Letzte Woche</span>`:'')+
     (plannedCum?`<span style="color:var(--orange-soft);">Geplant (Ist+Plan)</span>`:'')+
     (bandLoCum?`<span style="color:var(--acwr-low);">Empfohlener Bereich</span>`:'');
+}
+
+// ── Last-Farbskala (editorial) ───────────────────────────────────────────────
+// Basisfarbe der Balken ist ein helles Lila/Pink. Erst wenn die Tageslast die
+// obere Optimum-Kante (r=1,3) verlässt, wandert die Farbe linear Richtung
+// helles Orange (Warnsignal für Überlastung) — im/unter Optimum bleibt es beim
+// ruhigen Lila/Pink, statt einer durchgehenden Regenbogen-Skala.
+const LOADDIST_PURPLE=[201,160,209];   // helles Lila/Pink – Basisfarbe (im/unter Optimum)
+const LOADDIST_ORANGE=[215,155,70];    // helles Orange – deutlich über Optimum
+const LOADDIST_HI_R=1.3,LOADDIST_MAX_R=2.2;
+// Überlastungs-Intensität 0–1: 0 bis zur oberen Optimum-Kante, linear steigend bis LOADDIST_MAX_R.
+function loadDistIntensity(r){
+  if(r==null||isNaN(r)||r<=LOADDIST_HI_R)return 0;
+  return Math.min(1,(r-LOADDIST_HI_R)/(LOADDIST_MAX_R-LOADDIST_HI_R));
+}
+function loadDistColor(r){
+  const t=loadDistIntensity(r);
+  if(t<=0)return`rgb(${LOADDIST_PURPLE.join(',')})`;
+  const c=LOADDIST_PURPLE.map((v,i)=>Math.round(v+(LOADDIST_ORANGE[i]-v)*t));
+  return`rgb(${c.join(',')})`;
+}
+
+// ── Lastverteilung pro Woche (ein Balken je Tag Mo–So, editorialer Stil) ──────
+// Ergänzt den Wochenvergleich; gleiche Datengrundlage (ausgewählte Woche via
+// weekOffset). Balkenhöhe = Tageslast, Farbe = loadDistColor(r) mit r relativ
+// zum optimalen Tages-Zielbereich (Wochen-Ø der letzten 4 abgeschlossenen
+// Wochen ÷ 7, Band 0,8–1,3×). Optik: im Hintergrund ein weichgezeichnetes,
+// hellblaues Band markiert den Optimum-Korridor; Balken abgerundet, im unteren
+// Bereich voll deckend Lila, im oberen Drittel läuft die Farbe aus (Deckkraft
+// nimmt Richtung Spitze ab) und schwenkt bei Überlastung kräftig auf Orange —
+// per Clip-Path hart exakt an der Balkenkante abgeschnitten; feiner Grain über
+// Band und Balken.
+function renderWeeklyLoadDistribution(){
+  const svg=document.getElementById('weekly-load-dist-chart');
+  if(!svg)return;
+  const weeks=computeWeeklyTrendData(12,weekOffset);
+  const currentWeek=weeks[weeks.length-1];
+  const completedWeeks=weeks.slice(0,weeks.length-1).filter(w=>w.total>0);
+  const bandRefWeeks=completedWeeks.slice(-4);
+  const bandRefAvg=bandRefWeeks.length>0?bandRefWeeks.reduce((a,w)=>a+w.total,0)/bandRefWeeks.length:0;
+
+  const daily=currentWeek.daily;
+  const dailyPlanned=currentWeek.dailyPlanned;
+  const dailySessions=currentWeek.dailySessions;
+  const maxDaily=Math.max(...daily,...dailyPlanned,0);
+  // Tages-Zielwert (Optimum-Mitte). Ohne Referenz (neue Nutzer): so skalieren,
+  // dass der stärkste Tag der Woche knapp oberhalb der Optimum-Mitte landet —
+  // die Farbskala bleibt so auch ohne Historie aussagekräftig.
+  const dailyTarget=bandRefAvg>0?bandRefAvg/7:(maxDaily>0?maxDaily/1.15:0);
+  const dailyLo=dailyTarget*0.8,dailyHi=dailyTarget*1.3;
+  const ratio=v=>dailyTarget>0?v/dailyTarget:0;
+
+  const today=new Date();
+  const dow=weekOffset===0?(today.getDay()+6)%7+1:(weekOffset<0?7:0);
+
+  const W=svg.clientWidth||svg.parentElement.clientWidth||360;
+  const H=svg.clientHeight||200;
+  const padL=34,padR=12,padT=18,padB=24;
+  const innerW=W-padL-padR,innerH=H-padT-padB;
+  const slot=innerW/7,barW=Math.min(slot*0.6,32);
+  const maxVal=Math.max(...daily,dailyHi,1);
+  const yBase=padT+innerH;
+  const yAt=v=>yBase-Math.max(0,v/maxVal)*innerH;
+  const dayLabels=['Mo.','Di.','Mi.','Do.','Fr.','Sa.','So.'];
+  const axisFont=cssVar('--font-sans'),axisFill=cssVar('--text-muted');
+
+  // Baseline
+  const baselineSvg=`<line x1="${padL}" y1="${yBase.toFixed(1)}" x2="${(W-padR).toFixed(1)}" y2="${yBase.toFixed(1)}" stroke="rgba(44,44,42,0.12)" stroke-width="0.5"/>`;
+
+  // Hintergrund-Band: weichgezeichnete, hellblaue Fläche markiert den
+  // Optimum-Korridor (dailyLo–dailyHi) über die volle Breite.
+  let bandSvg='';
+  if(dailyTarget>0){
+    const yHi=yAt(dailyHi),yLo=yAt(dailyLo),bandPad=16;
+    bandSvg=`<rect x="${(padL-bandPad).toFixed(1)}" y="${yHi.toFixed(1)}" width="${(innerW+bandPad*2).toFixed(1)}" height="${Math.max(2,yLo-yHi).toFixed(1)}" rx="12" fill="${cssVar('--wlc-band')}" fill-opacity="0.24"/>`;
+  }
+
+  // Balken. Für die spätere Sportart-Zuteilung wird das eine <rect> je Tag in
+  // gestapelte Segmente (eines je Sportart aus dailySessions[i]) zerlegt — die
+  // <g>-Struktur bleibt dafür offen.
+  const dotSid=daySess=>{const s=(daySess||[]).find(x=>!isSpecialEntry(x))||(daySess||[])[0];return s?s.id:'';};
+  // Pro Balken (eckig, kein Radius, wie in der Vorlage): untere Hälfte voll
+  // deckend (Deckkraft 1), obere Hälfte läuft per vertikalem Gradient aus —
+  // Farbe schwenkt dabei zügig (kräftiger Farbverlauf, ab 50% der Auslaufzone
+  // bereits volle Zielfarbe) auf Orange, wenn der Balken über die obere
+  // Optimum-Kante (yOptHi) hinausragt. Die Deckkraft an der Spitze sinkt für
+  // alle Balken auf denselben Sockelwert (nie auf 0) — unabhängig davon, ob
+  // die Spitze lila oder orange eingefärbt ist. Per Balken-eigenem Clip-Path
+  // hart exakt an der Balkenkante abgeschnitten.
+  const purpleCss=`rgb(${LOADDIST_PURPLE.join(',')})`,orangeCss=`rgb(${LOADDIST_ORANGE.join(',')})`;
+  const yOptHi=dailyTarget>0?yAt(dailyHi):null;
+  const FADE_FRAC=0.5;        // Anteil der Balkenhöhe, der von oben her ausläuft (Verlauf startet bei 50%)
+  const TIP_OPACITY=0.15;     // Sockel-Deckkraft an der Spitze — gleich für Lila- und Orange-Balken
+  let barsSvg='',clipDefs='',fadeDefs='',labelsSvg='',plannedSvg='';
+  daily.forEach((v,i)=>{
+    const cx=padL+slot*i+slot/2;
+    const xNum=cx-barW/2,x=xNum.toFixed(1);
+    const future=weekOffset>0||(weekOffset===0&&i>=dow);
+    // Ist-Balken
+    if(v>0){
+      const yTop=yAt(v),h=Math.max(3,yBase-yTop);
+      const barY=yTop.toFixed(1);
+      const sid=dotSid(dailySessions[i]);
+      const exceeds=yOptHi!=null&&v>dailyHi;
+      const clipId=`ld-clip-${i}`,gradId=`ld-fade-${i}`;
+      clipDefs+=`<clipPath id="${clipId}"><rect x="${x}" y="${barY}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}"/></clipPath>`;
+      const fadeH=h*FADE_FRAC,fadeStartY=yTop+fadeH;
+      const tipColor=exceeds?orangeCss:purpleCss;
+      fadeDefs+=`<linearGradient id="${gradId}" gradientUnits="userSpaceOnUse" x1="${x}" y1="${fadeStartY.toFixed(1)}" x2="${x}" y2="${barY}">`+
+                 `<stop offset="0%" stop-color="${purpleCss}" stop-opacity="1"/>`+
+                 `<stop offset="50%" stop-color="${tipColor}" stop-opacity="1"/>`+
+                 `<stop offset="100%" stop-color="${tipColor}" stop-opacity="${TIP_OPACITY}"/>`+
+                 `</linearGradient>`;
+      const solidFill=`<rect x="${x}" y="${fadeStartY.toFixed(1)}" width="${barW.toFixed(1)}" height="${(yBase-fadeStartY).toFixed(1)}" fill="${purpleCss}"/>`;
+      const fadeFill=`<rect x="${x}" y="${barY}" width="${barW.toFixed(1)}" height="${fadeH.toFixed(1)}" fill="url(#${gradId})"/>`;
+      barsSvg+=`<g class="ld-bar" data-day="${i}" data-sid="${sid}" onclick="wtcDotClick(this)">`+
+               `<g clip-path="url(#${clipId})">${solidFill}${fadeFill}</g></g>`;
+      labelsSvg+=`<text x="${cx.toFixed(1)}" y="${(yTop-5).toFixed(1)}" font-family="${axisFont}" font-size="9" font-weight="600" fill="${cssVar('--text')}" text-anchor="middle">${Math.round(v)}</text>`;
+    }else{
+      // Ruhetag / kein Ist: leiser Basis-Stub als Marker
+      barsSvg+=`<g class="ld-bar" data-day="${i}"><rect x="${x}" y="${(yBase-2).toFixed(1)}" width="${barW.toFixed(1)}" height="2" rx="1" fill="${cssVar('--accent-purple')}" fill-opacity="0.3"/></g>`;
+    }
+    // Geplante (zukünftige) Last als gestrichelte Kontur oben drauf
+    const p=dailyPlanned[i];
+    if(p>0&&future){
+      const yp=yAt(v+p),base=v>0?yAt(v):yBase;
+      plannedSvg+=`<rect x="${x}" y="${yp.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(2,base-yp).toFixed(1)}" rx="4" fill="none" stroke="${cssVar('--orange-soft')}" stroke-width="1.2" stroke-dasharray="4,3" stroke-opacity="0.85"/>`;
+    }
+  });
+
+  // Achsenbeschriftung
+  const yTicks=[0,1,2,3].map(i=>{
+    const val=Math.round(maxVal/3*i),y=yAt(val);
+    return `<text x="${padL-5}" y="${(y+3).toFixed(1)}" font-family="${axisFont}" font-size="9" fill="${axisFill}" text-anchor="end">${val}</text>`;
+  }).join('');
+  const xLabels=dayLabels.map((l,i)=>{
+    const cx=padL+slot*i+slot/2;
+    const isToday=weekOffset===0&&(i+1)===dow;
+    return `<text x="${cx.toFixed(1)}" y="${(H-7).toFixed(1)}" font-family="${axisFont}" font-size="9" fill="${isToday?cssVar('--text'):axisFill}" font-weight="${isToday?'700':'400'}" text-anchor="middle">${l}</text>`;
+  }).join('');
+
+  // Grain-Overlay: legt sich als feines Korn über Band + Balken (nicht über die
+  // scharfe Achsenbeschriftung), analog zur Sportart-Kreis-Optik.
+  const grainSvg=`<rect x="${(padL-16).toFixed(1)}" y="${(padT-6).toFixed(1)}" width="${(innerW+32).toFixed(1)}" height="${(innerH+12).toFixed(1)}" filter="url(#ld-grain)" style="mix-blend-mode:overlay;" pointer-events="none"/>`;
+
+  svg.innerHTML=`<defs>
+    <filter id="ld-band-blur" x="-20%" y="-80%" width="140%" height="260%"><feGaussianBlur stdDeviation="11"/></filter>
+    <filter id="ld-grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0"/>
+    </filter>
+    ${fadeDefs}
+    ${clipDefs}
+  </defs>
+  ${yTicks}${baselineSvg}
+  <g filter="url(#ld-band-blur)">${bandSvg}</g>
+  ${barsSvg}${plannedSvg}
+  ${grainSvg}
+  ${labelsSvg}${xLabels}`;
+
+  // Legende: Lila/Pink (im/unter Optimum) → Orange (über Optimum) + Optimum-Hinweis
+  const legPurple=`rgb(${LOADDIST_PURPLE.join(',')})`,legOrange=`rgb(${LOADDIST_ORANGE.join(',')})`;
+  document.getElementById('weekly-load-dist-legend').innerHTML=
+    `<span style="display:inline-flex;align-items:center;gap:.35rem;">im Optimum`+
+    `<svg width="90" height="9" style="display:block;"><defs><linearGradient id="ld-leg-grad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="${legPurple}"/><stop offset="100%" stop-color="${legOrange}"/></linearGradient></defs><rect width="90" height="9" rx="4.5" fill="url(#ld-leg-grad)"/></svg>über Optimum</span>`+
+    (dailyTarget>0?`<span style="color:var(--acwr-optimal);">Optimum ${Math.round(dailyLo)}–${Math.round(dailyHi)}/Tag</span>`:`<span style="color:var(--text-faint);">Ø-Referenz sammelt sich</span>`);
+}
+
+// Aktive Log-Chart-Ansicht setzen (Wochenvergleich ⇄ Lastverteilung). Rendert das
+// nun sichtbare Panel neu, da ein verstecktes SVG clientWidth 0 hätte.
+function setLogChartView(view){
+  logChartView=view;
+  document.querySelectorAll('.ws-chart-panel').forEach(p=>{p.hidden=p.getAttribute('data-view')!==view;});
+  document.querySelectorAll('.ws-dot').forEach(d=>d.classList.toggle('active',d.getAttribute('data-view')===view));
+  const title=document.getElementById('ws-chart-title');
+  if(title)title.innerHTML=view==='compare'
+    ?'<i class="ti ti-git-compare"></i> Wochenvergleich'
+    :'<i class="ti ti-flame"></i> Lastverteilung';
+  if(view==='distribution')renderWeeklyLoadDistribution();else renderWeeklyTrendChart();
 }
 
 // Drill-down: Tagesbalken (Mo–So) der angeklickten Woche
@@ -4865,6 +5320,7 @@ function zoneSettingsHTML(profile){
       <input type="number" class="zone-hrmin-inline" data-zone="${i}" value="${z.hrMin||''}" placeholder="min" min="0" max="250">
       <input type="number" class="zone-hrmax-inline" data-zone="${i}" value="${z.hrMax||''}" placeholder="max" min="0" max="250">
       <input type="color" class="zone-color-inline" data-zone="${i}" value="${z.color}">
+      <input type="number" class="zone-recovery-inline" data-zone="${i}" value="${z.recoveryFactor??0.1}" placeholder="Erhol." min="0" max="2" step="0.01" title="Erholungsfaktor (Regenerationskosten pro Minute in dieser Zone, für Recovery Pressure)">
     </div>`).join('');
 }
 function renderSettingsInline(){
@@ -5094,6 +5550,7 @@ document.getElementById('save-settings-inline').addEventListener('click',()=>{
   document.querySelectorAll('.zone-hrmin-inline').forEach(el=>{targetZones[parseInt(el.dataset.zone)].hrMin=parseFloat(el.value)||null;});
   document.querySelectorAll('.zone-hrmax-inline').forEach(el=>{targetZones[parseInt(el.dataset.zone)].hrMax=parseFloat(el.value)||null;});
   document.querySelectorAll('.zone-color-inline').forEach(el=>{targetZones[parseInt(el.dataset.zone)].color=el.value;});
+  document.querySelectorAll('.zone-recovery-inline').forEach(el=>{targetZones[parseInt(el.dataset.zone)].recoveryFactor=parseFloat(el.value)||0;});
   saveCfg();populateSelects();updateNoteLabel();renderLog();
   document.getElementById('settings-status-inline').textContent='Gespeichert <i class="ti ti-check"></i>';
   setTimeout(()=>{document.getElementById('settings-status-inline').textContent='';},2000);
@@ -6357,10 +6814,11 @@ loadCfg();
 <script>
 (function(){
   var bg=document.getElementById('bg-layer');
+  var logoHeader=document.querySelector('header.has-logo');
   if(!bg)return;
   var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
   if(reduce)return;
-  var k=0.4,ticking=false;
+  var k=0.4,logoLag=0.3,logoMax=100,ticking=false;
   function recalc(){
     var vh=window.innerHeight,
         doc=Math.max(document.documentElement.scrollHeight,document.body.scrollHeight),
@@ -6373,6 +6831,11 @@ loadCfg();
     ticking=false;
     var y=window.pageYOffset||document.documentElement.scrollTop||0;
     bg.style.transform='translate3d(0,'+(-y*k)+'px,0)';
+    // Logo hinkt dem Scroll leicht hinterher, damit es von der nächsten Karte überdeckt wird
+    if(logoHeader){
+      var ty=Math.min(y*logoLag,logoMax);
+      logoHeader.style.transform='translate3d(0,'+ty+'px,0)';
+    }
   }
   function onScroll(){ if(!ticking){ticking=true;requestAnimationFrame(update);} }
   window.addEventListener('scroll',onScroll,{passive:true});
