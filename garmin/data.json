@@ -694,11 +694,37 @@
         "low": 6
       },
       "stress": {
-        "avg": 20
+        "avg": 31
       },
-      "steps": 8719,
+      "steps": 13630,
       "trainingReadiness": {
         "score": 59,
+        "level": "MODERATE"
+      }
+    },
+    "2026-07-08": {
+      "sleep": {
+        "score": 75,
+        "durationH": 5.9,
+        "deepH": 1.6,
+        "remH": 1.2,
+        "awakeH": 0.4
+      },
+      "hrv": {
+        "lastNightAvg": 85,
+        "status": "BALANCED"
+      },
+      "restingHR": 42.0,
+      "bodyBattery": {
+        "high": 80,
+        "low": 11
+      },
+      "stress": {
+        "avg": 20
+      },
+      "steps": 3722,
+      "trainingReadiness": {
+        "score": 68,
         "level": "MODERATE"
       }
     }
@@ -413159,5 +413185,5 @@
       ]
     }
   ],
-  "generated": "2026-07-07T13:27:16+00:00"
+  "generated": "2026-07-08T11:32:28+00:00"
 }
