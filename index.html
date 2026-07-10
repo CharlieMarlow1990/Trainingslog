@@ -246,9 +246,6 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .chart-box{position:relative;height:180px;}
 .workload-chart-box{position:relative;height:220px;}
 @media(min-width:720px){#workload-chart-svg-box{height:340px;}}
-.rp-bars{display:flex;align-items:flex-end;gap:3px;height:100%;}
-.rp-bar-col{flex:1;height:100%;display:flex;align-items:flex-end;}
-.rp-bar{width:100%;border-radius:0;min-height:2px;}
 
 /* Log-Header: Garmin-Sync links, schwebender [+]-Button rechts oben */
 .log-header{display:flex;justify-content:space-between;align-items:center;margin:0 0 .8rem;position:relative;gap:.6rem;flex-wrap:wrap;}
@@ -389,7 +386,7 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
 .color-pick{width:34px;height:34px;padding:2px;border:1px solid var(--border-strong);border-radius:8px;cursor:pointer;}
 .emoji-pick{width:52px;text-align:center;font-size:1rem;padding:.3rem;}
 .sport-img-preview{width:34px;height:34px;border-radius:6px;object-fit:cover;border:1px solid var(--border);}
-.zone-row{display:grid;grid-template-columns:1fr 60px 60px 34px 56px;gap:.4rem;align-items:center;margin-bottom:.45rem;}
+.zone-row{display:grid;grid-template-columns:1fr 60px 60px 34px;gap:.4rem;align-items:center;margin-bottom:.45rem;}
 .zone-row input{font-size:.82rem;}
 .zone-color-pick{width:30px;height:30px;padding:2px;border:1px solid var(--border-strong);border-radius:6px;cursor:pointer;}
 
@@ -758,7 +755,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
     </div>
     <div id="recovery-pressure-body" style="display:none;margin-bottom:.9rem;">
       <p id="recovery-pressure-driver" style="font-size:.72rem;margin:0 0 .5rem;font-weight:600;"></p>
-      <div class="workload-chart-box wlc-paper" id="recovery-sparkline-box" style="height:52px;padding:.3rem .5rem;"></div>
+      <div class="workload-chart-box wlc-paper" id="recovery-sparkline-box" style="height:72px;padding:.3rem .5rem;"></div>
       <div class="metrics metrics-3" id="recovery-subsignal-cards" style="margin-top:.7rem;"></div>
     </div>
 
@@ -1367,24 +1364,43 @@ const DEFAULT_SPORTS=[
   {key:'Kampfsport',label:'Kampfsport',color:'#8c6db0',icon:'ti-karate',imgUrl:null,freitext:true},
   {key:'Sonstiges',label:'Sonstiges',color:'#5f5e5a',icon:'ti-bolt',imgUrl:null,freitext:true}
 ];
-// recoveryFactor: "Regenerationsstunden"-Kosten pro Trainingsminute in dieser Zone,
-// genutzt von der Recovery-Debt-Berechnung (Recovery Pressure). UNKALIBRIERTER
-// Platzhalter — nur monoton steigend nach Intensität, keine physiologische Grundlage
-// (bisher keine HRV-/Ruhe-HF-Daten zur Kalibrierung vorhanden). In den Einstellungen
-// pro Zone anpassbar.
 const DEFAULT_ZONES=[
-  {key:'Z1',label:'Zone 1',hrMin:null,hrMax:null,color:'#b3c7d8',recoveryFactor:0.05},
-  {key:'Z2',label:'Zone 2',hrMin:null,hrMax:null,color:'#7c9bb5',recoveryFactor:0.10},
-  {key:'Z3',label:'Zone 3',hrMin:null,hrMax:null,color:'#d79b46',recoveryFactor:0.20},
-  {key:'Z4',label:'Zone 4',hrMin:null,hrMax:null,color:'#c8603a',recoveryFactor:0.35},
-  {key:'Z5',label:'Zone 5',hrMin:null,hrMax:null,color:'#9a3f23',recoveryFactor:0.55},
-  {key:'-',label:'Keine Zone',hrMin:null,hrMax:null,color:'#c9c6bc',recoveryFactor:0.15}
+  {key:'Z1',label:'Zone 1',hrMin:null,hrMax:null,color:'#b3c7d8'},
+  {key:'Z2',label:'Zone 2',hrMin:null,hrMax:null,color:'#7c9bb5'},
+  {key:'Z3',label:'Zone 3',hrMin:null,hrMax:null,color:'#d79b46'},
+  {key:'Z4',label:'Zone 4',hrMin:null,hrMax:null,color:'#c8603a'},
+  {key:'Z5',label:'Zone 5',hrMin:null,hrMax:null,color:'#9a3f23'},
+  {key:'-',label:'Keine Zone',hrMin:null,hrMax:null,color:'#c9c6bc'}
 ];
 // Backwards-Compat: alte Configs ohne freitext-Flag pro Sport
 const FREITEXT=['Kraft','Kampfsport','Sonstiges'];
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let sessions=[],chart1=null,chart2=null,analyticsChart=null,workloadChart=null,logWeekChart=null,weeklyTrendChart=null,weeklyDetailChart=null,weeklyChartData=[];
+// Garmin-Tages-Wellness (Ruhepuls/HRV/Schlaf), Map iso->{rhr,hrvAvg,hrvStatus,sleepH}. Read-only
+// aus dem Garmin-Sync (garmin/data.json, Block `days`), gecached in localStorage 'tlog_wellness'.
+// Wird für die Recovery-Pressure-Sub-Signale (Ruhepuls/HRV/Schlaf) genutzt; leer => Fallback aufs
+// reine Last-Modell.
+let wellness={};
+try{const w=localStorage.getItem('tlog_wellness');if(w)wellness=JSON.parse(w)||{};}catch(e){}
+// Extrahiert die Tages-Wellness aus einem geladenen garmin/data.json-Objekt in den globalen
+// `wellness`-Store (+ localStorage). Nur Felder mit echtem Wert übernehmen (Garmin liefert oft null).
+function ingestGarminWellness(data){
+  const days=data&&data.days;
+  if(!days||typeof days!=='object')return;
+  let changed=false;
+  Object.keys(days).forEach(iso=>{
+    const d=days[iso]||{};
+    const rhr=(d.restingHR!=null&&d.restingHR>0)?d.restingHR:null;
+    const hrvAvg=(d.hrv&&d.hrv.lastNightAvg!=null&&d.hrv.lastNightAvg>0)?d.hrv.lastNightAvg:null;
+    const hrvStatus=(d.hrv&&d.hrv.status)?d.hrv.status:null;
+    const sleepH=(d.sleep&&d.sleep.durationH!=null&&d.sleep.durationH>0)?d.sleep.durationH:null;
+    if(rhr==null&&hrvAvg==null&&hrvStatus==null&&sleepH==null)return;
+    wellness[iso]={rhr,hrvAvg,hrvStatus,sleepH};
+    changed=true;
+  });
+  if(changed){try{localStorage.setItem('tlog_wellness',JSON.stringify(wellness));}catch(e){}}
+}
 
 // ── CHART.JS DARK-MODE DEFAULTS + GLOW-EFFEKT ─────────────────────────────────
 // Alle Charts sitzen jetzt in dunklen .chart-dark Containern (var(--surface-dark)).
@@ -1486,16 +1502,6 @@ function loadCfg(){
           else cfg.sports.push(JSON.parse(JSON.stringify(ds)));
         }
       });
-      // Alte gespeicherte Configs kennen recoveryFactor (Recovery Pressure) noch nicht —
-      // fehlenden Wert anhand des Zonen-Keys aus DEFAULT_ZONES nachtragen.
-      const backfillRecoveryFactor=z=>{
-        if(z.recoveryFactor==null){
-          const dz=DEFAULT_ZONES.find(d=>d.key===z.key);
-          z.recoveryFactor=dz?dz.recoveryFactor:0.15;
-        }
-      };
-      (cfg.zones||[]).forEach(backfillRecoveryFactor);
-      Object.values(cfg.sportZones||{}).forEach(list=>Array.isArray(list)&&list.forEach(backfillRecoveryFactor));
       if(migrateSportIcons())saveCfg();
     }
   }catch(e){}
@@ -1806,6 +1812,23 @@ function acwrCardsHTMLCompact(dayStats,dayBeforeStats,isToday){
 // Ein 4. Sub-Signal (Ruhe-HF, sobald Garmin-Sync die Daten liefert) kann später einfach
 // als weiteres Element im signals-Array von combine() ergänzt werden.
 
+// Sub-Signal A: Monotonie-Schwellen (benannt statt inline, siehe computeMonotonyStrain/
+// monotonyStatus sowie computeDailyRecoveryScores weiter unten, die dieselben Schwellen
+// für die kontinuierliche Score-Berechnung des Charts nutzt).
+const MONOTONY_YELLOW=1.5;
+const MONOTONY_RED=2.0;
+
+// Rollierende Monotonie (Foster) für einen Tag: 7-Tage-Fenster endend an Index i der
+// übergebenen Tageslast-Reihe. Tagesgenau statt an Kalenderwochen gebunden (analog
+// computeAcwrRollingSeries) — von computeDailyRecoveryScores UND computeRecoveryPressure
+// genutzt, damit Chart und Headline-Text exakt denselben Wert für "heute" zeigen.
+function rollingMonotonyAsOf(loads,i){
+  const win=loads.slice(Math.max(0,i-6),i+1);
+  const sum=win.reduce((a,b)=>a+b,0),mean=sum/win.length;
+  const variance=win.reduce((a,v)=>a+(v-mean)**2,0)/win.length,sd=Math.sqrt(variance);
+  return(sum>0&&sd>0)?mean/sd:(sum>0?7:0);
+}
+
 // Sub-Signal B: Ruhetage-Streak. Reine Tageszählung, braucht keine historische
 // Kalibrierung (im Gegensatz zu C).
 const REST_STREAK_YELLOW=5; // ab 5 Tagen ohne Pause: gelb
@@ -1830,52 +1853,54 @@ function restStreakStatus(streak){
 }
 
 // Sub-Signal C: Erholungsschuld — kumulierte Differenz zwischen "Regenerationsstunden
-// verbraucht" (gewichtet nach Zonenintensität via recoveryFactor) und "Regenerations-
-// stunden regeneriert" (fixer Tagesbetrag). Negative Schuld wird bei 0 gekappt (kein
-// "Erholungsguthaben" ansammelbar — konservativ).
+// verbraucht" (workload-basiert relativ zur rollierenden 28-Tage-Ø-Last, siehe
+// dailyRecoveryDebtSeries) und "Regenerationsstunden regeneriert" (fixer Tagesbetrag).
+// Negative Schuld wird bei 0 gekappt (kein "Erholungsguthaben" ansammelbar — konservativ).
 //
-// ACHTUNG: REGEN_PER_DAY und die recoveryFactor-Defaults in DEFAULT_ZONES sind
-// UNKALIBRIERTE Platzhalter ohne physiologische Grundlage (kein Garmin-/HRV-Datensatz
-// vorhanden). Anpassen, sobald reale Belastungs-/Erholungsmuster beobachtbar sind.
+// ACHTUNG: REGEN_PER_DAY ist ein UNKALIBRIERTER Platzhalter ohne physiologische Grundlage
+// (kein Garmin-/HRV-Datensatz vorhanden). Anpassen, sobald reale Belastungs-/
+// Erholungsmuster beobachtbar sind.
 const REGEN_PER_DAY=1.2;   // "Regenerationsstunden", die der Körper pro Tag regeneriert — GUESS
-const DEBT_WINDOW_DAYS=21; // Rückblickfenster für die Schuld-Akkumulation
-const DEBT_YELLOW=3;       // Schuld-Schwelle für Gelb — GUESS, an REGEN_PER_DAY gekoppelt
-const DEBT_RED=8;          // Schuld-Schwelle für Rot — GUESS, an REGEN_PER_DAY gekoppelt
+const DEBT_YELLOW=2;       // Schuld-Schwelle für Gelb — an die abklingende Skala angepasst (kalibrierbar)
+const DEBT_RED=5;          // Schuld-Schwelle für Rot — an die abklingende Skala angepasst (kalibrierbar)
+const DEBT_LOOKBACK=27;    // Vorlauf für die rollierende 28-Tage-Ø-Last (siehe unten)
+const DEBT_RETENTION=0.85; // Tages-Restanteil der Schuld — alte Schuld klingt exponentiell ab
+                           // (≈1–2 Wochen Halbwertszeit); begrenzt die Schuld und macht sie fenster-unabhängig
 
-// Recovery-Kosten eines Tages in "Regenerationsstunden": bevorzugt Zonen-Minuten
-// (zoneProfileMin, wenn HF-Verlauf vorhanden), sonst Fallback: einheitlicher
-// "Keine Zone"-Faktor auf die volle Dauer (für sRPE-only/Freitext-Einheiten ohne HF-Daten).
-function dayRecoveryCost(daySessions){
-  let cost=0;
-  daySessions.forEach(s=>{
-    const zp=zoneProfileMin(s); // [Z1..Z5] Minuten, oder null
-    if(zp){
-      const zones=zonesFor(s.sport);
-      const factors=['Z1','Z2','Z3','Z4','Z5'].map(k=>{
-        const z=zones.find(zz=>zz.key===k);
-        return(z&&z.recoveryFactor!=null)?z.recoveryFactor:0.15;
-      });
-      cost+=zp.reduce((a,min,i)=>a+min*factors[i],0);
-    }else{
-      const noZone=zoneCfg('-',s.sport);
-      const factor=(noZone&&noZone.recoveryFactor!=null)?noZone.recoveryFactor:0.15;
-      cost+=(s.duration||0)*factor;
-    }
+// Erholungsschuld-Serie (Sub-Signal C): workload-basiert statt zonenbasiert, damit auch
+// Krafteinheiten ohne HF-/Zonen-Zuordnung korrekt beitragen (sie haben trotzdem einen
+// Workload-Wert aus berechneWorkload/buildDailyLoadSeries). Ein Tag mit rollierend-
+// durchschnittlicher Last (28-Tage-Ø, gleiche Fensterlogik wie computeAcwrRollingSeries)
+// ist Recovery-neutral (Kosten = REGEN_PER_DAY); Tage darüber bauen Schuld auf, Tage
+// darunter/Ruhetage bauen sie ab. Die Schuld klingt pro Tag um (1-DEBT_RETENTION) ab, statt
+// unbegrenzt zu akkumulieren — dadurch strebt sie gegen ein Gleichgewicht (~Tagesüberschuss/
+// (1-DEBT_RETENTION)) statt wegzulaufen, und Ruhetage senken sie sofort sichtbar.
+function dailyRecoveryDebtSeries(series){
+  const loads=series.map(d=>d.actualLoad);
+  let debt=0;
+  return series.map((d,i)=>{
+    const chronicSlice=loads.slice(Math.max(0,i-DEBT_LOOKBACK),i+1);
+    const avgDailyLoad=chronicSlice.reduce((a,b)=>a+b,0)/chronicSlice.length;
+    const cost=avgDailyLoad>0?REGEN_PER_DAY*(d.actualLoad/avgDailyLoad):0;
+    debt=Math.max(0,debt*DEBT_RETENTION+(cost-REGEN_PER_DAY));
+    return{iso:d.iso,debt:Math.round(debt*100)/100};
   });
-  return cost;
+}
+// Kanonischer Erholungsschuld-Verlauf über ein FESTES Akkumulationsfenster ab heute rückwärts.
+// Da die Schuld-Akkumulation vom Startpunkt abhängt (jeder Aufruf startet bei debt=0), müssen
+// alle Konsumenten denselben Anker nutzen, sonst weichen Headline-Karte und Chart im Heute-Wert
+// voneinander ab. Mit dem Abklingen (DEBT_RETENTION) ist die Fensterlänge unkritisch. Map iso->debt.
+const DEBT_ACCUM_DAYS=35;
+function recoveryDebtByIso(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const start=new Date(today);start.setDate(start.getDate()-DEBT_ACCUM_DAYS+1);
+  const series=buildDailyLoadSeries({start,end:today});
+  return new Map(dailyRecoveryDebtSeries(series).map(d=>[d.iso,d.debt]));
 }
 function computeRecoveryDebt(){
   const today=new Date();today.setHours(0,0,0,0);
-  const start=new Date(today);start.setDate(start.getDate()-DEBT_WINDOW_DAYS+1);
-  const series=buildDailyLoadSeries({start,end:today});
-  let debt=0;
-  const debtSeries=[];
-  series.forEach(d=>{
-    const cost=dayRecoveryCost(d.sessions);
-    debt=Math.max(0,debt+cost-REGEN_PER_DAY);
-    debtSeries.push({iso:d.iso,debt:Math.round(debt*100)/100});
-  });
-  return{debt:Math.round(debt*100)/100,series:debtSeries};
+  const debt=recoveryDebtByIso().get(toISODate(today));
+  return{debt:debt!=null?debt:0};
 }
 function recoveryDebtStatus(debt){
   if(debt==null)return{label:'Keine Daten',color:'#888780',severity:null};
@@ -1883,6 +1908,65 @@ function recoveryDebtStatus(debt){
   if(debt<DEBT_RED)return{label:'Mehr Erholung nötig',color:cssVar('--acwr-caution'),severity:1};
   return{label:'Stark erhöht',color:cssVar('--acwr-high'),severity:2};
 }
+
+// ── Physiologische Sub-Signale aus Garmin-Wellness (Ruhepuls, HRV, Schlafdauer) ─
+// Alle drei baseline-relativ (persönlicher Median über die verfügbaren Wellness-Tage) statt
+// absolut — passt sich an die individuelle Physiologie an (z.B. Schlaf-Norm) und vermeidet
+// Dauer-Alarm. Schwellen als benannte Konstanten, kalibrierbar.
+const RHR_YELLOW=3,RHR_RED=6;        // bpm über persönlicher Ruhepuls-Baseline
+const HRV_YELLOW=0.08,HRV_RED=0.15;  // Anteil unter HRV-Baseline
+const SLEEP_YELLOW=0.8,SLEEP_RED=1.5;// h unter Schlaf-Baseline (3-Nächte-Schnitt)
+function median(arr){
+  if(!arr||!arr.length)return null;
+  const s=[...arr].sort((a,b)=>a-b),m=Math.floor(s.length/2);
+  return s.length%2?s[m]:(s[m-1]+s[m])/2;
+}
+function wellnessBaselines(){
+  const rhr=[],hrv=[],sleep=[];
+  Object.values(wellness).forEach(w=>{
+    if(w.rhr!=null)rhr.push(w.rhr);
+    if(w.hrvAvg!=null)hrv.push(w.hrvAvg);
+    if(w.sleepH!=null)sleep.push(w.sleepH);
+  });
+  return{rhr:median(rhr),hrv:median(hrv),sleep:median(sleep)};
+}
+// Aus einem baseline-relativen Wert die diskrete Severity (0/1/2) UND den kontinuierlichen
+// Chart-Score (bandScore, gleiche Schwellen) ableiten — hält Headline und Kurve konsistent.
+function gradedSignal(value,yellowAt,redAt){
+  if(value==null||isNaN(value))return{severity:null,score:0};
+  return{severity:value>=redAt?2:value>=yellowAt?1:0,score:bandScore(value,yellowAt,redAt)};
+}
+function restingHrSignal(iso,baseRhr){
+  const w=wellness[iso];
+  if(!w||w.rhr==null||baseRhr==null)return{severity:null,score:0,rhr:w?w.rhr:null,dev:null};
+  const dev=Math.round((w.rhr-baseRhr)*10)/10;
+  return{...gradedSignal(dev,RHR_YELLOW,RHR_RED),rhr:w.rhr,dev};
+}
+function hrvSignal(iso,baseHrv){
+  const w=wellness[iso];
+  if(!w)return{severity:null,score:0,hrvAvg:null,dropPct:null};
+  if(w.hrvAvg!=null&&baseHrv){
+    const drop=(baseHrv-w.hrvAvg)/baseHrv;
+    return{...gradedSignal(drop,HRV_YELLOW,HRV_RED),hrvAvg:w.hrvAvg,dropPct:Math.round(drop*100)};
+  }
+  // Fallback: Garmin-HRV-Status (NONE/leer => keine Daten)
+  const st=(w.hrvStatus||'').toUpperCase();
+  if(st==='BALANCED')return{severity:0,score:0,hrvAvg:null,status:st};
+  if(st==='UNBALANCED')return{severity:1,score:0.5,hrvAvg:null,status:st};
+  if(st==='LOW'||st==='POOR'||st==='UNRELIABLE')return{severity:2,score:0.85,hrvAvg:null,status:st};
+  return{severity:null,score:0,hrvAvg:null,status:st||null};
+}
+function sleepSignal(iso,baseSleep){
+  if(baseSleep==null)return{severity:null,score:0,avg:null,deficit:null};
+  const d=new Date(iso+'T00:00:00'),vals=[];
+  for(let k=0;k<3;k++){const dk=new Date(d);dk.setDate(dk.getDate()-k);const w=wellness[toISODate(dk)];if(w&&w.sleepH!=null)vals.push(w.sleepH);}
+  if(!vals.length)return{severity:null,score:0,avg:null,deficit:null};
+  const avg=vals.reduce((a,b)=>a+b,0)/vals.length,deficit=Math.round((baseSleep-avg)*10)/10;
+  return{...gradedSignal(deficit,SLEEP_YELLOW,SLEEP_RED),avg:Math.round(avg*10)/10,deficit};
+}
+function rhrStatusLabel(s){return s==null?'Keine Daten':['Normal','Leicht erhöht','Erhöht'][s];}
+function hrvStatusLabel(s){return s==null?'Keine Daten':['Ausgeglichen','Reduziert','Niedrig'][s];}
+function sleepStatusLabel(s){return s==null?'Keine Daten':['Ausreichend','Wenig','Zu wenig'][s];}
 
 // Kombiniert die Sub-Signale zum Gesamtstatus: schlechtester Fall gewinnt (max. Schweregrad).
 // signals: Array von {key,label,severity} — severity 0=grün,1=gelb,2=rot,null=keine Daten.
@@ -1898,9 +1982,15 @@ function combine(signals){
 }
 
 function computeRecoveryPressure(){
-  const mono=computeMonotonyStrain(1)[0];
+  // Rollierende 7-Tage-Monotonie "als heute" (rollingMonotonyAsOf) statt der kalender-
+  // wochengebundenen computeMonotonyStrain(1) — damit dieser Wert exakt dem "heute"-Punkt
+  // im Regeneration-Chart (computeDailyRecoveryScores) entspricht.
+  const monoToday=new Date();monoToday.setHours(0,0,0,0);
+  const monoStart=new Date(monoToday);monoStart.setDate(monoStart.getDate()-6);
+  const monoLoads=buildDailyLoadSeries({start:monoStart,end:monoToday}).map(d=>d.actualLoad);
+  const mono={monotony:Math.round(rollingMonotonyAsOf(monoLoads,monoLoads.length-1)*100)/100};
   const monoStat=monotonyStatus(mono.monotony);
-  const monoSeverity=mono.monotony===0?null:(mono.monotony<1.5?0:mono.monotony<2.0?1:2);
+  const monoSeverity=mono.monotony===0?null:(mono.monotony<MONOTONY_YELLOW?0:mono.monotony<MONOTONY_RED?1:2);
 
   const rest=computeRestStreak();
   const restStat=restStreakStatus(rest.streak);
@@ -1908,18 +1998,97 @@ function computeRecoveryPressure(){
   const debt=computeRecoveryDebt();
   const debtStat=recoveryDebtStatus(debt.debt);
 
+  // Physiologische Sub-Signale aus Garmin-Wellness (für "heute"); severity=null wenn keine Daten.
+  const todayIso=toISODate(monoToday);
+  const base=wellnessBaselines();
+  const rhr=restingHrSignal(todayIso,base.rhr);
+  const hrv=hrvSignal(todayIso,base.hrv);
+  const sleep=sleepSignal(todayIso,base.sleep);
+
   const signals=[
     {key:'monotony',label:'wenig Abwechslung',severity:monoSeverity},
     {key:'restStreak',label:'Ruhepausen fehlen',severity:restStat.severity},
-    {key:'recoveryDebt',label:'Erholungsrückstand',severity:debtStat.severity}
-    // Sub-Signal D (Ruhe-HF) käme hier als weiteres Objekt dazu, sobald Garmin-Sync verfügbar ist.
+    {key:'recoveryDebt',label:'Erholungsrückstand',severity:debtStat.severity},
+    {key:'restingHr',label:'erhöhter Ruhepuls',severity:rhr.severity},
+    {key:'hrv',label:'niedrige HRV',severity:hrv.severity},
+    {key:'sleep',label:'zu wenig Schlaf',severity:sleep.severity}
   ];
   return{
     ...combine(signals),
-    monotony:{data:mono,status:monoStat},
+    monotony:{data:mono,status:monoStat,severity:monoSeverity},
     restStreak:{data:rest,status:restStat},
-    recoveryDebt:{data:debt,status:debtStat}
+    recoveryDebt:{data:debt,status:debtStat},
+    restingHr:rhr,hrv:hrv,sleep:sleep
   };
+}
+
+// Kontinuierliche 0–1-Bewertung eines Sub-Signal-Werts anhand seiner Gelb-/Rot-Schwelle:
+// 0 → 0; Gelb-Schwelle → 1/3; Rot-Schwelle → 2/3; darüber asymptotisch → 1 (KEIN harter Cap,
+// damit Verbesserungen auch im roten Bereich sichtbar bleiben — z.B. Erholung durch Ruhetage,
+// die die Schuld senkt, ohne gleich unter die Rot-Schwelle zu fallen).
+// Jede Severity-Stufe (0/1/2) belegt so genau ein vertikales Drittel: die Kurvenhöhe im Chart
+// entspricht dadurch der Headline-Bewertung ("Achtung" = Mitte/pink, nicht oben/rot).
+function bandScore(value,yellowAt,redAt){
+  if(value==null||isNaN(value)||value<=0)return 0;
+  if(value<=yellowAt)return(value/yellowAt)/3;
+  if(value<=redAt)return 1/3+((value-yellowAt)/(redAt-yellowAt))/3;
+  const over=(value-redAt)/(redAt-yellowAt||1);
+  return 2/3+(1/3)*(1-Math.exp(-over));
+}
+
+// Recovery-Pressure-Score PRO TAG (0–1, worst-case aus Monotonie/Streak/Erholungsschuld) für
+// die letzten `days` Tage — im Unterschied zu computeRecoveryPressure() (nur der aktuelle
+// Gesamtstatus) liefert dies eine Zeitreihe, damit der "Balken als Fenster"-Chart jeden Tag
+// mit seinem eigenen Regenerationsbedarf einfärben kann (RECOVERY_PRESSURE.md §10.1/§10.3).
+// Monotonie wird dafür tagesgenau als rollierendes 7-Tage-Fenster berechnet (analog
+// computeAcwrRollingSeries), nicht an Kalenderwochen gebunden wie computeMonotonyStrain.
+function computeDailyRecoveryScores(days){
+  const today=new Date();today.setHours(0,0,0,0);
+  const end=new Date(today);
+  const start=new Date(today);start.setDate(start.getDate()-days+1);
+  const LOOKBACK=27; // deckt Monotonie-Fenster (7T), Streak-Cap und Erholungsschuld-Ø-Fenster (28T) ab
+  const extStart=new Date(start);extStart.setDate(extStart.getDate()-LOOKBACK);
+  const series=buildDailyLoadSeries({start:extStart,end});
+  const loads=series.map(d=>d.actualLoad);
+  const offset=series.length-days;
+
+  // Erholungsschuld: aus dem KANONISCHEN Verlauf (recoveryDebtByIso) je Tag holen, damit der
+  // Heute-Wert exakt mit der Headline-Karte (computeRecoveryDebt) übereinstimmt — beide lesen
+  // aus demselben Akkumulationsfenster.
+  const debtMap=recoveryDebtByIso();
+  const base=wellnessBaselines(); // persönliche Baselines für die physiologischen Signale
+
+  const out=[];
+  for(let i=offset;i<series.length;i++){
+    const iso=series[i].iso;
+    const monotony=rollingMonotonyAsOf(loads,i);
+
+    let streak=0;
+    for(let j=i;j>=0;j--){if(loads[j]>0)streak++;else break;}
+
+    const debt=debtMap.get(iso)||0;
+    const rhr=restingHrSignal(iso,base.rhr);
+    const hrv=hrvSignal(iso,base.hrv);
+    const sleep=sleepSignal(iso,base.sleep);
+    // Rohwerte + Treiber (das Sub-Signal, das das Max liefert) mitgeben — nicht nur den
+    // kombinierten Score, damit der Tooltip zeigt, welches Signal den Ausschlag gibt.
+    // Physiologische Signale nur, wo Garmin-Daten vorliegen (severity!=null).
+    const subScores=[
+      {key:'Monotonie',value:bandScore(monotony-1,MONOTONY_YELLOW-1,MONOTONY_RED-1)},
+      {key:'Streak',value:bandScore(streak,REST_STREAK_YELLOW,REST_STREAK_RED)},
+      {key:'Schuld',value:bandScore(debt,DEBT_YELLOW,DEBT_RED)},
+      {key:'Ruhepuls',value:rhr.severity!=null?rhr.score:0},
+      {key:'HRV',value:hrv.severity!=null?hrv.score:0},
+      {key:'Schlaf',value:sleep.severity!=null?sleep.score:0}
+    ];
+    const driver=subScores.reduce((a,b)=>b.value>a.value?b:a);
+    out.push({
+      iso,load:series[i].actualLoad,score:Math.min(1,driver.value),
+      monotony,streak,debt,driverKey:driver.key,
+      rhrDev:rhr.dev,hrvDropPct:hrv.dropPct,sleepAvg:sleep.avg
+    });
+  }
+  return out;
 }
 
 // HF-Drift (kardiovaskuläres Decoupling-Näherung): Vergleicht die durchschnittliche
@@ -4513,8 +4682,8 @@ function computeMonotonyStrain(weeksBack){
 
 function monotonyStatus(m){
   if(m==null||m===0)return{label:'Keine Daten',color:'#888780'};
-  if(m<1.5)return{label:'Gut variiert',color:cssVar('--acwr-optimal')};
-  if(m<2.0)return{label:'Moderat',color:cssVar('--acwr-caution')};
+  if(m<MONOTONY_YELLOW)return{label:'Gut variiert',color:cssVar('--acwr-optimal')};
+  if(m<MONOTONY_RED)return{label:'Moderat',color:cssVar('--acwr-caution')};
   return{label:'Zu gleichförmig',color:cssVar('--acwr-high')};
 }
 
@@ -4540,40 +4709,135 @@ function computeHrDrift(session){
   return{hr1:Math.round(hr1),hr2:Math.round(hr2),driftPct};
 }
 
-// Leichtgewichtiger Bar-Sparkline für die letzten `days` Tage — reine CSS-Flexbox-
-// Balken statt SVG-viewBox-Skalierung, dadurch unabhängig von Container-Seitenverhältnis
-// und ohne die Verzerrungsgefahr, die die wiederverwendete renderWorkloadChart-SVG bei
-// kleinen/versteckten Containern hatte. Ruhetage bleiben als Null-Balken sichtbar.
-// Farb-/Formsprache von renderWeeklyLoadDistribution() ("Lastverteilung", Log-Seite)
-// übernommen: violett→orange je nach Verhältnis zur typischen Tageslast (LOADDIST_*/
-// loadDistColor), eckige Balken mit Farbverlauf zur Spitze, gedämpfte Ruhetag-Stubs.
-// Bewusst ohne die volle SVG-Maschinerie (Grain-Overlay, Optimum-Band, Clip-Paths) —
-// für einen 52px hohen 14-Tage-Streifen wäre das visuelles Rauschen statt Klarheit.
+// "Balken als Fenster"-Chart (RECOVERY_PRESSURE.md §10, 1:1 nach der Referenzskizze
+// "recovery pressure v2 sketch.html"): Balkenhöhe = Workload, Balkenfarbe = Recovery-
+// Pressure-Score (computeDailyRecoveryScores). Kernmechanik: EINE geglättete Flächenform
+// (areaPath) unter der Score-Kurve wird für JEDEN Balken erneut gezeichnet, aber jedes Mal
+// durch die individuelle Fade+Grain-Maske jenes Balkens beschnitten — dadurch ist innerhalb
+// eines Balkens nur der Bereich UNTERHALB der Kurve voll eingefärbt, der Bereich OBERHALB
+// zeigt nur die dezente Grundtönung. Zusätzlich läuft die Kurve selbst als sichtbare Linie
+// (geclippt auf die Balkenflächen) durch die Balken.
 function renderRecoveryBarSparkline(container,days){
   if(!container)return;
   days=days||14;
-  const today=new Date();today.setHours(0,0,0,0);
-  const start=new Date(today);start.setDate(start.getDate()-days+1);
-  const series=buildDailyLoadSeries({start,end:today});
-  const maxLoad=Math.max(...series.map(d=>d.actualLoad),1);
-  // Gleiche Referenz wie ACWR: chronische (28-Tage-Ø) Last ÷ 7 als "typische Tageslast".
-  // Fallback für neue Nutzer ohne Historie, analog renderWeeklyLoadDistribution.
-  const chronic=computeAcwrStatsRolling().currentChronic;
-  const dailyTarget=chronic>0?chronic/7:(maxLoad>0?maxLoad/1.15:0);
-  const purpleCss=`rgb(${LOADDIST_PURPLE.join(',')})`;
-  const bars=series.map(d=>{
-    const isRest=d.actualLoad<=0;
-    const dateLabel=new Date(d.iso+'T00:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'numeric'});
-    if(isRest){
-      return`<div class="rp-bar-col" title="${dateLabel} · Ruhetag"><div class="rp-bar" style="height:3%;background:${purpleCss};opacity:.3;"></div></div>`;
+  const dayData=computeDailyRecoveryScores(days);
+  const maxLoad=Math.max(...dayData.map(d=>d.load),1);
+
+  // Feste logische Breite/Höhe statt container.clientWidth: die Box ist beim ersten Rendern
+  // noch eingeklappt (display:none, clientWidth 0) — das SVG skaliert stattdessen responsiv
+  // über viewBox + width:100% auf die tatsächliche Container-Breite.
+  const W=300,H=72,GAP=3,BOTTOM=14,TOP_PAD=4;
+  const barW=(W-GAP*(dayData.length-1))/dayData.length;
+  const innerH=H-BOTTOM-TOP_PAD;
+  const FADE_TOP_OPACITY=0.15,FADE_BOTTOM_OPACITY=1.0;
+  const baseY=H-BOTTOM;
+
+  // Glatte Kurve durch eine Punktfolge via Catmull-Rom → kubische Béziers (identisch zur Referenz).
+  const smoothPath=pts=>{
+    if(pts.length<2)return'';
+    let d=`M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+    for(let i=0;i<pts.length-1;i++){
+      const p0=pts[i===0?0:i-1],p1=pts[i],p2=pts[i+1],p3=pts[i+2===pts.length?i+1:i+2];
+      const c1x=p1.x+(p2.x-p0.x)/6,c1y=p1.y+(p2.y-p0.y)/6;
+      const c2x=p2.x-(p3.x-p1.x)/6,c2y=p2.y-(p3.y-p1.y)/6;
+      d+=` C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
     }
-    const pct=Math.max(6,Math.round((d.actualLoad/maxLoad)*100));
-    const r=dailyTarget>0?d.actualLoad/dailyTarget:0;
-    const tipColor=loadDistColor(r);
-    const bg=`linear-gradient(to top, ${purpleCss} 50%, ${tipColor} 100%)`;
-    return`<div class="rp-bar-col" title="${dateLabel} · Tageslast ${d.actualLoad} Pkt"><div class="rp-bar" style="height:${pct}%;background:${bg};"></div></div>`;
+    return d;
+  };
+
+  const bars=dayData.map((d,i)=>{
+    const x=i*(barW+GAP);
+    const barH=Math.max(0.5,(d.load/maxLoad)*innerH);
+    const y=baseY-barH;
+    return{...d,x,barH,y};
+  });
+
+  // Score-Kurve: y unabhängig von der Balkenhöhe, über die volle Chart-Innenhöhe.
+  const scorePts=bars.map(b=>({x:b.x+barW/2,y:TOP_PAD+innerH*(1-b.score)}));
+  // EINE geschlossene Flächenform unter der Kurve — für alle Balken identisch, wird nur
+  // per Balken-Maske unterschiedlich beschnitten (Kernmechanik der Referenz).
+  const areaPath=smoothPath(scorePts)+
+    ` L ${scorePts[scorePts.length-1].x.toFixed(1)} ${baseY.toFixed(1)}`+
+    ` L ${scorePts[0].x.toFixed(1)} ${baseY.toFixed(1)} Z`;
+
+  // EIN horizontaler Gradient über die gesamte Chart-Breite, ein Farb-Stop pro Tag.
+  const gradId='rp-window-grad';
+  const gradStops=dayData.map((d,i)=>{
+    const offset=dayData.length===1?0:(i/(dayData.length-1))*100;
+    return`<stop offset="${offset.toFixed(2)}%" stop-color="${pressureColor(d.score)}"/>`;
   }).join('');
-  container.innerHTML=`<div class="rp-bars">${bars}</div>`;
+
+  let defs=`<linearGradient id="${gradId}" x1="0" y1="0" x2="1" y2="0">${gradStops}</linearGradient>`;
+  // Gemeinsamer Grain-Filter (ein einziges Mal), von jeder Balken-Maske referenziert.
+  defs+=`<filter id="rp-grain" x="-30%" y="-30%" width="160%" height="160%">`+
+    `<feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="11" result="noise"/>`+
+    `<feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0.6 0.6 0.6 0 0" result="grainAlpha"/>`+
+    `<feComposite in="grainAlpha" in2="SourceGraphic" operator="in" result="grainClipped"/>`+
+    `<feBlend in="SourceGraphic" in2="grainClipped" mode="multiply" result="darkened"/>`+
+    `<feComponentTransfer in="darkened"><feFuncA type="identity"/></feComponentTransfer>`+
+    `</filter>`;
+
+  // Pro Balken: eigener Fade-Gradient (objectBoundingBox-Default, 15% oben → 100% unten)
+  // + Maske, die Fade und Grain kombiniert (exakt wie Referenz).
+  bars.forEach((b,i)=>{
+    defs+=`<linearGradient id="rp-fade-${i}" x1="0" y1="0" x2="0" y2="1">`+
+      `<stop offset="0%" stop-color="#fff" stop-opacity="${FADE_TOP_OPACITY}"/>`+
+      `<stop offset="100%" stop-color="#fff" stop-opacity="${FADE_BOTTOM_OPACITY}"/>`+
+      `</linearGradient>`+
+      `<mask id="rp-mask-${i}" maskUnits="userSpaceOnUse" x="${b.x.toFixed(1)}" y="${b.y.toFixed(1)}" width="${barW.toFixed(1)}" height="${b.barH.toFixed(1)}">`+
+      `<rect x="${b.x.toFixed(1)}" y="${b.y.toFixed(1)}" width="${barW.toFixed(1)}" height="${b.barH.toFixed(1)}" fill="url(#rp-fade-${i})" filter="url(#rp-grain)"/>`+
+      `</mask>`;
+  });
+
+  const WEEKDAY_ABBR=['So.','Mo.','Di.','Mi.','Do.','Fr.','Sa.'];
+  // Debug-Tooltip mit allen Rohwerten + Treiber, damit sich die Score-Berechnung pro Tag
+  // ohne Vermutungen nachvollziehen lässt (statt nur den kombinierten Score anzuzeigen).
+  const debugTooltip=b=>{
+    const dateObj=new Date(b.iso+'T00:00:00');
+    const fullDateLabel=dateObj.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'numeric'});
+    let t=`${fullDateLabel} · Tageslast ${b.load} Pkt · Score ${b.score.toFixed(2)} · Treiber: ${b.driverKey} · `+
+      `Monotonie ${b.monotony.toFixed(2)} · Streak ${b.streak}T · Schuld ${b.debt.toFixed(1)}h`;
+    if(b.rhrDev!=null)t+=` · Ruhepuls ${b.rhrDev>=0?'+':''}${b.rhrDev} bpm`;
+    if(b.hrvDropPct!=null)t+=` · HRV ${b.hrvDropPct>=0?'−':'+'}${Math.abs(b.hrvDropPct)}%`;
+    if(b.sleepAvg!=null)t+=` · Schlaf ${b.sleepAvg}h`;
+    return t;
+  };
+
+  let barsSvg='';
+  bars.forEach((b,i)=>{
+    const dateObj=new Date(b.iso+'T00:00:00');
+    const weekdayLabel=WEEKDAY_ABBR[dateObj.getDay()];
+    const tint=pressureColor(b.score);
+    barsSvg+=`<g>`+
+      // Grundtönung: dezenter, konstanter Ton in der Score-Farbe (unabhängig vom Fade) —
+      // hält den Balken auch dort als Fläche erkennbar, wo die Kurve darüber verläuft.
+      `<rect x="${b.x.toFixed(1)}" y="${b.y.toFixed(1)}" width="${barW.toFixed(1)}" height="${b.barH.toFixed(1)}" fill="${tint}" opacity="0.16"/>`+
+      // Dieselbe areaPath wie bei jedem anderen Balken, aber durch DIESE Balken-Maske
+      // beschnitten -> nur der Bereich unterhalb der Score-Kurve wird sichtbar.
+      `<g mask="url(#rp-mask-${i})"><path d="${areaPath}" fill="url(#${gradId})"/></g>`+
+      // Seitliche Konturlinien, ohne obere Kante -> Balken bleibt nach oben offen.
+      `<path d="M ${b.x.toFixed(1)} ${b.y.toFixed(1)} L ${b.x.toFixed(1)} ${baseY.toFixed(1)} M ${(b.x+barW).toFixed(1)} ${b.y.toFixed(1)} L ${(b.x+barW).toFixed(1)} ${baseY.toFixed(1)}" stroke="#1a1a1a" stroke-opacity="0.18" stroke-width="1" fill="none"/>`+
+      `<text x="${(b.x+barW/2).toFixed(1)}" y="${H-3}" font-size="8" text-anchor="middle" fill="${cssVar('--text-faint')}">${weekdayLabel}</text>`+
+      `<title>${debugTooltip(b)}</title>`+
+      `</g>`;
+  });
+
+  // Durchlaufende Score-Linie: immer vollständig sichtbar (nicht auf Balkenflächen
+  // beschnitten) — macht die Berechnung direkt nachvollziehbar/überprüfbar. Helle
+  // Kontur dahinter für Lesbarkeit über wechselnden Balkenfarben, plus ein Punkt pro
+  // Tag mit Rohwert-Tooltip.
+  const curvePath=smoothPath(scorePts);
+  const dots=scorePts.map((p,i)=>
+    `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.5" fill="${pressureColor(bars[i].score)}" stroke="#fff" stroke-width="1"><title>${debugTooltip(bars[i])}</title></circle>`
+  ).join('');
+  const lineSvg=`<path d="${curvePath}" fill="none" stroke="#fff" stroke-width="4" stroke-opacity="0.6"/>`+
+    `<path d="${curvePath}" fill="none" stroke="url(#${gradId})" stroke-width="2.5" stroke-opacity="1"/>`+
+    dots;
+
+  container.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="width:100%;height:100%;display:block;">`+
+    `<defs>${defs}</defs>`+
+    `${barsSvg}${lineSvg}`+
+    `</svg>`;
 }
 
 // Recovery Pressure: kompakte Ampel im Collapse-Toggle + aufklappbare Details
@@ -4581,7 +4845,15 @@ function renderRecoveryBarSparkline(container,days){
 // bedarf ohne Seitenwechsel direkt sichtbar ist.
 function renderRecoveryPressure(){
   const rp=computeRecoveryPressure();
-  const overallColor=rp.color||'#888780';
+  // Ampel-Färbung in den Recovery-Pressure-Farben (blau/pink/rot) statt der grün/gelb/rot-
+  // Ampelfarben — konsistent mit dem Chart (pressureColor).
+  const overallColor=pressureBandColor(rp.severity);
+  const monoColor=pressureBandColor(rp.monotony.severity);
+  const streakColor=pressureBandColor(rp.restStreak.status.severity);
+  const debtColor=pressureBandColor(rp.recoveryDebt.status.severity);
+  const rhrColor=pressureBandColor(rp.restingHr.severity);
+  const hrvColor=pressureBandColor(rp.hrv.severity);
+  const sleepColor=pressureBandColor(rp.sleep.severity);
   const labelEl=document.getElementById('recovery-pressure-label');
   if(labelEl){labelEl.textContent=rp.label||'—';labelEl.style.color=overallColor;}
   const driverEl=document.getElementById('recovery-pressure-driver');
@@ -4590,11 +4862,22 @@ function renderRecoveryPressure(){
     driverEl.style.color=overallColor;
   }
 
+  // Karte für ein physiologisches Signal: zeigt den Garmin-Wert, oder dezent "—" wenn keine
+  // Wellness-Daten für heute vorliegen.
+  const naStyle='color:var(--text-faint);';
+  const physioCard=(label,sig,valueHtml,subHtml,color,statusLabel)=>
+    sig.severity==null
+      ?`<div class="metric"><p class="m-label">${label}</p><p class="m-value" style="${naStyle}">&#x2014;</p><p style="font-size:.64rem;${naStyle}margin:.1rem 0 0;font-weight:600;">Keine Garmin-Daten</p><p style="font-size:.58rem;color:var(--text-faint);margin:.12rem 0 0;">${subHtml}</p></div>`
+      :`<div class="metric"><p class="m-label">${label}</p><p class="m-value" style="color:${color};">${valueHtml}</p><p style="font-size:.64rem;color:${color};margin:.1rem 0 0;font-weight:600;">${statusLabel}</p><p style="font-size:.58rem;color:var(--text-faint);margin:.12rem 0 0;">${subHtml}</p></div>`;
+
   const subEl=document.getElementById('recovery-subsignal-cards');
   if(subEl)subEl.innerHTML=`
-    <div class="metric"><p class="m-label">Belastungswechsel</p><p class="m-value" style="color:${rp.monotony.status.color};">${rp.monotony.data.monotony>0?rp.monotony.data.monotony.toFixed(2)+'×':'&#x2014;'}</p><p style="font-size:.64rem;color:${rp.monotony.status.color};margin:.1rem 0 0;font-weight:600;">${rp.monotony.status.label}</p><p style="font-size:.58rem;color:var(--text-faint);margin:.12rem 0 0;">weniger Abwechslung</p></div>
-    <div class="metric"><p class="m-label">Ruhepausen</p><p class="m-value" style="color:${rp.restStreak.status.color};">${rp.restStreak.data.streak}<span style="font-size:.72rem;"> Tage</span></p><p style="font-size:.64rem;color:${rp.restStreak.status.color};margin:.1rem 0 0;font-weight:600;">${rp.restStreak.status.label}</p><p style="font-size:.58rem;color:var(--text-faint);margin:.12rem 0 0;">ohne Pause</p></div>
-    <div class="metric"><p class="m-label">Erholungsrückstand</p><p class="m-value" style="color:${rp.recoveryDebt.status.color};">${rp.recoveryDebt.data.debt}<span style="font-size:.72rem;"> h</span></p><p style="font-size:.64rem;color:${rp.recoveryDebt.status.color};margin:.1rem 0 0;font-weight:600;">${rp.recoveryDebt.status.label}</p><p style="font-size:.58rem;color:var(--text-faint);margin:.12rem 0 0;">über 3 Wochen</p></div>`;
+    <div class="metric"><p class="m-label">Belastungswechsel</p><p class="m-value" style="color:${monoColor};">${rp.monotony.data.monotony>0?rp.monotony.data.monotony.toFixed(2)+'×':'&#x2014;'}</p><p style="font-size:.64rem;color:${monoColor};margin:.1rem 0 0;font-weight:600;">${rp.monotony.status.label}</p><p style="font-size:.58rem;color:var(--text-faint);margin:.12rem 0 0;">weniger Abwechslung</p></div>
+    <div class="metric"><p class="m-label">Trainingstage in Folge</p><p class="m-value" style="color:${streakColor};">${rp.restStreak.data.streak}<span style="font-size:.72rem;"> Tage</span></p><p style="font-size:.64rem;color:${streakColor};margin:.1rem 0 0;font-weight:600;">${rp.restStreak.status.label}</p><p style="font-size:.58rem;color:var(--text-faint);margin:.12rem 0 0;">am Stück ohne Ruhetag</p></div>
+    <div class="metric"><p class="m-label">Erholungsrückstand</p><p class="m-value" style="color:${debtColor};">${rp.recoveryDebt.data.debt}<span style="font-size:.72rem;"> h</span></p><p style="font-size:.64rem;color:${debtColor};margin:.1rem 0 0;font-weight:600;">${rp.recoveryDebt.status.label}</p><p style="font-size:.58rem;color:var(--text-faint);margin:.12rem 0 0;">laufender Saldo</p></div>
+    ${physioCard('Ruhepuls',rp.restingHr,`${rp.restingHr.rhr}<span style="font-size:.72rem;"> bpm</span>`,rp.restingHr.dev!=null?`${rp.restingHr.dev>=0?'+':''}${rp.restingHr.dev} ggü. Ø`:'ggü. Baseline',rhrColor,rhrStatusLabel(rp.restingHr.severity))}
+    ${physioCard('HRV',rp.hrv,rp.hrv.hrvAvg!=null?`${rp.hrv.hrvAvg}<span style="font-size:.72rem;"> ms</span>`:(rp.hrv.status||'&#x2014;'),rp.hrv.dropPct!=null?`${rp.hrv.dropPct>=0?'−':'+'}${Math.abs(rp.hrv.dropPct)}% ggü. Ø`:'letzte Nacht',hrvColor,hrvStatusLabel(rp.hrv.severity))}
+    ${physioCard('Schlaf',rp.sleep,rp.sleep.avg!=null?`${rp.sleep.avg}<span style="font-size:.72rem;"> h</span>`:'&#x2014;','&#x2205; 3 Nächte',sleepColor,sleepStatusLabel(rp.sleep.severity))}`;
 
   renderRecoveryBarSparkline(document.getElementById('recovery-sparkline-box'),14);
 }
@@ -4947,6 +5230,33 @@ function loadDistColor(r){
   if(t<=0)return`rgb(${LOADDIST_PURPLE.join(',')})`;
   const c=LOADDIST_PURPLE.map((v,i)=>Math.round(v+(LOADDIST_ORANGE[i]-v)*t));
   return`rgb(${c.join(',')})`;
+}
+
+// ── Recovery-Pressure-Farbskala (RECOVERY_PRESSURE.md §10.2) ─────────────────
+// Drei feste Stützstellen, linear im RGB-Raum interpoliert. Bewusst NICHT aus
+// Theme-Tokens abgeleitet — laut Spezifikation (§10.9 Punkt 9: "Keine neuen Farben
+// außer den drei Score-Stufen") sind exakt diese drei Farben Teil des Designs.
+const RP_COLOR_STOPS=[
+  {at:0,rgb:[98,156,203]},   // #629CCB — optimal/ausgeglichen
+  {at:0.5,rgb:[195,57,165]}, // #C339A5 — Regenerationsbedarf steigt
+  {at:1,rgb:[200,43,48]}     // #C82B30 — hoher Regenerationsbedarf
+];
+function pressureColor(score){
+  score=(score==null||isNaN(score))?0:Math.max(0,Math.min(1,score));
+  let lo=RP_COLOR_STOPS[0],hi=RP_COLOR_STOPS[RP_COLOR_STOPS.length-1];
+  for(let i=0;i<RP_COLOR_STOPS.length-1;i++){
+    if(score>=RP_COLOR_STOPS[i].at&&score<=RP_COLOR_STOPS[i+1].at){lo=RP_COLOR_STOPS[i];hi=RP_COLOR_STOPS[i+1];break;}
+  }
+  const t=(score-lo.at)/((hi.at-lo.at)||1);
+  const c=lo.rgb.map((v,i)=>Math.round(v+(hi.rgb[i]-v)*t));
+  return`rgb(${c.join(',')})`;
+}
+// Diskrete Severity-Farbe (0/1/2) in denselben drei Recovery-Pressure-Farben wie pressureColor
+// — für die Ampel-Färbung von Headline und Sub-Signal-Karten (statt der grün/gelb/rot-
+// Ampelfarben --acwr-*, die weiterhin für ACWR/Monotonie-Chart reserviert bleiben).
+function pressureBandColor(severity){
+  if(severity==null)return'#888780';
+  return['#629CCB','#C339A5','#C82B30'][severity]||'#888780';
 }
 
 // ── Lastverteilung pro Woche (ein Balken je Tag Mo–So, editorialer Stil) ──────
@@ -5320,7 +5630,6 @@ function zoneSettingsHTML(profile){
       <input type="number" class="zone-hrmin-inline" data-zone="${i}" value="${z.hrMin||''}" placeholder="min" min="0" max="250">
       <input type="number" class="zone-hrmax-inline" data-zone="${i}" value="${z.hrMax||''}" placeholder="max" min="0" max="250">
       <input type="color" class="zone-color-inline" data-zone="${i}" value="${z.color}">
-      <input type="number" class="zone-recovery-inline" data-zone="${i}" value="${z.recoveryFactor??0.1}" placeholder="Erhol." min="0" max="2" step="0.01" title="Erholungsfaktor (Regenerationskosten pro Minute in dieser Zone, für Recovery Pressure)">
     </div>`).join('');
 }
 function renderSettingsInline(){
@@ -5550,7 +5859,6 @@ document.getElementById('save-settings-inline').addEventListener('click',()=>{
   document.querySelectorAll('.zone-hrmin-inline').forEach(el=>{targetZones[parseInt(el.dataset.zone)].hrMin=parseFloat(el.value)||null;});
   document.querySelectorAll('.zone-hrmax-inline').forEach(el=>{targetZones[parseInt(el.dataset.zone)].hrMax=parseFloat(el.value)||null;});
   document.querySelectorAll('.zone-color-inline').forEach(el=>{targetZones[parseInt(el.dataset.zone)].color=el.value;});
-  document.querySelectorAll('.zone-recovery-inline').forEach(el=>{targetZones[parseInt(el.dataset.zone)].recoveryFactor=parseFloat(el.value)||0;});
   saveCfg();populateSelects();updateNoteLabel();renderLog();
   document.getElementById('settings-status-inline').textContent='Gespeichert <i class="ti ti-check"></i>';
   setTimeout(()=>{document.getElementById('settings-status-inline').textContent='';},2000);
@@ -6512,10 +6820,20 @@ async function fetchGarminByDate(){
   const res=await fetch('garmin/data.json?_='+Date.now());
   if(!res.ok)throw new Error('HTTP '+res.status);
   const data=await res.json();
+  ingestGarminWellness(data); // Tages-Wellness beim ohnehin erfolgenden Fetch mitnehmen
   const workouts=(data&&data.workouts)||[];
   const byDate={};
   workouts.forEach(w=>{if(w&&w.date){(byDate[w.date]=byDate[w.date]||[]).push(w);}});
   return byDate;
+}
+// Best-effort-Refresh der Tages-Wellness beim App-Start (unabhängig vom Aktivitäten-Import).
+// Fehlschlag ist unkritisch — dann bleibt der localStorage-Cache maßgeblich.
+async function refreshGarminWellness(){
+  try{
+    const res=await fetch('garmin/data.json?_='+Date.now());
+    if(!res.ok)return;
+    ingestGarminWellness(await res.json());
+  }catch(e){}
 }
 // Baut die App-Session-Felder aus den (ggf. mehreren) Garmin-Aktivitäten eines
 // Tages — gemeinsam genutzt von Neu-Import und HF-Verlauf-Nachzug.
@@ -6787,6 +7105,8 @@ async function showApp(user){
   renderLog();
   // Rückwärtsbefüllung Workload für alte Sessions mit HR
   backfillWorkload().then(()=>renderLog()).catch(()=>{});
+  // Garmin-Tages-Wellness (Ruhepuls/HRV/Schlaf) best-effort aktualisieren, danach neu rendern
+  refreshGarminWellness().then(()=>renderLog()).catch(()=>{});
   // sRPE-Prompt für kürzlich abgeschlossene Sessions ohne Load
   setTimeout(checkSrpePrompt,1500);
   // GPX Watch-Folder initialisieren (silent scan wenn schon verbunden)
