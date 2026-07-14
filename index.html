@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap">
+<link rel="stylesheet" href="design/calendar-whiteboard.css">
 <style>
 @font-face{
   font-family:"KrautType";
@@ -153,6 +154,12 @@ body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text
 #bottom-nav button.active{color:var(--text);font-weight:500;}
 #bottom-nav button.active::before{content:"";position:absolute;top:0;left:25%;right:25%;height:2px;background:var(--text);border-radius:0 0 2px 2px;}
 #bottom-nav button .nav-icon{font-size:1.2rem;line-height:1;}
+/* Pull-to-Refresh-Indikator: folgt dem Finger beim Ziehen von oben, dreht bei Auslösung */
+#ptr-indicator{position:fixed;top:10px;left:50%;transform:translate(-50%,-160%);z-index:60;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--glass-bg-strong);-webkit-backdrop-filter:blur(calc(var(--glass-blur) + 2px)) saturate(1.5);backdrop-filter:blur(calc(var(--glass-blur) + 2px)) saturate(1.5);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);color:var(--text-muted);font-size:1.15rem;opacity:0;pointer-events:none;transition:opacity .18s ease;}
+#ptr-indicator.visible{opacity:1;}
+#ptr-indicator.ready{color:var(--accent-yellow);}
+#ptr-indicator.spin i{animation:ptrSpin .7s linear infinite;}
+@keyframes ptrSpin{to{transform:rotate(360deg);}}
 header{display:flex;align-items:center;justify-content:center;margin-bottom:.9rem;padding:.85rem 0;border-bottom:1px solid var(--border);}
 header h1{font-family:var(--font-heading);font-size:2rem;font-weight:200;margin:0;letter-spacing:.12em;text-indent:.42em;word-spacing:.1em;color:var(--accent-yellow);text-align:center;}
 header.has-logo{background:url("img/training-log.png") top center/contain no-repeat;height:160px;margin-top:12px;margin-bottom:-24px;padding:0;border-bottom:none;will-change:transform;position:relative;z-index:0;}
@@ -182,6 +189,32 @@ input,select,textarea{border:1px solid var(--border-strong);border-radius:var(--
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light);}
 textarea{resize:vertical;min-height:3rem;}
 textarea.note-expanded{min-height:9rem;}
+/* Whiteboard-Notizfeld: Board-Foto-Hintergrund (heller Scrim für Lesbarkeit) +
+   eckiger, handgezeichnet wirkender Rahmen. Getippter Text bleibt in klarer
+   Grotesk-Schrift (bewusst KEIN Handschrift-Font). Größe: großer Start, wächst per
+   JS (wbNoteAutoGrow) bis max-height und scrollt dann; manuelles Ziehen bleibt. */
+textarea.wb-note{
+  width:100%;
+  min-height:150px;
+  max-height:min(42vh,360px);
+  overflow-y:auto;
+  resize:vertical;
+  padding:.7rem .8rem;
+  font-family:var(--font-sans);
+  font-size:.9rem;
+  line-height:1.55;
+  color:#242422;
+  border:1px solid rgba(44,44,42,.28);
+  border-radius:3px;
+  box-shadow:0 1px 3px rgba(44,44,42,.12);
+  background:linear-gradient(rgba(244,243,240,.72),rgba(244,243,240,.72)),url("img/whiteboard-board.jpg") center/cover no-repeat,#f4f3f0;
+}
+textarea.wb-note:focus{
+  outline:none;
+  border-color:#b8502f;
+  box-shadow:0 0 0 3px rgba(184,80,47,.18);
+}
+textarea.wb-note::placeholder{color:#54524c;opacity:.75;}
 .note-history-box{margin-top:.55rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);max-height:13rem;overflow-y:auto;}
 .note-history-box .nh-head{font-size:.68rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;padding:.5rem .7rem .25rem;}
 .note-history-box .nh-item{border-top:1px solid var(--border);}
@@ -214,8 +247,8 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .week-nav .label{font-family:var(--font-mono);font-size:.85rem;font-weight:500;min-width:200px;text-align:center;}
 .current-tag{font-size:.68rem;color:var(--accent-text);background:var(--accent-light);border-radius:100px;padding:.08rem .45rem;margin-left:.35rem;}
 .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:.75rem;margin-bottom:1.25rem;}
-.metrics-3{grid-template-columns:repeat(3,1fr);}
-.metrics-5{grid-template-columns:repeat(5,1fr);}
+.metrics-3{grid-template-columns:repeat(auto-fit,minmax(100px,1fr));}
+.metrics-5{grid-template-columns:repeat(auto-fit,minmax(70px,1fr));}
 .metrics-5 .metric{padding:.4rem .35rem;}
 .metrics-5 .m-label{font-size:.58rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .metrics-5 .m-value{font-size:.95rem;}
@@ -596,6 +629,8 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 </div>
 
 <div id="app" style="display:none;">
+<!-- Pull-to-Refresh: oben ziehen zum Aktualisieren der App -->
+<div id="ptr-indicator" aria-hidden="true"><i class="ti ti-refresh"></i></div>
 <nav id="bottom-nav">
   <button class="active" data-page="log"><span class="nav-icon"><i class="ti ti-clipboard-list"></i></span>Log</button>
   <button data-page="calendar"><span class="nav-icon"><i class="ti ti-calendar"></i></span>Kalender</button>
@@ -648,7 +683,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
         <div class="field"><label>Dauer (min, optional)</label><input type="number" id="qn-duration" min="1" step="1" placeholder="60"></div>
         <div class="field"><label>Zone</label><select id="qn-zone"></select></div>
       </div>
-      <textarea id="qn-note" placeholder="Übungen eintragen&#10;z.B. Kniebeugen 4×8 80kg&#10;Bankdrücken 3×10 60kg" style="width:100%;height:130px;padding:.55rem .65rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:.88rem;line-height:1.5;resize:vertical;"></textarea>
+      <textarea id="qn-note" class="wb-note" placeholder="Übungen eintragen&#10;z.B. Kniebeugen 4×8 80kg&#10;Bankdrücken 3×10 60kg"></textarea>
       <div id="qn-note-history" class="note-history-box" style="display:none;margin-top:.5rem;"></div>
       <div class="grid" style="margin-top:.6rem;margin-bottom:.2rem;">
         <div class="field">
@@ -760,6 +795,15 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
       <p id="recovery-pressure-driver" style="font-size:.72rem;margin:0 0 .5rem;font-weight:600;"></p>
       <div class="workload-chart-box wlc-paper" id="recovery-sparkline-box" style="height:72px;padding:.3rem .5rem;"></div>
       <div class="metrics metrics-3" id="recovery-subsignal-cards" style="margin-top:.7rem;"></div>
+      <!-- Belastungsverteilung (Monotonie/Strain) — aufklappbar über die Belastungswechsel-Karte.
+           Von der Auswertung hierher verlagert, damit der Regenerationsbedarf und seine Treiber
+           zusammen an einem Ort sichtbar sind. -->
+      <div id="monotony-detail" style="display:none;margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--border);">
+        <p style="font-size:.72rem;color:var(--text-muted);margin:0 0 .6rem;">Monotonie misst die Gleichförmigkeit der Belastung innerhalb der Woche. Hohe Monotonie bei hoher Last erhöht das Übertrainingsrisiko — Variation (harte und leichte Tage) ist erwünscht.</p>
+        <div class="metrics metrics-3" id="monotony-cards" style="margin-bottom:.8rem;"></div>
+        <div class="workload-chart-box chart-dark" style="height:200px;"><canvas id="monotony-chart"></canvas></div>
+        <div id="monotony-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
+      </div>
     </div>
 
     <div class="ws-section">
@@ -796,12 +840,17 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
       </div>
       <div class="row" style="gap:.6rem;">
         <button class="icon" id="cal-prev"><i class="ti ti-arrow-left"></i></button>
-        <span id="cal-label" style="font-family:var(--font-mono);font-size:.85rem;font-weight:500;min-width:150px;text-align:center;"></span>
+        <span id="cal-label" style="font-family:var(--font-sans);font-size:.85rem;font-weight:500;min-width:150px;text-align:center;"></span>
         <button class="icon" id="cal-next"><i class="ti ti-arrow-right"></i></button>
       </div>
     </div>
+    <div class="cal-plan-toolbar">
+      <button id="cal-tpl-plan-btn" class="cal-tpl-plan-btn"><i class="ti ti-books"></i> Aus Vorlage planen</button>
+      <button id="cal-design-btn" class="cal-tpl-plan-btn"><i class="ti ti-pencil"></i> Gestalten</button>
+    </div>
+    <div id="cal-design-tools" class="cal-design-tools" style="display:none;"></div>
+    <div id="cal-armed-banner" class="cal-armed-banner" style="display:none;"></div>
     <div id="cal-container"></div>
-    <div class="cal-legend" id="cal-legend"></div>
   </div>
 </div>
 
@@ -870,13 +919,6 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
         <button data-weeks="26">6 M</button>
       </div>
       <div class="workload-chart-box chart-dark" style="height:240px;"><canvas id="category-breakdown-chart"></canvas></div>
-    </div>
-    <div class="card" style="margin-top:1rem;">
-      <h2><i class="ti ti-wave-sine"></i> Belastungsverteilung</h2>
-      <p style="font-size:.76rem;color:var(--text-muted);margin-bottom:.75rem;">Monotonie misst die Gleichförmigkeit der Belastung innerhalb der Woche. Hohe Monotonie bei hoher Last erhöht das Übertrainingsrisiko — Variation (harte und leichte Tage) ist erwünscht.</p>
-      <div class="metrics metrics-3" id="monotony-cards" style="margin-bottom:.8rem;"></div>
-      <div class="workload-chart-box chart-dark" style="height:200px;"><canvas id="monotony-chart"></canvas></div>
-      <div id="monotony-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
     </div>
 </div>
 
@@ -1134,6 +1176,11 @@ Aktueller Fokus: Grundlagenausdauer aufbauen"></textarea>
   <div class="modal" id="cal-plan-modal-content" style="max-width:380px;"></div>
 </div>
 
+<!-- Kalender-Vorlagen-Picker: durchsuchbare Vorlagenauswahl zum Einplanen -->
+<div class="modal-backdrop" id="cal-tpl-picker-modal">
+  <div class="modal" id="cal-tpl-picker-content" style="max-width:460px;display:flex;flex-direction:column;max-height:82vh;"></div>
+</div>
+
 <!-- Vorlagen-Detail-Modal -->
 <div class="modal-backdrop" id="template-modal">
   <div class="modal" id="template-modal-content" style="max-width:480px;"></div>
@@ -1206,7 +1253,7 @@ const DB={
         }catch(e2){
           // Stufe 2: vollständiger Fallback für ältere DB-Schemata
           if(e2.message&&e2.message.includes('column')){
-            const{srpe,workload,workload_method,avg_power_w,peak_power_w,normalized_power_w,intensity_factor,tss,hr_series,planned,...base}=s;
+            const{srpe,workload,workload_method,avg_power_w,peak_power_w,normalized_power_w,intensity_factor,tss,hr_series,planned,marker_color,...base}=s;
             const r=await sb.from('sessions').insert([{...base,avg_pace:null}]).select().single();
             if(r.error)throw r.error;return r.data;
           }
@@ -1236,7 +1283,7 @@ const DB={
             // Stufe 2: vollständiger Fallback
             if(e2.message&&e2.message.includes('column')){
               try{
-                const{srpe,workload,workload_method,avg_power_w,peak_power_w,normalized_power_w,intensity_factor,tss,hr_series,planned,...base}=s;
+                const{srpe,workload,workload_method,avg_power_w,peak_power_w,normalized_power_w,intensity_factor,tss,hr_series,planned,marker_color,...base}=s;
                 const r=await sb.from('sessions').insert([{...base,avg_pace:null}]).select().single();
                 if(r.error)throw r.error;results.push(r.data);continue;
               }catch(e3){errors.push({date:s.date,sport:s.sport,err:e3.message});}
@@ -1269,7 +1316,7 @@ const DB={
         }catch(e2){
           // Stufe 2: vollständiger Fallback
           if(e2.message&&e2.message.includes('column')){
-            const{srpe,workload,workload_method,avg_power_w,peak_power_w,normalized_power_w,intensity_factor,tss,hr_series,planned,...base}=s;
+            const{srpe,workload,workload_method,avg_power_w,peak_power_w,normalized_power_w,intensity_factor,tss,hr_series,planned,marker_color,...base}=s;
             const r=await sb.from('sessions').update(base).eq('id',id).select().single();
             if(r.error)throw r.error;return r.data;
           }
@@ -1327,6 +1374,15 @@ const DB={
     if(error)throw error;
     const{data}=sb.storage.from(BUCKET).getPublicUrl(path);
     return data.publicUrl+'?t='+Date.now();
+  },
+  // Kalender-Deko-Bild: in denselben Bucket, aber unter cal/ pro Nutzer.
+  async uploadCalImage(iso,file){
+    const ext=(file.name.split('.').pop()||'png').toLowerCase();
+    const path=`${currentUser.id}/cal/${iso}-${Date.now()}.${ext}`;
+    const{error}=await sb.storage.from(BUCKET).upload(path,file,{upsert:true,contentType:file.type});
+    if(error)throw error;
+    const{data}=sb.storage.from(BUCKET).getPublicUrl(path);
+    return data.publicUrl;
   },
   // Templates: Trainingsbibliothek
   async getTemplates(){
@@ -1466,7 +1522,7 @@ let activePage='log';
 let analyticsPeriod='week',analyticsMetric='time',analyticsActiveSports=new Set();
 let analyticsChartScrolledOnce=false;
 let analyticsMode='time-sport-abs'; // time-sport-abs | time-zone
-let cfg={sports:JSON.parse(JSON.stringify(DEFAULT_SPORTS)),zones:JSON.parse(JSON.stringify(DEFAULT_ZONES)),sportZones:{},hrMax:192,hrRest:40,ftp:200,radMethod:'tss'};
+let cfg={sports:JSON.parse(JSON.stringify(DEFAULT_SPORTS)),zones:JSON.parse(JSON.stringify(DEFAULT_ZONES)),sportZones:{},hrMax:192,hrRest:40,ftp:200,radMethod:'tss',calMarks:{},calImages:{}};
 let chatHistory=[];
 let pendingGpxData=null;
 let pendingGpxMulti=[];
@@ -1496,6 +1552,9 @@ function loadCfg(){
       cfg.hrRest=p.hrRest||cfg.hrRest;
       cfg.ftp=p.ftp||cfg.ftp;
       cfg.radMethod=p.radMethod||cfg.radMethod;
+      // Kalender-Deko: freie Markierungen (Farbe/Symbol) und Zell-Bilder
+      cfg.calMarks=p.calMarks||cfg.calMarks||{};
+      cfg.calImages=p.calImages||cfg.calImages||{};
       // Neu eingeführte Default-Sportarten ergänzen, die in alten gespeicherten
       // Configs fehlen (z.B. Capacity). 'Sonstiges' bleibt am Ende.
       DEFAULT_SPORTS.forEach(ds=>{
@@ -2171,13 +2230,22 @@ async function backfillWorkload(){
   }
 }
 
+// Merkt sich einmal übersprungene Sessions in localStorage, damit die sRPE-Frage
+// beim Neuladen nicht erneut für dieselbe Einheit erscheint (persistiert über Reloads).
+const SRPE_SKIP_KEY='tlog_srpe_skipped';
+function srpeSkippedSet(){try{return new Set(JSON.parse(localStorage.getItem(SRPE_SKIP_KEY)||'[]').map(String));}catch(e){return new Set();}}
+function srpeMarkSkipped(id){try{const set=srpeSkippedSet();set.add(String(id));localStorage.setItem(SRPE_SKIP_KEY,JSON.stringify([...set]));}catch(e){}}
+
 // sRPE-Prompt: erscheint einmalig für Sessions vom heutigen Tag ohne srpe,
 // nur wenn kein anderer Workload vorliegt und keine HF-Daten (Import) vorhanden sind.
 // Geplante Einheiten und Sessions mit bereits bekanntem sRPE werden übersprungen.
 function checkSrpePrompt(){
   const cutoffDate=toISODate(new Date());
+  const skipped=srpeSkippedSet();
   const candidate=sessions.find(s=>{
     if(isPlanned(s))return false;         // Geplante Einheiten nie fragen
+    if(isSpecialEntry(s))return false;    // Krankheit/Verletzung/Sonstiges: kein sRPE
+    if(skipped.has(String(s.id)))return false; // Einmal übersprungen → nie wieder fragen
     if(s.srpe!=null)return false;          // sRPE schon gesetzt
     if(s.workload!=null&&s.workload_method&&s.workload_method!=='srpe')return false; // HF-Workload vorhanden
     if(s.hr_avg||s.hr_series)return false; // Importierte Einheit mit HF
@@ -2204,12 +2272,13 @@ document.querySelectorAll('#srpe-scale button').forEach(btn=>{
   });
 });
 document.getElementById('srpe-skip').addEventListener('click',()=>{
+  if(pendingSrpe?.sessionId!=null)srpeMarkSkipped(pendingSrpe.sessionId);
   document.getElementById('srpe-modal').classList.remove('open');
   pendingSrpe=null;
 });
 document.getElementById('srpe-save').addEventListener('click',async()=>{
   const sel=document.querySelector('#srpe-scale button.selected');
-  if(!sel){document.getElementById('srpe-modal').classList.remove('open');pendingSrpe=null;return;}
+  if(!sel){if(pendingSrpe?.sessionId!=null)srpeMarkSkipped(pendingSrpe.sessionId);document.getElementById('srpe-modal').classList.remove('open');pendingSrpe=null;return;}
   const srpe=parseInt(sel.dataset.v);
   const sid=pendingSrpe?.sessionId;
   document.getElementById('srpe-modal').classList.remove('open');
@@ -2228,6 +2297,14 @@ document.getElementById('srpe-save').addEventListener('click',async()=>{
 });
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
+// Whiteboard-Notizfeld: Höhe an den Inhalt anpassen, gedeckelt durch die
+// CSS-max-height (danach internes Scrollen). resize:vertical bleibt nutzbar.
+function wbNoteAutoGrow(el){
+  if(!el)return;
+  el.style.height='auto';
+  const max=parseFloat(getComputedStyle(el).maxHeight)||360;
+  el.style.height=Math.min(el.scrollHeight,max)+'px';
+}
 function toISODate(d){const off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10);}
 function startOfWeek(d){const date=new Date(d),day=(date.getDay()+6)%7;date.setDate(date.getDate()-day);date.setHours(0,0,0,0);return date;}
 function fmtDate(d){return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});}
@@ -2398,10 +2475,12 @@ function initQuickNote(){
     document.getElementById('qn-planned').checked=!!draft.planned;
   }
   qnUpdateHistory();
+  wbNoteAutoGrow(document.getElementById('qn-note')); // Starthöhe an geladenen Draft anpassen
   // Auto-Save bei jeder Eingabe + Schätzung aktualisieren
   ['qn-date','qn-sport','qn-title','qn-duration','qn-note','qn-srpe','qn-zone'].forEach(id=>{
     const el=document.getElementById(id);
     el.addEventListener('input',()=>{qnSaveDraft();qnUpdateEstimate();});
+    if(id==='qn-note')el.addEventListener('input',()=>wbNoteAutoGrow(el));
     if(id==='qn-sport')el.addEventListener('change',qnUpdateHistory);
     if(id==='qn-zone')el.addEventListener('change',qnUpdateEstimate);
   });
@@ -2416,7 +2495,7 @@ document.getElementById('qn-clear-btn').addEventListener('click',()=>{
   if(!confirm('Notiz leeren?'))return;
   ['qn-title','qn-duration','qn-note','qn-srpe'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('qn-planned').checked=false;
-  qnClearDraft();qnUpdateHistory();
+  qnClearDraft();qnUpdateHistory();wbNoteAutoGrow(document.getElementById('qn-note'));
 });
 
 document.getElementById('qn-save-btn').addEventListener('click',async()=>{
@@ -2454,6 +2533,7 @@ document.getElementById('qn-save-btn').addEventListener('click',async()=>{
     qnClearDraft();
     ['qn-title','qn-duration','qn-note','qn-srpe'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('qn-planned').checked=false;
+    wbNoteAutoGrow(document.getElementById('qn-note'));
     setSyncState('ok');
     statusEl.textContent=planned?'\u2713 Als Plan gespeichert'+(workloadMethod==='estimated'?' (Workload gesch\u00e4tzt)':''):'\u2713 Gespeichert — HF-Daten sp\u00e4ter per FIT-Upload erg\u00e4nzen';
     qnUpdateHistory();renderLog();
@@ -2475,6 +2555,40 @@ function showPage(key){
   if(key==='library')renderLibrary();
 }
 document.querySelectorAll('#bottom-nav button').forEach(btn=>btn.addEventListener('click',()=>showPage(btn.dataset.page)));
+
+// ── PULL-TO-REFRESH ───────────────────────────────────────────────────────────
+// Von ganz oben nach unten ziehen lädt die App neu (holt die aktuelle Version).
+// Der Indikator folgt dem Finger; ab Schwelle wird beim Loslassen neu geladen.
+(function(){
+  const ind=document.getElementById('ptr-indicator');
+  if(!ind)return;
+  const TRIGGER=64,DAMP=0.5,MAXPULL=120;
+  let startY=0,active=false,pull=0;
+  const atTop=()=>(window.scrollY||document.documentElement.scrollTop||0)<=0;
+  const reset=()=>{ind.classList.remove('visible','ready','spin');ind.style.transform='';};
+  window.addEventListener('touchstart',e=>{
+    if(e.touches.length===1&&atTop()){startY=e.touches[0].clientY;active=true;pull=0;}
+    else active=false;
+  },{passive:true});
+  window.addEventListener('touchmove',e=>{
+    if(!active)return;
+    const dy=e.touches[0].clientY-startY;
+    if(dy<=0){reset();active=false;return;}
+    pull=Math.min(MAXPULL,dy*DAMP);
+    ind.classList.add('visible');
+    ind.classList.toggle('ready',pull>=TRIGGER);
+    ind.style.transform=`translate(-50%,${pull}px) rotate(${pull*3}deg)`;
+  },{passive:true});
+  window.addEventListener('touchend',()=>{
+    if(!active)return;
+    active=false;
+    if(pull>=TRIGGER){
+      ind.classList.add('spin','ready','visible');
+      ind.style.transform='translate(-50%,64px)';
+      setTimeout(()=>location.reload(),160);
+    }else reset();
+  },{passive:true});
+})();
 
 // ── BIBLIOTHEK: Render & Filter ───────────────────────────────────────────────
 let _libAddFormInit=false;
@@ -2770,8 +2884,10 @@ function openTemplateEditPanel(t){
 }
 
 // Vorlage in Trainingsnotiz \u00fcbernehmen: f\u00fcllt Notiz-Felder vor und wechselt zur Log-Seite
-function useTemplateInQuickNote(t){
-  // Sportart-Mapping aus Ziel + Modalit\u00e4ten ableiten
+// Bildet eine Vorlage auf die session-relevanten Felder ab (Sport/Name/Dauer/
+// Notiz). Zentral, damit Trainingsnotiz UND Kalender-Planer/Vorlagen-Drag
+// dieselbe Sportart-Ableitung nutzen.
+function templateToSession(t){
   let sport='Sonstiges';
   if(t.goal==='Capacity')sport='Capacity';
   else if(t.goal==='Kraft'||t.goal==='Schnellkraft')sport='Kraft';
@@ -2780,8 +2896,13 @@ function useTemplateInQuickNote(t){
     else if((t.modalities||[]).includes('Rad'))sport='Rad';
     else sport='Lauf';
   }
-  // Nur \u00fcbernehmen wenn Sport in cfg.sports existiert
   if(!cfg.sports.find(s=>s.key===sport))sport='Sonstiges';
+  return{sport,title:t.title||'',duration:t.duration_min||null,note:t.content||''};
+}
+function useTemplateInQuickNote(t){
+  // Sportart-Mapping aus Ziel + Modalit\u00e4ten ableiten
+  const map=templateToSession(t);
+  let sport=map.sport;
   const titleEl=document.getElementById('qn-title');
   const sportEl=document.getElementById('qn-sport');
   const durEl=document.getElementById('qn-duration');
@@ -2789,7 +2910,7 @@ function useTemplateInQuickNote(t){
   if(sportEl){sportEl.value=sport;qnUpdateHistory();}
   if(titleEl)titleEl.value=t.title||'';
   if(durEl&&t.duration_min)durEl.value=t.duration_min;
-  if(noteEl)noteEl.value=t.content||'';
+  if(noteEl){noteEl.value=t.content||'';wbNoteAutoGrow(noteEl);}
   qnSaveDraft();
   closeTemplateModal();
   showPage('log');
@@ -2825,6 +2946,22 @@ function isPlanned(s){return!!(s&&(s.planned===true||s.planned===1));}
 // Fließt nie in Workload-/ACWR-/Steigerungs-Statistiken ein.
 function isSpecialEntry(s){return!!(s&&s.category&&s.category!=='training');}
 const SPECIAL_CATEGORIES={illness:{label:'Krankheit',icon:'ti-thermometer',color:'#c4332e'},injury:{label:'Verletzung',icon:'ti-bandage',color:'#c4332e'},other:{label:'Sonstiges',icon:'ti-alert-circle',color:'#c4332e'}};
+// Vordefinierte Farb-Swatches zum freien Markieren von Einheiten im Kalender
+// (persistiert als session.marker_color; siehe renderCalCell / buildModalEditPanel).
+const MARKER_COLORS=[
+  {key:'#c4332e',label:'Rot'},
+  {key:'#d79b46',label:'Orange'},
+  {key:'#e6c84f',label:'Gelb'},
+  {key:'#6f8f3e',label:'Grün'},
+  {key:'#3a6ea8',label:'Blau'},
+  {key:'#8c6db0',label:'Violett'}
+];
+// Baut die Swatch-Reihe zum Setzen/Entfernen der Markierungsfarbe.
+function markerSwatchesHTML(current){
+  const none=`<button type="button" class="marker-swatch marker-swatch-none${!current?' active':''}" data-color="" title="Keine Markierung"><i class="ti ti-ban"></i></button>`;
+  const swatches=MARKER_COLORS.map(c=>`<button type="button" class="marker-swatch${current===c.key?' active':''}" data-color="${c.key}" title="${c.label}" style="background:${c.key};"></button>`).join('');
+  return`<div class="marker-swatches">${none}${swatches}</div>`;
+}
 function actualSessions(){return sessions.filter(s=>!isPlanned(s)&&!isSpecialEntry(s));}
 function plannedSessions(){return sessions.filter(s=>isPlanned(s)&&!isSpecialEntry(s));}
 function specialSessions(){return sessions.filter(isSpecialEntry);}
@@ -3655,7 +3792,94 @@ function renderLog(){
   }));
 }
 
+// ── KALENDER: Whiteboard-Optik-Helfer ────────────────────────────────────────
+// Deterministischer Pseudo-Zufall aus einem String-Seed (0..1) — damit
+// Rotation/Größe/Jitter pro Tag/Linie stabil bleiben und nicht bei jedem
+// Re-Render "springen".
+function wbHash(str){
+  let h=0;
+  for(let i=0;i<str.length;i++)h=(Math.imul(31,h)+str.charCodeAt(i))|0;
+  return ((h>>>0)%10000)/10000;
+}
+// Handgezogener Pfad zwischen zwei Punkten: mehrere Zwischenpunkte werden
+// senkrecht zur Linie zufällig versetzt und per Quadratic-Bezier verbunden,
+// statt einer vektor-perfekten Geraden.
+function wbJitterPath(x1,y1,x2,y2,seed,amp){
+  const segs=6;
+  const dx=x2-x1,dy=y2-y1;
+  const len=Math.hypot(dx,dy)||1;
+  const nx=-dy/len,ny=dx/len;
+  const pts=[];
+  for(let i=0;i<=segs;i++){
+    const t=i/segs;
+    const edgeDamp=(i===0||i===segs)?.12:1;
+    const j=(wbHash(seed+'_'+i)-.5)*2*amp*edgeDamp;
+    pts.push([x1+dx*t+nx*j,y1+dy*t+ny*j]);
+  }
+  let d=`M ${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)} `;
+  for(let i=1;i<pts.length;i++){
+    const[px,py]=pts[i-1],[cx,cy]=pts[i];
+    const mx=(px+cx)/2,my=(py+cy)/2;
+    d+=`Q ${px.toFixed(1)} ${py.toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)} `;
+  }
+  d+=`L ${pts[pts.length-1][0].toFixed(1)} ${pts[pts.length-1][1].toFixed(1)}`;
+  return d;
+}
+// Handgezeichneter Rahmen um die "Heute"-Zelle: vier einzeln gejitterte
+// Seiten (0..100-Einheiten, per preserveAspectRatio="none" auf die Zellgröße
+// gestreckt) im selben welligen Stil wie das Rasterlinien-Overlay, statt
+// eines sauberen CSS-Rahmens — dadurch fügt sich die Markierung ins übrige
+// handgezeichnete Raster ein statt digital-clean daraus hervorzustechen.
+function wbTodayFrameSVG(seed){
+  const amp=4;
+  const top=wbJitterPath(2,4,98,3,seed+'ft',amp);
+  const right=wbJitterPath(97,3,96,97,seed+'fr',amp);
+  const bottom=wbJitterPath(98,96,2,97,seed+'fb',amp);
+  const left=wbJitterPath(3,97,4,3,seed+'fl',amp);
+  return`<svg class="wb-today-frame" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <path d="${top} ${right} ${bottom} ${left}" stroke-width="2.6"/>
+    <path d="${top} ${right} ${bottom} ${left}" class="wb-today-frame-thin" stroke-width="1.3"/>
+  </svg>`;
+}
+// Zeichnet das saubere Rasterlinien-Overlay über das Kalendergrid: misst die
+// tatsächlichen Zell-Positionen (robust bei variabler Zeilenhöhe) und ersetzt
+// so die (unsichtbaren) CSS-Grid-Lücken durch gerade, verschmelzende
+// SVG-Linien (mix-blend-mode, siehe calendar-whiteboard.css).
+function drawWbGridOverlay(container,grid){
+  const cells=[...grid.querySelectorAll('.wb-cell')];
+  if(!cells.length)return;
+  const cols=7,rows=cells.length/cols;
+  const gridRect=grid.getBoundingClientRect();
+  const colX=[];
+  for(let c=0;c<cols;c++)colX.push(cells[c].getBoundingClientRect().left-gridRect.left);
+  colX.push(cells[cols-1].getBoundingClientRect().right-gridRect.left);
+  const rowY=[0];
+  for(let r=0;r<rows;r++)rowY.push(cells[r*cols].getBoundingClientRect().top-gridRect.top);
+  rowY.push(cells[cells.length-1].getBoundingClientRect().bottom-gridRect.top);
+  const w=gridRect.width,h=gridRect.height;
+  let paths='';
+  rowY.forEach(y=>{
+    paths+=`<path d="M0,${y} L${w},${y}" class="wb-gridline"/>`;
+  });
+  colX.forEach(x=>{
+    paths+=`<path d="M${x},0 L${x},${h}" class="wb-gridline"/>`;
+  });
+  // Als Kind von grid (nicht container) eingefügt, damit die auf .wb
+  // gescopten CSS-Variablen (--wb-line-ink u.a.) kaskadieren.
+  let svg=grid.querySelector('.wb-gridlines-svg');
+  if(!svg){
+    svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('class','wb-gridlines-svg');
+    grid.insertBefore(svg,grid.firstChild);
+  }
+  svg.setAttribute('width',w);svg.setAttribute('height',h);
+  svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+  svg.style.left='0px';
+  svg.style.top='0px';
+  svg.innerHTML=paths;
+}
 // ── KALENDER ──────────────────────────────────────────────────────────────────
+let _calGridResizeObserver=null;
 function renderCalCell(cellDate,isOutside,weekMode){
   const iso=toISODate(cellDate);const entries=byDate(iso);
   const isToday=isSameDate(cellDate,new Date());
@@ -3664,7 +3888,7 @@ function renderCalCell(cellDate,isOutside,weekMode){
   const isPast=cellDate<new Date()&&!isToday;
   const isEmpty=entries.length===0;
   const canOpen=!isOutside&&isEmpty;
-  const cls='cal-cell'+(isOutside?' outside':'')+(isToday?' today':'')+(canOpen?' cal-cell-empty':'');
+  const cls='cal-cell wb-cell'+(isOutside?' outside':'')+(isToday?' today':'')+(canOpen?' cal-cell-empty':'');
   const dayLabel=weekMode?cellDate.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'}):cellDate.getDate();
   const chips=entries.map(s=>{
     const special=isSpecialEntry(s);
@@ -3682,21 +3906,39 @@ function renderCalCell(cellDate,isOutside,weekMode){
       :`background:${sc.color}22;color:${sc.color};`;
     const plannedTitle=planned?' (geplant)':'';
     const titleText=special?(cat.label+(s.note?': '+s.note:'')):(s.sport+plannedTitle+(s.note?': '+s.note:needsDetail?' — Details fehlen':''));
-    return`<span class="cal-chip${needsDetail?' needs-detail':''}${planned?' planned':''}" data-session-id="${s.id}" style="${chipStyle}" title="${esc(titleText)}">
-      ${warnDot}${iconHTML}<span class="cal-chip-label">${esc(label)}</span>${special?'':`<span class="cal-dur">${fmtMin(s.duration)}</span>`}</span>`;
+    // Freie Farbmarkierung (marker_color): als linker Farbbalken am Chip, damit
+    // die abgeleitete Sportfarbe/Form erhalten bleibt und die Zuordnung lesbar ist.
+    const markerBar=s.marker_color?`<span class="cal-chip-marker" style="background:${esc(s.marker_color)};"></span>`:'';
+    return`<span class="cal-chip${needsDetail?' needs-detail':''}${planned?' planned':''}${s.marker_color?' has-marker':''}" data-session-id="${s.id}" draggable="false" style="${chipStyle}" title="${esc(titleText)}">
+      ${markerBar}<span class="cal-chip-main">${warnDot}${iconHTML}<span class="cal-chip-label">${esc(label)}</span></span>${special?'':`<span class="cal-dur">${fmtMin(s.duration)}</span>`}</span>`;
   }).join('');
   // Plus-Icon für leere Zellen: Zukunft/heute → Training planen ODER Sondereintrag, Vergangenheit → nur Sondereintrag
   const plusBtn=canOpen
     ?`<span class="cal-add-btn" data-date="${iso}" title="${isPast?'Sondereintrag erfassen':'Einheit planen'}">+</span>`:'';
-  return`<div class="${cls}" ${canOpen?`data-date="${iso}"`:''}><span class="cal-daynum">${dayLabel}</span><div class="cal-entries">${chips}</div>${plusBtn}</div>`;
+  // Leichte Rotations-/Größen-Varianz pro Tag, deterministisch aus dem Datum
+  // abgeleitet (kein Flackern bei Re-Render) — wirkt wie zu unterschiedlichen
+  // Momenten von Hand geschrieben statt vektor-perfekt uniform.
+  const rot=(wbHash(iso+'rot')-.5)*9;
+  const scale=.94+wbHash(iso+'scale')*.22;
+  const daynumStyle=`transform:rotate(${rot.toFixed(1)}deg) scale(${scale.toFixed(2)});`;
+  // Kalender-Deko: freie Markierung (Farbe/Symbol) und Zell-Bild als eigene
+  // Ebenen hinter den Chips. "Heute" wird nicht mehr umrahmt, sondern über die
+  // vergrößerte Tageszahl (.today .cal-daynum) hervorgehoben.
+  const mark=(cfg.calMarks||{})[iso];
+  const markFill=mark&&mark.color?`<span class="cal-mark-fill" style="background:${esc(mark.color)};"></span>`:'';
+  const markSymbol=mark&&mark.symbol?`<span class="cal-mark-symbol">${esc(mark.symbol)}</span>`:'';
+  const img=(cfg.calImages||{})[iso];
+  const imgLayer=img&&img.url?`<img class="cal-cell-img" src="${esc(img.url)}" alt="" draggable="false" style="transform:scale(${(img.scale||1)});">`:'';
+  // data-cell-date auf JEDER Zelle (nicht nur leeren) — Drop-Ziel für Drag&Drop.
+  return`<div class="${cls}" data-cell-date="${iso}" ${canOpen?`data-date="${iso}"`:''}>${markFill}${imgLayer}${markSymbol}<span class="cal-daynum" style="${daynumStyle}">${dayLabel}</span><div class="cal-entries">${chips}</div>${plusBtn}</div>`;
 }
 function renderCalendar(){
   const container=document.getElementById('cal-container');
   const labelEl=document.getElementById('cal-label');
   const grid=document.createElement('div');
-  grid.className='cal-grid';
-  ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(wd=>{
-    const el=document.createElement('div');el.className='cal-weekday';el.textContent=wd;grid.appendChild(el);
+  grid.className='cal-grid wb';
+  [['M','Montag'],['D','Dienstag'],['M','Mittwoch'],['D','Donnerstag'],['F','Freitag'],['S','Samstag'],['S','Sonntag']].forEach(([wd,full])=>{
+    const el=document.createElement('div');el.className='cal-weekday';el.textContent=wd;el.title=full;grid.appendChild(el);
   });
   if(calMode==='month'){
     const range=getMonthRange();
@@ -3722,17 +3964,326 @@ function renderCalendar(){
     }
   }
   container.innerHTML='';container.appendChild(grid);
-  document.getElementById('cal-legend').innerHTML=cfg.sports.map(s=>`<span>${sportIconHTML(s.key,14)} ${s.label}</span>`).join('');
-  container.querySelectorAll('.cal-chip[data-session-id]').forEach(chip=>{
-    chip.addEventListener('click',e=>{e.stopPropagation();openSessionModal(chip.dataset.sessionId);});
-  });
-  // Plus-Button und leere Zellen → Schnell-Planer öffnen
+  drawWbGridOverlay(container,grid);
+  // Font-Swap (WBHand lädt asynchron nach) und inhaltsbedingte Zeilenhöhen-
+  // Änderungen (unterschiedlich viele Chips pro Tag) können die Zellgrößen
+  // nach diesem ersten Zeichnen noch verändern — ohne Neuzeichnen driften die
+  // Linien dann von den tatsächlichen Zellrändern weg. ResizeObserver deckt
+  // das zuverlässiger ab als ein reiner window-resize-Listener.
+  document.fonts.ready.then(()=>{if(grid.isConnected)drawWbGridOverlay(container,grid);});
+  if(_calGridResizeObserver)_calGridResizeObserver.disconnect();
+  _calGridResizeObserver=new ResizeObserver(()=>drawWbGridOverlay(container,grid));
+  _calGridResizeObserver.observe(grid);
+  // Chip-Interaktionen: Einfachklick öffnet Detail, Doppelklick hakt eine
+  // geplante Einheit ab (→ absolviert), Ziehen verschiebt/kopiert (Teil 2/4b).
+  attachCalChipInteractions(container);
+  attachCalDesignInteractions(container);
+  // Plus-Button und leere Zellen → Schnell-Planer öffnen (nicht im Gestalten-Modus)
   container.querySelectorAll('.cal-add-btn[data-date]').forEach(btn=>{
-    btn.addEventListener('click',e=>{e.stopPropagation();openCalPlanModal(btn.dataset.date);});
+    btn.addEventListener('click',e=>{if(calDesignActive)return;e.stopPropagation();openCalPlanModal(btn.dataset.date);});
   });
   container.querySelectorAll('.cal-cell-empty[data-date]').forEach(cell=>{
-    cell.addEventListener('click',()=>openCalPlanModal(cell.dataset.date));
+    cell.addEventListener('click',()=>{if(calDesignActive)return;openCalPlanModal(cell.dataset.date);});
   });
+}
+
+// ── KALENDER: DRAG & DROP + CHIP-INTERAKTIONEN ───────────────────────────────
+// Einheiten per Pointer-Drag (Maus + Touch) verschieben/kopieren, Doppelklick
+// hakt geplante Einheiten ab. Nutzt Pointer Events (nicht HTML5-DnD), damit
+// Touch von Anfang an funktioniert. Klick/Doppelklick/Drag werden über Zeit-
+// und Bewegungsschwellen sauber getrennt, damit der Einfachklick weiter die
+// Detailansicht öffnet.
+const CAL_DRAG_THRESHOLD=6;   // px Bewegung, ab der ein Drag (statt Klick) startet
+const CAL_DBLCLICK_MS=260;    // Fenster zur Doppelklick-Erkennung
+let _calDrag=null;            // aktiver Drag-Zustand
+let _calClickTimer=null;      // pendender Einfachklick (für Doppelklick-Diskriminierung)
+let _calPendingTapId=null;    // Session-ID des pendenden Einfachklicks
+
+function attachCalChipInteractions(container){
+  container.querySelectorAll('.cal-chip[data-session-id]').forEach(chip=>{
+    chip.addEventListener('pointerdown',onCalChipPointerDown);
+  });
+}
+
+// Teil 4a: Vorlagen gezielt einplanen — durchsuchbarer Picker (wie die
+// Bibliothek) statt einer bei vielen Vorlagen unübersichtlichen Drag-Leiste.
+// Ablauf: Picker öffnen → Vorlage wählen → "scharfgestellt" → Zieltag antippen
+// → der Kalender-Planer öffnet vorbefüllt (geplant), Datum = angetippter Tag.
+let _calArmedTemplate=null;
+let _calPickerSearch='';
+
+function openCalTemplatePicker(){
+  const content=document.getElementById('cal-tpl-picker-content');
+  content.innerHTML=`
+    <h2 style="margin-bottom:.5rem;"><i class="ti ti-books"></i> Aus Vorlage planen
+      <button class="modal-close" id="cal-tpl-close" title="Schließen"><i class="ti ti-x"></i></button>
+    </h2>
+    <input type="text" id="cal-tpl-search" placeholder="Vorlagen durchsuchen…" value="${esc(_calPickerSearch)}" style="width:100%;margin-bottom:.6rem;">
+    <div id="cal-tpl-list" style="overflow-y:auto;flex:1;"></div>`;
+  document.getElementById('cal-tpl-picker-modal').classList.add('open');
+  const searchEl=document.getElementById('cal-tpl-search');
+  searchEl.addEventListener('input',()=>{_calPickerSearch=searchEl.value;renderCalTplList();});
+  document.getElementById('cal-tpl-close').addEventListener('click',closeCalTemplatePicker);
+  renderCalTplList();
+  searchEl.focus();
+}
+function closeCalTemplatePicker(){document.getElementById('cal-tpl-picker-modal').classList.remove('open');}
+
+// Nutzt dieselbe Freitextsuche wie die Bibliothek (Titel/Inhalt/Formate/
+// Modalitäten), ohne die dortigen Filter/Sortierung zu beeinflussen.
+function renderCalTplList(){
+  const listEl=document.getElementById('cal-tpl-list');
+  if(!listEl)return;
+  const q=_calPickerSearch.trim().toLowerCase();
+  if(!templates||!templates.length){
+    listEl.innerHTML=`<p style="text-align:center;color:var(--text-faint);font-size:.84rem;padding:1.5rem 0;">Noch keine Vorlagen in der Bibliothek.</p>`;return;
+  }
+  const list=templates.filter(t=>{
+    if(!q)return true;
+    const hay=((t.title||'')+' '+(t.content||'')+' '+(t.formats||[]).join(' ')+' '+(t.modalities||[]).join(' ')).toLowerCase();
+    return hay.includes(q);
+  });
+  if(!list.length){listEl.innerHTML=`<p style="text-align:center;color:var(--text-faint);font-size:.84rem;padding:1.5rem 0;">Keine Vorlagen gefunden.</p>`;return;}
+  listEl.innerHTML=list.map(t=>{
+    const sport=templateToSession(t).sport;
+    return`<div class="lib-template-card" data-id="${t.id}">
+      <div class="lib-template-title">${sportIconHTML(sport,13)} ${esc(t.title||'Ohne Titel')}</div>
+      <div class="lib-template-meta">
+        ${t.goal?`<span class="lib-template-tag goal">${esc(t.goal)}</span>`:''}
+        ${t.duration_min?`<span class="lib-template-tag"><i class="ti ti-clock" style="font-size:.85em;vertical-align:-.1em;"></i> ${t.duration_min} min</span>`:''}
+      </div>
+      ${t.content?`<div class="lib-template-preview">${esc(t.content.slice(0,140))}${t.content.length>140?'…':''}</div>`:''}
+    </div>`;
+  }).join('');
+  listEl.querySelectorAll('.lib-template-card').forEach(c=>c.addEventListener('click',()=>{
+    const t=templates.find(x=>String(x.id)===String(c.dataset.id));
+    if(t)armCalTemplate(t);
+  }));
+}
+
+// Vorlage "scharfstellen": Banner zeigen, Kalender in Platzierungs-Modus.
+function armCalTemplate(t){
+  _calArmedTemplate=t;
+  closeCalTemplatePicker();
+  const banner=document.getElementById('cal-armed-banner');
+  banner.style.display='';
+  banner.innerHTML=`<span><i class="ti ti-hand-finger"></i> Vorlage <strong>${esc(t.title||'Vorlage')}</strong> – Zieltag antippen</span>
+    <button id="cal-armed-cancel" class="ghost" style="font-size:.74rem;padding:.25rem .6rem;">Abbrechen</button>`;
+  document.getElementById('cal-armed-cancel').addEventListener('click',disarmCalTemplate);
+  const container=document.getElementById('cal-container');
+  container.classList.add('cal-arming');
+  // Capture-Phase, damit der Tap VOR den Chip-/Leerzellen-Handlern greift und
+  // die Platzierung auch auf bereits belegten Tagen funktioniert.
+  container.addEventListener('pointerdown',armedPlaceHandler,true);
+}
+function disarmCalTemplate(){
+  _calArmedTemplate=null;
+  const banner=document.getElementById('cal-armed-banner');
+  if(banner){banner.style.display='none';banner.innerHTML='';}
+  const container=document.getElementById('cal-container');
+  container.classList.remove('cal-arming');
+  container.removeEventListener('pointerdown',armedPlaceHandler,true);
+}
+function armedPlaceHandler(e){
+  const cell=e.target.closest?e.target.closest('.wb-cell[data-cell-date]'):null;
+  if(!cell)return;
+  e.preventDefault();e.stopPropagation();
+  const iso=cell.dataset.cellDate;
+  const t=_calArmedTemplate;
+  const map=templateToSession(t);
+  disarmCalTemplate();
+  openCalPlanModal(iso,{sport:map.sport,title:map.title,note:map.note,duration:map.duration,planned:true});
+}
+
+function onCalChipPointerDown(e){
+  if(e.button!=null&&e.button!==0)return; // nur primärer Button/Touch
+  if(calDesignActive)return; // Im Gestalten-Modus keine Chip-Interaktion (Markieren hat Vorrang)
+  const chip=e.currentTarget;
+  const id=chip.dataset.sessionId;
+  const s=sessions.find(x=>String(x.id)===String(id));
+  if(!s)return;
+  // Sondereinträge (Krankheit etc.) nicht draggable — nur Detail per Klick.
+  const draggable=!isSpecialEntry(s);
+  const startX=e.clientX,startY=e.clientY;
+  let started=false;
+  const container=document.getElementById('cal-container');
+
+  function move(ev){
+    if(!started){
+      if(!draggable)return;
+      if(Math.abs(ev.clientX-startX)<CAL_DRAG_THRESHOLD&&Math.abs(ev.clientY-startY)<CAL_DRAG_THRESHOLD)return;
+      started=true;
+      beginCalDrag(chip,s,ev);
+    }
+    updateCalDrag(ev);
+  }
+  function up(ev){
+    chip.removeEventListener('pointermove',move);
+    chip.removeEventListener('pointerup',up);
+    chip.removeEventListener('pointercancel',up);
+    try{chip.releasePointerCapture(e.pointerId);}catch(_){}
+    if(started){
+      finishCalDrag(ev);
+    }else{
+      handleCalChipTap(s);
+    }
+  }
+  try{chip.setPointerCapture(e.pointerId);}catch(_){}
+  chip.addEventListener('pointermove',move);
+  chip.addEventListener('pointerup',up);
+  chip.addEventListener('pointercancel',up);
+}
+
+// Einfach- vs. Doppelklick trennen: erster Tap startet einen Timer, der nach
+// CAL_DBLCLICK_MS die Detailansicht öffnet; ein zweiter Tap innerhalb des
+// Fensters hakt stattdessen eine geplante Einheit ab (Teil 4b).
+function handleCalChipTap(s){
+  // Zweiter Tap auf DIESELBE Einheit innerhalb des Fensters = Doppelklick.
+  if(_calClickTimer&&_calPendingTapId===String(s.id)){
+    clearTimeout(_calClickTimer);_calClickTimer=null;_calPendingTapId=null;
+    if(isPlanned(s)&&!isSpecialEntry(s)){calMarkDone(s.id);}
+    else{openSessionModal(s.id);}
+    return;
+  }
+  if(_calClickTimer)clearTimeout(_calClickTimer);
+  _calPendingTapId=String(s.id);
+  _calClickTimer=setTimeout(()=>{_calClickTimer=null;_calPendingTapId=null;openSessionModal(s.id);},CAL_DBLCLICK_MS);
+}
+
+function beginCalDrag(chip,s,ev){
+  startCalDndVisual();
+  const ghost=chip.cloneNode(true);
+  ghost.classList.add('cal-drag-ghost');
+  const r=chip.getBoundingClientRect();
+  ghost.style.width=r.width+'px';
+  document.body.appendChild(ghost);
+  chip.classList.add('cal-chip-dragging');
+  _calDrag={type:'session',sessionId:s.id,session:s,ghost,offX:ev.clientX-r.left,offY:ev.clientY-r.top,targetCell:null};
+  positionGhost(ev);
+}
+
+function positionGhost(ev){
+  if(!_calDrag)return;
+  _calDrag.ghost.style.left=(ev.clientX-_calDrag.offX)+'px';
+  _calDrag.ghost.style.top=(ev.clientY-_calDrag.offY)+'px';
+}
+
+function updateCalDrag(ev){
+  if(!_calDrag)return;
+  positionGhost(ev);
+  _calDrag.ghost.style.pointerEvents='none';
+  const el=document.elementFromPoint(ev.clientX,ev.clientY);
+  const cell=el?el.closest('.wb-cell[data-date],.wb-cell'):null;
+  // data-date liegt nur auf leeren Zellen; für belegte Zellen das Datum aus der
+  // ersten enthaltenen Chip-/Add-Referenz ableiten geht nicht — daher Datum
+  // über ein data-Attribut an ALLEN Zellen (siehe renderCalCell-Anpassung).
+  const newTarget=cell&&cell.dataset.cellDate?cell:null;
+  if(_calDrag.targetCell&&_calDrag.targetCell!==newTarget)_calDrag.targetCell.classList.remove('wb-cell-drop-target');
+  if(newTarget&&newTarget!==_calDrag.targetCell)newTarget.classList.add('wb-cell-drop-target');
+  _calDrag.targetCell=newTarget;
+  autoScrollNearEdges(ev);
+}
+
+// Auto-Scroll, wenn nahe am oberen/unteren Viewport-Rand gezogen wird.
+function autoScrollNearEdges(ev){
+  const margin=70,speed=12;
+  if(ev.clientY<margin)window.scrollBy(0,-speed);
+  else if(ev.clientY>window.innerHeight-margin)window.scrollBy(0,speed);
+}
+
+async function finishCalDrag(ev){
+  const drag=_calDrag;
+  cleanupCalDrag();
+  if(!drag||!drag.targetCell)return;
+  const iso=drag.targetCell.dataset.cellDate;
+  if(!iso)return;
+  const s=sessions.find(x=>String(x.id)===String(drag.sessionId));
+  if(!s)return;
+  if(iso===s.date)return; // gleicher Tag → nichts tun
+  const planned=isPlanned(s);
+  const rect=drag.targetCell.getBoundingClientRect();
+  const menuX=Math.min(ev.clientX,window.innerWidth-180),menuY=Math.min(ev.clientY,window.innerHeight-160);
+  const opts=planned
+    ?[{key:'move',label:'Verschieben',icon:'ti-arrow-move-right'},{key:'copy',label:'Kopieren',icon:'ti-copy'},{key:'cancel',label:'Abbrechen',icon:'ti-x'}]
+    :[{key:'copyAdjust',label:'Kopieren (anpassen)',icon:'ti-copy'},{key:'cancel',label:'Abbrechen',icon:'ti-x'}];
+  const choice=await showCalDropMenu(menuX,menuY,opts);
+  if(!choice||choice==='cancel')return;
+  if(choice==='move')await calMoveSession(s.id,iso);
+  else if(choice==='copy')await calCreateCopy(s,iso,true);
+  else if(choice==='copyAdjust')openCalPlanModal(iso,{sport:s.sport,zone:s.zone,title:s.title,note:s.note,duration:s.duration,srpe:s.srpe,marker_color:s.marker_color,planned:false});
+}
+
+// Globale Selektions-/Cursor-Sperre während eines Drags; verhindert das
+// Markieren von Text beim Überfahren anderer Zellen.
+function startCalDndVisual(){
+  document.body.classList.add('cal-dnd-active');
+  const sel=window.getSelection&&window.getSelection();
+  if(sel){try{sel.removeAllRanges();}catch(_){}}
+}
+function cleanupCalDrag(){
+  document.body.classList.remove('cal-dnd-active');
+  if(!_calDrag)return;
+  _calDrag.ghost?.remove();
+  document.querySelectorAll('.wb-cell-drop-target').forEach(c=>c.classList.remove('wb-cell-drop-target'));
+  document.querySelectorAll('.cal-chip-dragging').forEach(c=>c.classList.remove('cal-chip-dragging'));
+  _calDrag=null;
+}
+
+// Kleines Kontextmenü an der Drop-Position; löst mit dem gewählten Key auf.
+function showCalDropMenu(x,y,options){
+  return new Promise(resolve=>{
+    const menu=document.createElement('div');
+    menu.className='cal-drop-menu';
+    menu.style.left=x+'px';menu.style.top=y+'px';
+    menu.innerHTML=options.map(o=>`<button type="button" data-key="${o.key}" class="${o.key==='cancel'?'cal-drop-cancel':''}"><i class="ti ${o.icon}"></i> ${o.label}</button>`).join('');
+    document.body.appendChild(menu);
+    function done(key){
+      menu.remove();
+      document.removeEventListener('pointerdown',outside,true);
+      resolve(key);
+    }
+    function outside(e){if(!menu.contains(e.target))done(null);}
+    menu.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>done(b.dataset.key)));
+    // Erst im nächsten Tick den Außen-Klick-Listener aktivieren (sonst schließt
+    // der abschließende pointerup des Drags das Menü sofort wieder).
+    setTimeout(()=>document.addEventListener('pointerdown',outside,true),0);
+  });
+}
+
+async function calMoveSession(id,iso){
+  setSyncState('syncing');
+  try{
+    const updated=await DB.updateSession(id,{date:iso});
+    const idx=sessions.findIndex(x=>String(x.id)===String(id));
+    if(idx>=0)sessions[idx]={...sessions[idx],...updated};
+    setSyncState('ok');renderCalendar();renderLog();
+  }catch(e){setSyncState('error');alert('Verschieben fehlgeschlagen: '+e.message);}
+}
+
+async function calCreateCopy(s,iso,planned){
+  const copy={
+    date:iso,duration:s.duration,sport:s.sport,zone:s.zone,
+    title:s.title||null,note:s.note||null,srpe:s.srpe??null,
+    marker_color:s.marker_color||null,planned:!!planned,
+    workload:s.workload??null,workload_method:s.workload_method||null,
+    user_id:currentUser?.id,hr_avg:null,hr_max:null
+  };
+  setSyncState('syncing');
+  try{
+    const saved=await DB.addSession(copy);
+    sessions.unshift(saved);
+    setSyncState('ok');renderCalendar();renderLog();
+  }catch(e){setSyncState('error');alert('Kopieren fehlgeschlagen: '+e.message);}
+}
+
+async function calMarkDone(id){
+  setSyncState('syncing');
+  try{
+    const updated=await DB.updateSession(id,{planned:false});
+    const idx=sessions.findIndex(x=>String(x.id)===String(id));
+    if(idx>=0)sessions[idx]={...sessions[idx],...updated};
+    setSyncState('ok');renderCalendar();renderLog();
+  }catch(e){setSyncState('error');alert('Fehler: '+e.message);}
 }
 
 // ── FEEDBACK + KI-HINWEIS ────────────────────────────────────────────────────
@@ -3838,12 +4389,19 @@ function bindFeedbackHandler(session){
 }
 // Öffnet ein kompaktes Modal zum Anlegen einer geplanten Einheit ODER eines
 // Sondereintrags (Krankheit/Verletzung/Sonstiges) für ein ausgewähltes Datum.
-function openCalPlanModal(iso){
+// prefill (optional): Session-artiges Objekt zum Vorbefüllen der Felder — für
+// die Drag-Kopie einer bestehenden Einheit auf ein neues Datum. Ist prefill
+// gesetzt, wird die neue Einheit immer als Trainingseintrag angelegt und der
+// Geplant/Absolviert-Status aus prefill.planned übernommen.
+function openCalPlanModal(iso,prefill){
   const modal=document.getElementById('cal-plan-modal');
   const d=new Date(iso+'T00:00:00');
   const dateLabel=d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
   const isPastDate=iso<toISODate(new Date());
-  let cpMode=isPastDate?'special':'training';
+  let cpMode=isPastDate&&!prefill?'special':'training';
+  // Standard: geplant für Zukunft, absolviert für Vergangenheit; per prefill
+  // bzw. per Umschalter überschreibbar.
+  let cpPlanned=prefill?!!prefill.planned:!isPastDate;
 
   function renderModal(){
     const tabsHTML=isPastDate?'':`
@@ -3854,18 +4412,27 @@ function openCalPlanModal(iso){
     const sportOpts=cfg.sports.map(s=>`<option value="${s.key}">${sportIconText(s)?sportIconText(s)+" ":""}${s.label}</option>`).join('');
     const zoneOpts=cfg.zones.map(z=>`<option value="${z.key}">${z.label}${z.hrMin&&z.hrMax?' ('+z.hrMin+'\u2013'+z.hrMax+')':''}</option>`).join('');
     const catOpts=Object.entries(SPECIAL_CATEGORIES).map(([k,c])=>`<option value="${k}">${c.label}</option>`).join('');
+    const tplOpts=(templates&&templates.length)?`<option value="">– Aus Vorlage übernehmen –</option>`+templates.map(t=>`<option value="${t.id}">${esc(t.title||'Vorlage')}</option>`).join(''):'';
+    const tplHTML=tplOpts?`<div class="field" style="margin-bottom:.55rem;"><label><i class="ti ti-books"></i> Vorlage</label><select id="cp-template">${tplOpts}</select></div>`:'';
+    const pv=prefill||{};
     const formHTML=cpMode==='training'?`
+      ${tplHTML}
       <div class="grid" style="margin-bottom:.6rem;">
         <div class="field"><label>Sportart</label><select id="cp-sport">${sportOpts}</select></div>
         <div class="field"><label>Zone</label><select id="cp-zone">${zoneOpts}</select></div>
-        <div class="field"><label>Name</label><input type="text" id="cp-title" placeholder="z.B. Oberkörper A"></div>
-        <div class="field"><label>Dauer (min)</label><input type="number" id="cp-duration" min="1" step="1" placeholder="60"></div>
-        <div class="field"><label>Gesch. sRPE</label><input type="number" id="cp-srpe" min="1" max="10" step="1" placeholder="\u2013"></div>
+        <div class="field"><label>Name</label><input type="text" id="cp-title" placeholder="z.B. Oberkörper A" value="${esc(pv.title||'')}"></div>
+        <div class="field"><label>Dauer (min)</label><input type="number" id="cp-duration" min="1" step="1" placeholder="60" value="${pv.duration&&pv.duration>0?pv.duration:''}"></div>
+        <div class="field"><label>Gesch. sRPE</label><input type="number" id="cp-srpe" min="1" max="10" step="1" placeholder="\u2013" value="${pv.srpe||''}"></div>
       </div>
-      <textarea id="cp-note" placeholder="Übungen / Notizen (optional)" style="width:100%;height:80px;padding:.5rem .6rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:.85rem;resize:vertical;"></textarea>
+      <textarea id="cp-note" class="wb-note" placeholder="Übungen / Notizen (optional)">${esc(pv.note||'')}</textarea>
+      <div id="cp-note-history" class="note-history-box" style="display:none;margin-top:.5rem;"></div>
+      <label style="display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:var(--text-muted);margin-top:.6rem;cursor:pointer;">
+        <input type="checkbox" id="cp-planned" style="width:auto;margin:0;" ${cpPlanned?'checked':''}>
+        <span>Als geplante Einheit markieren <span style="font-size:.7rem;color:var(--text-faint);">(noch nicht absolviert)</span></span>
+      </label>
       <div id="cp-estimate" style="display:none;margin-top:.5rem;padding:.5rem .6rem;background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--accent-purple);border-radius:var(--radius);font-size:.76rem;color:var(--text-muted);"></div>
       <div style="display:flex;gap:.5rem;margin-top:.7rem;">
-        <button class="primary" id="cp-save" style="flex:1;"><i class="ti ti-calendar-plus"></i> Als Plan speichern</button>
+        <button class="primary" id="cp-save" style="flex:1;"><i class="ti ti-calendar-plus"></i> Speichern</button>
         <button id="cp-close" style="padding:.55rem .9rem;"><i class="ti ti-x"></i></button>
       </div>`:`
       <div class="field" style="margin-bottom:.6rem;"><label>Kategorie</label><select id="cp-category">${catOpts}</select></div>
@@ -3891,6 +4458,37 @@ function openCalPlanModal(iso){
     if(tabS)tabS.addEventListener('click',()=>{cpMode='special';renderModal();});
 
     if(cpMode==='training'){
+      // Prefill (Drag-Kopie): Sport/Zone auf den Selects setzen — value-Attribut
+      // wirkt bei <select> nicht über die Options, daher hier.
+      if(prefill){
+        if(prefill.sport&&cfg.sports.find(s=>s.key===prefill.sport))document.getElementById('cp-sport').value=prefill.sport;
+        if(prefill.zone&&cfg.zones.find(z=>z.key===prefill.zone))document.getElementById('cp-zone').value=prefill.zone;
+      }
+      // Notiz-Historie unter dem Notizfeld — nur für verknüpfbare Sportarten
+      // (Kraft/Capacity), analog zur Trainingsnotiz auf der Log-Seite.
+      function cpUpdateHistory(){
+        const sport=document.getElementById('cp-sport').value;
+        const histEl=document.getElementById('cp-note-history');
+        if(!histEl)return;
+        if(isSportLinkable(sport)){
+          const html=buildNoteHistoryHTML(sport,null);
+          histEl.innerHTML=html;
+          histEl.style.display=(html.includes('nh-item')||html.includes('nh-empty'))?'':'none';
+        }else{histEl.style.display='none';}
+      }
+      // Vorlagen-Auswahl: füllt Sport/Name/Dauer/Notiz aus der gewählten Vorlage.
+      const tplSel=document.getElementById('cp-template');
+      if(tplSel)tplSel.addEventListener('change',()=>{
+        const t=templates.find(x=>String(x.id)===String(tplSel.value));
+        if(!t)return;
+        const map=templateToSession(t);
+        document.getElementById('cp-sport').value=map.sport;
+        if(map.title!=null)document.getElementById('cp-title').value=map.title;
+        if(map.duration)document.getElementById('cp-duration').value=map.duration;
+        if(map.note!=null)document.getElementById('cp-note').value=map.note;
+        cpUpdateHistory();cpEstimate();wbNoteAutoGrow(document.getElementById('cp-note'));
+      });
+      document.getElementById('cp-sport').addEventListener('change',cpUpdateHistory);
       function cpEstimate(){
         const sport=document.getElementById('cp-sport').value;
         const dur=document.getElementById('cp-duration').value;
@@ -3907,12 +4505,17 @@ function openCalPlanModal(iso){
         el.addEventListener('input',cpEstimate);
         el.addEventListener('change',cpEstimate);
       });
+      cpUpdateHistory();
       cpEstimate();
+      // Whiteboard-Notiz: mitwachsende Höhe (auch für Prefill/Vorlagen-Inhalt)
+      const cpNoteEl=document.getElementById('cp-note');
+      if(cpNoteEl){cpNoteEl.addEventListener('input',()=>wbNoteAutoGrow(cpNoteEl));wbNoteAutoGrow(cpNoteEl);}
 
       document.getElementById('cp-save').addEventListener('click',async()=>{
         const sport=document.getElementById('cp-sport').value;
         const dur=document.getElementById('cp-duration').value;
         const srpeVal=document.getElementById('cp-srpe').value;
+        const planned=document.getElementById('cp-planned').checked;
         const session={
           date:iso,
           duration:dur?parseInt(dur):1,
@@ -3920,8 +4523,9 @@ function openCalPlanModal(iso){
           zone:document.getElementById('cp-zone').value,
           title:document.getElementById('cp-title').value.trim()||null,
           note:document.getElementById('cp-note').value.trim()||null,
-          planned:true,
+          planned,
           srpe:srpeVal&&parseInt(srpeVal)>=1?parseInt(srpeVal):null,
+          marker_color:prefill&&prefill.marker_color?prefill.marker_color:null,
           user_id:currentUser?.id,hr_avg:null,hr_max:null
         };
         const wl=berechneWorkload(session);
@@ -4181,6 +4785,10 @@ function buildModalEditPanel(s){
       <label>${noteLabel}</label>
       <textarea id="me-note" rows="${isStrength?6:3}" placeholder="${isStrength?'\u00DCbungen, S\u00E4tze, Gewichte':''}">${esc(s.note||'')}</textarea>
     </div>
+    <div class="modal-edit-row">
+      <label>Markierung</label>
+      ${markerSwatchesHTML(s.marker_color||'')}
+    </div>
     <div class="modal-edit-row" style="border:none;padding-top:.4rem;">
       <button class="primary" id="me-save" style="flex:1;"><i class="ti ti-check"></i> Speichern</button>
     </div>
@@ -4189,13 +4797,23 @@ function buildModalEditPanel(s){
 }
 
 function bindModalEditPanel(s){
+  // Markierungs-Swatches: Auswahl nur im UI vormerken, persistiert wird beim Speichern.
+  let selectedMarker=s.marker_color||'';
+  const panel=document.getElementById('modal-edit-panel');
+  panel.querySelectorAll('.marker-swatch').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      selectedMarker=btn.dataset.color||'';
+      panel.querySelectorAll('.marker-swatch').forEach(b=>b.classList.toggle('active',b===btn));
+    });
+  });
   document.getElementById('me-save').addEventListener('click',async()=>{
     const isCardio=s.sport==='Lauf'||s.sport==='Rad';
     const patch={
       date:document.getElementById('me-date').value,
       duration:parseInt(document.getElementById('me-duration').value)||s.duration,
       title:document.getElementById('me-title').value.trim()||null,
-      note:document.getElementById('me-note').value.trim()||null
+      note:document.getElementById('me-note').value.trim()||null,
+      marker_color:selectedMarker||null
     };
     if(isCardio){
       const dist=document.getElementById('me-distance')?.value;
@@ -4219,10 +4837,187 @@ function bindModalEditPanel(s){
 function closeSessionModal(){document.getElementById('session-modal').classList.remove('open');}
 document.getElementById('session-modal').addEventListener('click',e=>{if(e.target.id==='session-modal')closeSessionModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSessionModal();});
+// ── KALENDER: GESTALTEN-MODUS (Markieren + Deko-Bilder) ──────────────────────
+// Ein Bearbeiten-Modus mit Werkzeugpalette. Farbe/Symbol werden per Klick oder
+// Ziehen über Tage (auch Bereiche) gesetzt; Bilder werden hochgeladen und in
+// eine Zelle platziert. Alles persistiert in cfg.calMarks / cfg.calImages
+// (→ saveCfg → localStorage + Supabase user_config), kein neues DB-Schema.
+let calDesignActive=false;
+let calTool={type:'color',value:MARKER_COLORS[0].key};
+let _calPendingImageUrl=null;   // frisch hochgeladenes Bild, wartet auf Zielzelle
+const CAL_SYMBOLS=['★','✔','●','✚','♥','☀','⚑','✻'];
+
+function toggleCalDesign(){
+  calDesignActive=!calDesignActive;
+  _calPendingImageUrl=null;
+  const page=document.getElementById('page-calendar');
+  page.classList.toggle('cal-design',calDesignActive);
+  const btn=document.getElementById('cal-design-btn');
+  btn.classList.toggle('active',calDesignActive);
+  btn.innerHTML=calDesignActive?'<i class="ti ti-check"></i> Fertig':'<i class="ti ti-pencil"></i> Gestalten';
+  const tools=document.getElementById('cal-design-tools');
+  tools.style.display=calDesignActive?'':'none';
+  if(calDesignActive)renderCalDesignTools();
+  closeCalImagePopover();
+}
+
+function renderCalDesignTools(){
+  const el=document.getElementById('cal-design-tools');
+  const colors=MARKER_COLORS.map(c=>`<button type="button" class="cal-tool-swatch${calTool.type==='color'&&calTool.value===c.key?' active':''}" data-tool="color" data-value="${c.key}" title="${c.label}" style="background:${c.key};"></button>`).join('');
+  const symbols=CAL_SYMBOLS.map(s=>`<button type="button" class="cal-tool-symbol${calTool.type==='symbol'&&calTool.value===s?' active':''}" data-tool="symbol" data-value="${esc(s)}">${esc(s)}</button>`).join('');
+  el.innerHTML=`
+    <div class="cal-tool-group"><span class="cal-tool-label">Farbe</span>${colors}</div>
+    <div class="cal-tool-group"><span class="cal-tool-label">Symbol</span>${symbols}</div>
+    <div class="cal-tool-group">
+      <button type="button" id="cal-tool-image" class="cal-tool-btn${calTool.type==='image'?' active':''}"><i class="ti ti-photo"></i> Bild</button>
+      <button type="button" id="cal-tool-eraser" class="cal-tool-btn${calTool.type==='eraser'?' active':''}"><i class="ti ti-eraser"></i> Radierer</button>
+    </div>
+    <div class="cal-tool-hint">${calDesignHint()}</div>`;
+  el.querySelectorAll('[data-tool]').forEach(b=>{
+    b.addEventListener('click',()=>{calTool={type:b.dataset.tool,value:b.dataset.value};_calPendingImageUrl=null;renderCalDesignTools();});
+  });
+  el.querySelector('#cal-tool-eraser').addEventListener('click',()=>{calTool={type:'eraser',value:null};_calPendingImageUrl=null;renderCalDesignTools();});
+  el.querySelector('#cal-tool-image').addEventListener('click',pickCalImage);
+}
+function calDesignHint(){
+  if(_calPendingImageUrl)return 'Bild geladen — tippe auf einen Tag, um es zu platzieren.';
+  if(calTool.type==='image')return 'Tippe auf „Bild", um ein Bild zu wählen.';
+  if(calTool.type==='eraser')return 'Tippe/ziehe über Tage, um Markierung & Bild zu entfernen.';
+  if(calTool.type==='symbol')return 'Tippe/ziehe über Tage, um das Symbol zu setzen.';
+  return 'Tippe/ziehe über Tage, um sie einzufärben.';
+}
+
+// Bild wählen → hochladen → als "pending" scharfstellen
+function pickCalImage(){
+  const inp=document.createElement('input');
+  inp.type='file';inp.accept='image/*';
+  inp.addEventListener('change',async()=>{
+    const file=inp.files&&inp.files[0];if(!file)return;
+    setSyncState('syncing');
+    try{
+      const url=await DB.uploadCalImage(toISODate(new Date()),file);
+      _calPendingImageUrl=url;calTool={type:'image',value:null};
+      setSyncState('ok');renderCalDesignTools();
+    }catch(e){setSyncState('error');alert('Bild-Upload fehlgeschlagen: '+e.message);}
+  });
+  inp.click();
+}
+
+// Anwenden eines Werkzeugs auf einen einzelnen Tag (Farbe/Symbol/Radierer)
+function applyCalToolToDate(iso){
+  if(calTool.type==='eraser'){delete cfg.calMarks[iso];delete cfg.calImages[iso];return;}
+  if(calTool.type==='color'){cfg.calMarks[iso]=Object.assign({},cfg.calMarks[iso],{color:calTool.value});return;}
+  if(calTool.type==='symbol'){cfg.calMarks[iso]=Object.assign({},cfg.calMarks[iso],{symbol:calTool.value});return;}
+}
+// Alle ISO-Daten zwischen zwei Tagen (inklusiv), kalendarisch aufsteigend
+function datesBetween(isoA,isoB){
+  let a=new Date(isoA+'T00:00:00'),b=new Date(isoB+'T00:00:00');
+  if(a>b){const t=a;a=b;b=t;}
+  const out=[];const d=new Date(a);
+  while(d<=b){out.push(toISODate(d));d.setDate(d.getDate()+1);}
+  return out;
+}
+
+let _calMark=null; // {startIso, curIso, moved}
+function attachCalDesignInteractions(container){
+  container.querySelectorAll('.wb-cell[data-cell-date]').forEach(cell=>{
+    cell.addEventListener('pointerdown',onCalDesignPointerDown);
+  });
+}
+function onCalDesignPointerDown(e){
+  if(!calDesignActive)return;
+  if(e.button!=null&&e.button!==0)return;
+  const cell=e.currentTarget;const iso=cell.dataset.cellDate;if(!iso)return;
+  e.preventDefault();
+  // Bild-/Radierer-Einzelinteraktion vs. Farbe/Symbol-Range
+  _calMark={startIso:iso,curIso:iso,moved:false};
+  cell.setPointerCapture&&cell.setPointerCapture(e.pointerId);
+  highlightCalRange(iso,iso);
+  const onMove=ev=>{
+    const el=document.elementFromPoint(ev.clientX,ev.clientY);
+    const c=el&&el.closest?el.closest('.wb-cell[data-cell-date]'):null;
+    if(c){const ci=c.dataset.cellDate;if(ci!==_calMark.curIso){_calMark.curIso=ci;_calMark.moved=true;highlightCalRange(_calMark.startIso,ci);}}
+  };
+  const onUp=ev=>{
+    document.removeEventListener('pointermove',onMove);
+    document.removeEventListener('pointerup',onUp);
+    clearCalRangeHighlight();
+    const{startIso,curIso,moved}=_calMark;_calMark=null;
+    finishCalDesignGesture(startIso,curIso,moved,cell);
+  };
+  document.addEventListener('pointermove',onMove);
+  document.addEventListener('pointerup',onUp);
+}
+function finishCalDesignGesture(startIso,endIso,moved,cell){
+  const single=!moved||startIso===endIso;
+  // Einzel-Tap-Logik: Bild platzieren / Bild bearbeiten haben Vorrang
+  if(single){
+    if(calTool.type==='eraser'){applyCalToolToDate(startIso);persistCalDesign();return;}
+    if(_calPendingImageUrl){cfg.calImages[startIso]={url:_calPendingImageUrl,scale:1};_calPendingImageUrl=null;calTool={type:'color',value:MARKER_COLORS[0].key};persistCalDesign();renderCalDesignTools();return;}
+    if((cfg.calImages||{})[startIso]){openCalImagePopover(startIso);return;}
+    applyCalToolToDate(startIso);persistCalDesign();return;
+  }
+  // Bereich: Farbe/Symbol/Radierer über alle Tage
+  if(calTool.type==='image')return;
+  datesBetween(startIso,endIso).forEach(applyCalToolToDate);
+  persistCalDesign();
+}
+function persistCalDesign(){saveCfg();renderCalendar();}
+
+function highlightCalRange(isoA,isoB){
+  const set=new Set(datesBetween(isoA,isoB));
+  document.querySelectorAll('#cal-container .wb-cell[data-cell-date]').forEach(c=>{
+    c.classList.toggle('cal-range-preview',set.has(c.dataset.cellDate));
+  });
+}
+function clearCalRangeHighlight(){
+  document.querySelectorAll('#cal-container .cal-range-preview').forEach(c=>c.classList.remove('cal-range-preview'));
+}
+
+// ── Bild-Popover: Skalieren / Entfernen ─────────────────────────────────────
+function openCalImagePopover(iso){
+  closeCalImagePopover();
+  const cell=document.querySelector(`#cal-container .wb-cell[data-cell-date="${iso}"]`);
+  if(!cell)return;
+  const rect=cell.getBoundingClientRect();
+  const pop=document.createElement('div');
+  pop.className='cal-img-popover';pop.id='cal-img-popover';
+  pop.innerHTML=`
+    <div class="cal-img-pop-row">
+      <button type="button" data-act="smaller" title="Kleiner"><i class="ti ti-minus"></i></button>
+      <span class="cal-img-pop-scale"></span>
+      <button type="button" data-act="bigger" title="Größer"><i class="ti ti-plus"></i></button>
+    </div>
+    <button type="button" class="cal-img-pop-remove" data-act="remove"><i class="ti ti-trash"></i> Entfernen</button>`;
+  document.body.appendChild(pop);
+  pop.style.left=Math.min(rect.left,window.innerWidth-pop.offsetWidth-8)+'px';
+  pop.style.top=(rect.bottom+6)+'px';
+  const scaleEl=pop.querySelector('.cal-img-pop-scale');
+  const upd=()=>{scaleEl.textContent=Math.round(((cfg.calImages[iso]||{}).scale||1)*100)+'%';};
+  upd();
+  pop.querySelectorAll('[data-act]').forEach(b=>b.addEventListener('click',e=>{
+    e.stopPropagation();const act=b.dataset.act;const img=cfg.calImages[iso];if(!img)return;
+    if(act==='remove'){delete cfg.calImages[iso];closeCalImagePopover();persistCalDesign();return;}
+    let s=img.scale||1;s=act==='bigger'?Math.min(2.5,s+0.15):Math.max(0.4,s-0.15);
+    img.scale=Math.round(s*100)/100;saveCfg();
+    const el=document.querySelector(`#cal-container .wb-cell[data-cell-date="${iso}"] .cal-cell-img`);
+    if(el)el.style.transform='scale('+img.scale+')';
+    upd();
+  }));
+  setTimeout(()=>document.addEventListener('pointerdown',_calPopOutside),0);
+}
+function _calPopOutside(e){const pop=document.getElementById('cal-img-popover');if(pop&&!pop.contains(e.target))closeCalImagePopover();}
+function closeCalImagePopover(){const pop=document.getElementById('cal-img-popover');if(pop)pop.remove();document.removeEventListener('pointerdown',_calPopOutside);}
+
+document.getElementById('cal-design-btn').addEventListener('click',toggleCalDesign);
+
 document.getElementById('cal-tab-month').addEventListener('click',()=>{calMode='month';document.getElementById('cal-tab-month').classList.add('active');document.getElementById('cal-tab-4weeks').classList.remove('active');renderCalendar();});
 document.getElementById('cal-tab-4weeks').addEventListener('click',()=>{calMode='4weeks';document.getElementById('cal-tab-4weeks').classList.add('active');document.getElementById('cal-tab-month').classList.remove('active');renderCalendar();});
 document.getElementById('cal-prev').addEventListener('click',()=>{if(calMode==='month'){monthOffset--;renderCalendar();}});
 document.getElementById('cal-next').addEventListener('click',()=>{if(calMode==='month'){monthOffset++;renderCalendar();}});
+document.getElementById('cal-tpl-plan-btn').addEventListener('click',openCalTemplatePicker);
+document.getElementById('cal-tpl-picker-modal').addEventListener('click',e=>{if(e.target.id==='cal-tpl-picker-modal')closeCalTemplatePicker();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeCalTemplatePicker();if(_calArmedTemplate)disarmCalTemplate();}});
 
 // ── ANALYTICS ─────────────────────────────────────────────────────────────────
 function getPeriodRange(){
@@ -4475,7 +5270,6 @@ function renderAnalytics(){
 
   weeklyChartData=computeWeeklyTrendData(Math.max(28,acwrWeeks+4));
   renderWorkloadChart();
-  renderMonotony();
   renderCategoryBreakdownChart();
 }
 
@@ -4875,7 +5669,7 @@ function renderRecoveryPressure(){
 
   const subEl=document.getElementById('recovery-subsignal-cards');
   if(subEl)subEl.innerHTML=`
-    <div class="metric"><p class="m-label">Belastungswechsel</p><p class="m-value" style="color:${monoColor};">${rp.monotony.data.monotony>0?rp.monotony.data.monotony.toFixed(2)+'×':'&#x2014;'}</p><p style="font-size:.64rem;color:${monoColor};margin:.1rem 0 0;font-weight:600;">${rp.monotony.status.label}</p><p style="font-size:.58rem;color:var(--text-faint);margin:.12rem 0 0;">weniger Abwechslung</p></div>
+    <div class="metric" style="cursor:pointer;" onclick="toggleMonotonyDetail()" title="Belastungsverteilung anzeigen"><p class="m-label">Belastungswechsel <i class="ti ti-chevron-down collapse-chevron" id="monotony-detail-chevron" style="font-size:.6rem;"></i></p><p class="m-value" style="color:${monoColor};">${rp.monotony.data.monotony>0?rp.monotony.data.monotony.toFixed(2)+'×':'&#x2014;'}</p><p style="font-size:.64rem;color:${monoColor};margin:.1rem 0 0;font-weight:600;">${rp.monotony.status.label}</p><p style="font-size:.58rem;color:var(--text-faint);margin:.12rem 0 0;">weniger Abwechslung</p></div>
     <div class="metric"><p class="m-label">Trainingstage in Folge</p><p class="m-value" style="color:${streakColor};">${rp.restStreak.data.streak}<span style="font-size:.72rem;"> Tage</span></p><p style="font-size:.64rem;color:${streakColor};margin:.1rem 0 0;font-weight:600;">${rp.restStreak.status.label}</p><p style="font-size:.58rem;color:var(--text-faint);margin:.12rem 0 0;">am Stück ohne Ruhetag</p></div>
     <div class="metric"><p class="m-label">Erholungsrückstand</p><p class="m-value" style="color:${debtColor};">${rp.recoveryDebt.data.debt}<span style="font-size:.72rem;"> h</span></p><p style="font-size:.64rem;color:${debtColor};margin:.1rem 0 0;font-weight:600;">${rp.recoveryDebt.status.label}</p><p style="font-size:.58rem;color:var(--text-faint);margin:.12rem 0 0;">laufender Saldo</p></div>
     ${physioCard('Ruhepuls',rp.restingHr,`${rp.restingHr.rhr}<span style="font-size:.72rem;"> bpm</span>`,rp.restingHr.dev!=null?`${rp.restingHr.dev>=0?'+':''}${rp.restingHr.dev} ggü. Ø`:'ggü. Baseline',rhrColor,rhrStatusLabel(rp.restingHr.severity))}
@@ -4883,6 +5677,22 @@ function renderRecoveryPressure(){
     ${physioCard('Schlaf',rp.sleep,rp.sleep.avg!=null?`${rp.sleep.avg}<span style="font-size:.72rem;"> h</span>`:'&#x2014;','&#x2205; 3 Nächte',sleepColor,sleepStatusLabel(rp.sleep.severity))}`;
 
   renderRecoveryBarSparkline(document.getElementById('recovery-sparkline-box'),14);
+  // Belastungsverteilung (Monotonie/Strain) mitrendern — steckt jetzt im aufklappbaren
+  // Detail unter der Belastungswechsel-Karte statt auf der Auswertungsseite.
+  renderMonotony();
+}
+
+// Belastungsverteilungs-Detail (Monotonie-Chart) unter der Belastungswechsel-Karte
+// auf-/zuklappen. Chart.js muss beim Öffnen neu vermessen werden, da es im versteckten
+// Container mit 0-Größe gezeichnet wurde.
+function toggleMonotonyDetail(){
+  const body=document.getElementById('monotony-detail');
+  const chev=document.getElementById('monotony-detail-chevron');
+  if(!body)return;
+  const open=body.style.display==='none';
+  body.style.display=open?'':'none';
+  if(chev)chev.classList.toggle('open',open);
+  if(open&&monotonyChart)requestAnimationFrame(()=>monotonyChart.resize());
 }
 
 // Monotonie & Strain (Foster) — Belastungsverteilung über die letzten 8 Wochen
@@ -6310,6 +7120,7 @@ async function handleImportFiles(fileList){
 function findLinkCandidates(activity){
   const sameDay=sessions.filter(s=>{
     if(s.date!==activity.date)return false;
+    if(isSpecialEntry(s))return false;   // Krankheit/Verletzung/Sonstiges nie als Verknüpfungsziel
     const hasSeries=s.hr_series&&s.hr_series!=='null'&&s.hr_series!=='[]';
     return!hasSeries;
   });
@@ -6681,8 +7492,8 @@ async function himLoadFile(input){
     alert('Keine Aktivitäts-Summaries (Message 140) gefunden. Handelt es sich um eine einzelne Aktivität? Bitte als einzelne FIT per GPX-Import hochladen.');
     return;
   }
-  // Duplikate gegen bestehende Sessions prüfen
-  const existingDates=new Set(sessions.map(s=>s.date));
+  // Duplikate gegen bestehende Sessions prüfen (Sondereinträge belegen den Tag nicht)
+  const existingDates=new Set(sessions.filter(s=>!isSpecialEntry(s)).map(s=>s.date));
   _himData=summaries.map(s=>({...s,skip:existingDates.has(s.date),sport:''}));
   // Sortiert neueste zuerst
   _himData.sort((a,b)=>b.date.localeCompare(a.date));
@@ -6865,7 +7676,7 @@ async function importGarminActivities(){
     try{byDate=await fetchGarminByDate();}
     catch(e){st.textContent='garmin/data.json nicht gefunden ('+e.message+').';return;}
     if(!Object.keys(byDate).length){st.textContent='Keine Aktivitäten im Sync gefunden.';return;}
-    const existing=new Set(sessions.map(s=>s.date));
+    const existing=new Set(sessions.filter(s=>!isSpecialEntry(s)).map(s=>s.date));
     const rows=[];let skipped=0;
     Object.keys(byDate).sort().forEach(date=>{
       if(existing.has(date)){skipped++;return;}
