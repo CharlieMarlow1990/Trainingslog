@@ -130,6 +130,25 @@
   --t-cap:.7rem; --t-sm:.78rem; --t-base:.86rem; --t-md:.95rem; --t-lg:1.1rem; --t-xl:1.4rem;
 
   --nav-h:56px;
+
+  /* === Hero-Wetter (nur Log-Seite): Storm-Hintergrund + ASCII-Blitz.
+     --hero-h ist die EINZIGE Höhen-Quelle: header.has-logo (Layout-Lücke),
+     #logo-stage (top) und .hero-visual (height) lesen alle denselben Wert.
+     JS (updateHero() weiter unten im <script>) überschreibt ihn per
+     documentElement.style.setProperty() bei Scroll/Resize. Default = compact,
+     damit VOR dem ersten JS-Tick exakt das heutige statische Layout steht. */
+  --hero-compact-h:120px;     /* = bisheriger header.has-logo-Wert (Desktop) */
+  --hero-logo-gap:0px;        /* zusätzlicher #logo-stage-top-Versatz (Desktop: keiner) */
+  --hero-h:var(--hero-compact-h);
+  --hero-full-h:50vh;         /* FIXE Bild-/Intro-Höhe: entkoppelt vom schrumpfenden --hero-h,
+                                 damit das Foto beim Kollaps nur ABGESCHNITTEN, nicht rescaliert wird */
+  --hero-logo-anchor:0.60;    /* Logo-Vertikalposition als Anteil der Hero-Höhe (~über der Feld-Kante) */
+  --hero-field-fade-start:85%;/* = gemessene Wolken-Feld-Kante (84.9%): Storm voll opak bis zum
+                                 Horizont, erst das Feld darunter fadet ins Off-White */
+  --hero-ink-stop:85%;        /* Blitz bleibt über dem dunklen Sturm weiß bis zur Feld-Kante;
+                                 Verlauf Weiß→Ink erst dort, wo er auf das helle Feld trifft */
+  --hero-reveal-dur:0,8s;      /* Dauer der einmaligen Bolt-Reveal-Animation */
+  --hero-glow-color:hsl(42, 80%, 94%);  /* Kernfarbe des Blitz-Glows (mirrors .lh-ascii-Konvention) */
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));}
@@ -176,6 +195,15 @@ body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text
   -webkit-mask-position:var(--tex-shift,center);mask-position:var(--tex-shift,center);
 }
 
+/* Splash: verdeckt die Seite beim Laden, bis Hero-Assets (Storm-Bild, Logo-Canvas,
+   Fonts) + erster Render fertig sind — dann weicher Fade-Out, damit Hero/Blitz sauber
+   eintreten statt nacheinander aufzuploppen. Startet sofort sichtbar (kein display:none). */
+#splash{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .55s ease;}
+#splash.hidden{opacity:0;pointer-events:none;}
+#splash .sp-cursor{font-family:var(--font-pixel);font-size:1.5rem;letter-spacing:.12em;color:var(--ink);opacity:.72;animation:spBlink 1.05s steps(1) infinite;}
+@keyframes spBlink{50%{opacity:0;}}
+@media(prefers-reduced-motion:reduce){#splash .sp-cursor{animation:none;}#splash{transition:none;}}
+
 #auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;}
 .auth-box{padding:2.5rem 2rem;text-align:center;max-width:360px;width:100%;overflow:hidden;}
 .auth-box::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent-gradient);}
@@ -200,7 +228,7 @@ header h1{font-family:var(--font-sans);font-size:2rem;font-weight:600;margin:0;l
    dem fixierten Logo beginnt. Das Logo selbst rendert in #logo-stage (position:fixed, siehe
    unten), nicht mehr im Header — es muss beim Scrollen sichtbar über dem Content liegen
    statt mit der Seite aus dem Viewport zu laufen. */
-header.has-logo{height:120px;padding:0;margin-top:0;margin-bottom:0;border-bottom:none;position:relative;z-index:0;}
+header.has-logo{height:var(--hero-h);padding:0;margin-top:0;margin-bottom:0;border-bottom:none;position:relative;z-index:0;}
 header.has-logo h1{width:1px;height:1px;overflow:hidden;position:absolute;white-space:nowrap;}
 /* Scroll-Dither-Logo: fixiert über dem scrollenden Content, unabhängig vom Header-Fluss.
    Aufbau: #logo-stage (Positionierung) > #logo-clip (Beschnitt) > #logo-canvas (Effekt).
@@ -220,14 +248,12 @@ header.has-logo h1{width:1px;height:1px;overflow:hidden;position:absolute;white-
    der Logobreite. Dadurch kein Verrutschen mehr beim Verkleinern des Fensters. */
 /* position:absolute statt fixed: das Logo hängt am Dokument (nicht am Viewport) und
    scrollt wie der übrige Content nach oben aus dem Bild — es klebt nicht mehr fixiert. */
-#logo-stage{position:absolute;left:0;right:0;top:120px;z-index:1;display:flex;justify-content:center;pointer-events:none;opacity:0;transition:opacity .2s ease;transform:translateY(-50%);}
+#logo-stage{position:absolute;left:0;right:0;top:calc(var(--hero-h) * var(--hero-logo-anchor) + var(--hero-logo-gap));z-index:1;display:flex;justify-content:center;pointer-events:none;opacity:0;transition:opacity .2s ease;transform:translateY(-50%);}
 #logo-stage.visible{opacity:1;}
-#logo-clip{overflow:hidden;width:min(66vw,720px);aspect-ratio:2.368;}
+#logo-clip{overflow:hidden;width:min(66vw,350px);aspect-ratio:2.368;}
 #logo-canvas{display:block;width:208.33%;margin-left:-54.17%;margin-top:-44.85%;image-rendering:pixelated;image-rendering:-moz-crisp-edges;image-rendering:crisp-edges;}
 @media(max-width:520px){
-  header.has-logo{height:90px;}
-  /* schmaler, damit das Oval nicht die Garmin-/+-Buttons in den oberen Ecken überlappt */
-  #logo-stage{top:108px;}
+  :root{--hero-compact-h:90px;--hero-logo-gap:18px;}
   #logo-clip{width:min(54vw,250px);}
 }
 /* Seiten-Überschriften (alle Seiten außer Log): Inter statt Logo-Font, Großbuchstaben, luftig */
@@ -361,6 +387,130 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .log-hero.open .lh-chevron{transform:rotate(180deg);}
 /* Hero-Detail als eigenständige Box direkt unter der Hero-Kachel (nicht in einer .entry) */
 .hero-detail{margin-top:0;margin-bottom:1.1rem;}
+
+/* ===== Hero-Wetter (Log-Seite): Storm-Bild + ASCII-Blitz. Positionierung wie
+   #logo-stage (siehe oben): position:absolute, NICHT fixed — hängt am Dokument,
+   scrollt wie normaler Content mit weg, sobald es aus dem Viewport läuft.
+   Höhe kommt ausschließlich aus --hero-h (JS, siehe updateHero()). ===== */
+.hero-visual{
+  position:absolute;left:0;right:0;top:0;
+  height:var(--hero-h);
+  overflow:hidden;
+  z-index:1;
+  display:flex;justify-content:center;align-items:flex-start;
+  opacity:0;transition:opacity .2s ease;
+  pointer-events:none;
+  /* scroll-gesteuerter Fade der Storm-Ebenen (JS setzt 1→0 beim Einfahren);
+     als Faktor, damit die Basis-Opacities der Grain-Layer erhalten bleiben. */
+  --hero-fade:1;
+  /* Gemeinsame Masken-Definition: NUR unten über dem Feld ausfaden (voll opak bis zur
+     Feld-Kante, volle Transparenz an der Unterkante). Links/rechts bleibt full-bleed.
+     WICHTIG: Maske sitzt auf dem CONTAINER (Höhe --hero-h), NICHT auf den Foto-Layern
+     (feste --hero-full-h). Sonst schneidet .hero-visual (overflow:hidden) das Foto beim
+     Kollaps ab, BEVOR die Maske 100%/transparent erreicht → harte Kante. Auf dem Container
+     liegt "100% = transparent" immer exakt an der sichtbaren Unterkante → Fade läuft in
+     JEDEM Zustand (voll/gescrollt/kollabierend) sauber auf 0% Deckkraft aus. */
+  --hero-edge-mask:linear-gradient(to bottom,#000 0%,#000 var(--hero-field-fade-start),transparent 100%);
+  -webkit-mask-image:var(--hero-edge-mask);mask-image:var(--hero-edge-mask);
+}
+.hero-visual.visible{opacity:1;}
+
+/* Foto: FIXE Höhe (--hero-full-h), nicht die schrumpfende --hero-h. Dadurch schneidet
+   die überlaufende .hero-visual (overflow:hidden) beim Kollaps nur ab, statt zu rescalen.
+   Analoger Film: entsättigt/kontrastreduziert (matt) + weichgezeichnet; scale(1.04)
+   kaschiert die durch blur() entstehenden weichen Ränder. Nur das Feld unten (unterhalb
+   --hero-field-fade-start) fadet ins Off-White; der Rest bleibt voll opak. */
+.hero-bg{
+  position:absolute;top:0;left:0;right:0;
+  height:var(--hero-full-h);
+  /* Warmer Dunst-Layer (Moodboard-Haze) ÜBER dem Foto: hebt die dunkle obere
+     Bildhälfte an und zieht einen goldigen Schleier von unten hoch. */
+  /* background-position Y = Feld-Kante (85%): CSS richtet den 85%-Punkt des Bildes am
+     85%-Punkt der Box aus — unabhängig vom cover-Scaling. Dadurch liegt der Horizont
+     auf ALLEN Screens (auch breitem Desktop) bei 85% und der Blitz endet immer darauf. */
+  background:
+    linear-gradient(to bottom,rgba(214,178,138,.14) 0%,rgba(214,178,138,.05) 42%,rgba(228,196,150,.20) 74%,rgba(232,202,158,.38) 85%,rgba(230,200,156,.16) 93%,transparent 100%),
+    url("img/background-storm.png") center var(--hero-field-fade-start) / cover no-repeat;
+  /* Stärkerer Blur + wärmerer, matterer Grade → verträumt-malerisch statt scharf-dramatisch.
+     Der Dunst-Schleier bündelt sich auf der Feld-Kante (85%) + mehr Blur → keine harte
+     Wolke/Feld-Grenze mehr, der Horizont geht weich ineinander über. */
+  filter:saturate(.78) contrast(.86) brightness(1.08) sepia(.16) blur(5px);
+  transform:scale(1.06);
+  opacity:var(--hero-fade);
+}
+
+/* Körniger, matter Film ÜBER dem Foto, UNTER dem Blitz (eigener Layer, damit der Grain
+   NICHT vom blur() der .hero-bg weichgezeichnet wird — Korn bleibt scharf). Gleiche fixe
+   Höhe + Feld-Fade-Mask wie das Foto. Grain = selbst-enthaltene SVG-feTurbulence-Data-URI
+   (kein Asset); der lineare Tint hebt die Schwarzwerte an (matt). */
+.hero-film{
+  position:absolute;top:0;left:0;right:0;
+  height:var(--hero-full-h);
+  z-index:1;pointer-events:none;
+  background:linear-gradient(rgba(70,64,58,.12),rgba(70,64,58,.12)),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:auto,140px 140px;
+  mix-blend-mode:overlay;
+  opacity:calc(.72 * var(--hero-fade));
+}
+
+/* Zweiter Grain-Layer ÜBER dem Blitz (z-index 2 > .hero-bolt z-index 1): gibt dem
+   glühenden ASCII die fotokopiert-körnige, analoge Textur der Moodboard-Vorlage.
+   Gröberes Korn, dezentere Opacity, damit der Blitz lesbar bleibt. */
+.hero-film-top{
+  position:absolute;top:0;left:0;right:0;
+  height:var(--hero-full-h);
+  z-index:2;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.62' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n2)'/%3E%3C/svg%3E");
+  background-size:120px 120px;
+  mix-blend-mode:overlay;
+  opacity:calc(.16 * var(--hero-fade));
+}
+
+.hero-bolt{
+  position:relative;z-index:1;margin:0;
+  font-family:var(--font-mono);
+  line-height:1;
+  letter-spacing:0;white-space:pre;font-variant-ligatures:none;
+  /* Kern leicht warm-weiß (Moodboard-Glühen), unten in Ink übergehend. */
+  background:linear-gradient(to bottom,#FFF6EC 0%,#FFF6EC var(--hero-ink-stop),var(--ink) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  /* Weicher Auslauf zum Feld hin: der ausdünnende Blitz-Tip löst sich auf, statt mit harter
+     Kante zu enden — der Einschlag zerfasert am Boden. Maske ist unabhängig vom Reveal-
+     clip-path (beide komponieren). */
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 88%,transparent 100%);
+  mask-image:linear-gradient(to bottom,#000 0%,#000 88%,transparent 100%);
+  /* Voll-analog: leichter Blur (nicht razor-sharp) + mehrschichtiger, warm getönter Bloom. */
+  filter:blur(.4px);
+  text-shadow:
+    0 0 5px var(--hero-glow-color),
+    0 0 11px rgba(255,255,255,.7),
+    0 0 20px rgba(255,244,228,.45),
+    0 0 34px rgba(255,236,210,.30);
+  clip-path:inset(0 0 100% 0);
+}
+/* Persistenter Zustand nach Abschluss der Reveal-Animation: voll enthüllt, KEINE
+   opacity-Regel → die scroll-gesteuerte inline opacity aus updateHero() greift sauber. */
+.hero-bolt.settled{clip-path:inset(0 0 0 0);}
+/* Blitz-Entladung: der VOLLE ASCII-Text steht immer im DOM (Feld-Kante per CSS garantiert,
+   unabhängig von JS). Der Reveal ist ein Clip-Wipe von oben nach unten, per steps() in
+   Zeilen-Sprünge quantisiert (JS setzt animation mit steps=Zeilenzahl in playHeroBoltIntro,
+   ein Schritt = genau eine Zeilenhöhe → jede Zeile erscheint komplett, als würde sich der
+   Blitz nach unten entladen). Danach kurzer Return-Stroke-Flicker. */
+@keyframes heroBoltStrike{
+  from{clip-path:inset(0 0 100% 0);}
+  to{clip-path:inset(0 0 0 0);}
+}
+.hero-bolt.striking{animation:heroBoltFlash .22s ease-out;}
+@keyframes heroBoltFlash{
+  0%,100%{opacity:1;}
+  28%{opacity:.3;}
+  52%{opacity:1;}
+  76%{opacity:.5;}
+}
+@media(prefers-reduced-motion:reduce){
+  .hero-bolt{clip-path:none;}
+  .hero-bolt.striking{animation:none;}
+}
 
 /* ===== Tile-Flow: freie, versetzte Satelliten-Kacheln, seitliches Scrollen mit
    Einrasten (mobil/schmal); ab 900px volle Fläche ohne Snap — ein Verhalten,
@@ -732,6 +882,12 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 #weekly-growth-cards .m-value{font-size:2.15rem;line-height:1;}
 #weekly-growth-cards .m-label{font-size:.72rem;margin-bottom:.45rem;padding-top:.4rem;}
 .weekly-compare-box{height:200px;}
+/* Zonenverteilung & Wochenvergleich: ohne hellen Panel-Hintergrund, volle Kastenbreite */
+.ws-chart-panel .wlc-paper{background:transparent;padding:0;}
+#weekly-compare-chart{height:200px;}
+/* Zonen-Motiv füllt die volle Breite; Höhe folgt dem Seitenverhältnis (480:202) */
+.ws-chart-panel[data-view="zones"] .weekly-compare-box{height:auto;}
+#zones-dist-chart{width:100%;height:auto;display:block;shape-rendering:crispEdges;} /* keine AA-Nähte zwischen Pixel-Rects */
 /* Chart-Umschalter (Wochenvergleich ⇄ Lastverteilung) */
 .ws-chart-switch{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin:0 0 .3rem;}
 .ws-chart-switch .ws-h{margin:0;text-align:center;flex:1;}
@@ -819,8 +975,23 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 </head>
 <body>
 
+<div id="splash" aria-hidden="true"><div class="sp-cursor">▮</div></div>
+
 <div id="paper-tex" aria-hidden="true"></div>
 <div id="paper-dither" aria-hidden="true"></div>
+
+<!-- Hero-Wetter (nur Log-Seite): Storm-Hintergrund + ASCII-Blitz. Muss VOR
+     #logo-stage im DOM stehen: gleicher z-index (1) wie #logo-stage, aber
+     DOM-Reihenfolge entscheidet bei gleichem z-index — später im DOM = oben.
+     So malt das Logo-Canvas immer ÜBER dem Hero-Layer, dieser aber über
+     #paper-tex/#paper-dither (z-index 0). Sichtbarkeit/Intro werden wie
+     #logo-stage über showPage()/showApp() gesteuert (nur Log-Seite). -->
+<div id="hero-visual" class="hero-visual" aria-hidden="true">
+  <div id="hero-bg" class="hero-bg"></div>
+  <div class="hero-film"></div>
+  <pre id="hero-bolt" class="hero-bolt"></pre>
+  <div class="hero-film-top"></div>
+</div>
 
 <!-- Dither-Schriftzug: fixiert über dem Content, nur auf der Log-Seite sichtbar
      (Steuerung über showPage()/ensureLogoFx() weiter unten). -->
@@ -1028,7 +1199,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
       </div>
       <div class="ws-chart-panel" data-view="zones" hidden>
         <div class="workload-chart-box wlc-paper weekly-compare-box"><svg id="zones-dist-chart" width="100%" height="100%"></svg></div>
-        <div id="zones-dist-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;align-items:center;"></div>
+        <div id="zones-dist-legend" style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;align-items:center;"></div>
       </div>
     </div>
   </div>
@@ -3011,6 +3182,183 @@ function teardownLogoFx(){
   if(logoFx)logoFx.destroy();
   logoFx=null;logoFxPromise=null;
 }
+
+// ── Hero-Wetter (nur Log-Seite): Storm-Hintergrund + ASCII-Blitz ─────────────
+// Konfiguration zentral hier oben (mirrors die --hero-* CSS-Variablen oben).
+const HERO_CFG={
+  introVh:0.5,     // Zielhöhe beim ersten Laden = 50% Viewport-Höhe (= --hero-full-h)
+  fontFactor:0.95, // fontSize = heroHeightPx * fontFactor / Zeilenzahl → Blitz-Box-Unterkante bei
+                   // 95% der Hero-Höhe. Die letzten ASCII-Zeilen sind der dünner werdende
+                   // Blitz-Tip: dessen DICHTER Teil landet so auf der Feld-Kante (~85%/84.9%),
+                   // der ausdünnende Rest reicht bis ~95% in das Feld hinein (Einschlag am Boden
+                   // statt in der Luft). (Auf sehr breitem Desktop schiebt der cover-Crop den Horizont aus dem Bild.)
+                   // Skaliert weiter mit --hero-h (Zeichengröße/Dichte); nur das Foto bleibt fix.
+};
+let heroInited=false;        // DOM-Refs geholt + asciiArt normalisiert + Listener gebunden?
+let stormIntroPlayed=false;  // Bolt-Reveal schon gespielt? (Session-Latch, nie zurückgesetzt)
+let heroLatched=false;       // Hero schon auf compactHeight eingerastet? (Session-Latch)
+let heroTicking=false;
+let heroLines=[];
+
+// 39 rohe, ungleich lange Mono-Export-Zeilen (48 Spalten) — vom Nutzer bereitsgestellt:
+const asciiArt=[
+"                  #              !",
+"     ~            -               #",
+"                 #                        *",
+"                  $",
+"                  #",
+"                # #",
+"              #   #,",
+"                    $",
+"                     ~$",
+"          !            $",
+"  *                    $ *:",
+" *                     $   !",
+"                     ~$ =",
+"   ~                 $~",
+"                    ~*#  ~",
+"                    ~#*",
+"                   $:$;",
+"                  #;:#=",
+"                    -$;",
+"                      ##",
+"                       ;$",
+"              #         :$",
+"                        ~##",
+"            !           :*$;",
+"                       ,;##!~",
+"       $               ~=$*#",
+"                       ;!##;#",
+"                      :*##*;!~",
+"                     -;*$*=,    ;",
+"                    ,;!##!*.  ~#   *",
+"                   ,;*#$#=*",
+"                   :*$#*!:. = $ =",
+"                  ,;#$#!;,        #",
+"                  ,-!#$*;,",
+"                    :*$*;-",
+"                     ;*$=-          =",
+"                      .:$#=~",
+"                       !.*#$#:",
+"                      -  , :=##",
+"                              *$="
+];
+
+function normalizeAsciiArt(lines){
+  const maxLen=lines.reduce((m,l)=>Math.max(m,l.length),0);
+  return lines.map(l=>l.length<maxLen?l+' '.repeat(maxLen-l.length):l);
+}
+
+// Vorlage (docs/moodboard/IMG_5849.JPG) rendert das ASCII NUR aus # + - . + Space.
+// Die roh gelieferte Blitz-Art nutzt eine 12-Zeichen-Rampe → dichtebasiert auf 4 Stufen
+// kollabieren (dicht→#, mittel→+, dünn→-, fein→.), Space bleibt Space.
+const BOLT_CHARMAP={
+  '#':'#','$':'#','@':'#','*':'#',
+  '!':'+','=':'+','~':'+',
+  ';':'-',':':'-',',':'-','-':'-',
+  '.':'.',"'":'.'
+};
+function remapBoltCharset(lines){
+  return lines.map(l=>l.replace(/\S/g,ch=>BOLT_CHARMAP[ch]||'+'));
+}
+
+function initHeroVisual(){
+  if(heroInited)return;
+  const bolt=document.getElementById('hero-bolt');
+  if(!bolt)return;
+  heroLines=remapBoltCharset(normalizeAsciiArt(asciiArt));
+  bolt.textContent=heroLines.join('\n');
+  window.addEventListener('scroll',onHeroScroll,{passive:true});
+  window.addEventListener('resize',updateHero);
+  window.addEventListener('orientationchange',updateHero);
+  heroInited=true;
+}
+
+function onHeroScroll(){
+  if(heroLatched||activePage!=='log')return;
+  if(heroTicking)return;
+  heroTicking=true;
+  requestAnimationFrame(()=>{updateHero();heroTicking=false;});
+}
+
+function updateHero(){
+  const root=document.documentElement;
+  const compactH=parseFloat(getComputedStyle(root).getPropertyValue('--hero-compact-h'))||120;
+  if(heroLatched){
+    root.style.setProperty('--hero-h',compactH+'px');
+    setBoltFontSize(compactH);
+    setBoltFade(0);            // eingerastet → Blitz vollständig verschwunden (nur Logo bleibt)
+    setHeroFade(0);            // eingerastet → Storm-Bild vollständig eingefahren (kein Rest-Streifen)
+    return;
+  }
+  const introH=window.innerHeight*HERO_CFG.introVh;
+  const scrolled=window.scrollY||document.documentElement.scrollTop||0;
+  let h=Math.max(compactH,introH-scrolled);
+  if(h<=compactH+0.5){h=compactH;heroLatched=true;}
+  root.style.setProperty('--hero-h',h+'px');
+  setBoltFontSize(h);
+  // Opacity an den Scroll-Fortschritt koppeln: fadet aus und ist schon knapp über
+  // compactH bei 0 → statt winzig zu schrumpfen, verschwindet der Blitz ganz.
+  const range=introH-compactH;
+  const prog=range>0?(h-compactH)/range:1;      // 1 = voll ausgefahren, 0 = compact
+  const fade=Math.max(0,Math.min(1,(prog-0.2)/0.8));
+  setBoltFade(fade);
+  // Storm-Bild fährt beim Scrollen vollständig ein (mit der Höhe schrumpfend UND ausfadend),
+  // sodass beim/nach dem Einrasten KEIN dunkler Rest-Streifen unter dem Logo bleibt.
+  setHeroFade(Math.max(0,Math.min(1,prog)));
+}
+
+function setHeroFade(fade){
+  document.getElementById('hero-visual')?.style.setProperty('--hero-fade',String(fade));
+}
+
+function setBoltFontSize(heroHeightPx){
+  const bolt=document.getElementById('hero-bolt');
+  if(!bolt||!heroLines.length)return;
+  bolt.style.fontSize=(heroHeightPx*HERO_CFG.fontFactor/heroLines.length)+'px';
+}
+
+// Greift erst nach Abschluss der Reveal-Animation zuverlässig (.settled entfernt den
+// animation-fill-Konflikt); während des Reveals überschreiben die Keyframes die opacity.
+function setBoltFade(fade){
+  const bolt=document.getElementById('hero-bolt');
+  if(!bolt)return;
+  bolt.style.opacity=String(fade);
+  bolt.style.visibility=fade<=0.01?'hidden':'visible';
+}
+
+function playHeroBoltIntro(){
+  if(stormIntroPlayed)return;
+  stormIntroPlayed=true;
+  const bolt=document.getElementById('hero-bolt');
+  if(!bolt||!heroLines.length)return;
+  // Der VOLLE Text steht bereits im DOM (initHeroVisual). Endzustand = .settled (Feld-Kante
+  // per CSS garantiert), NIE abhängig von der Animation → der Blitz endet immer korrekt.
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  if(reduce){bolt.classList.add('settled');return;}
+  const n=heroLines.length;
+  const dur=getComputedStyle(bolt).getPropertyValue('--hero-reveal-dur').trim()||'.5s';
+  // steps(n) über den Clip-Wipe = ein Sprung pro Zeilenhöhe → Zeile für Zeile von oben nach
+  // unten. `both` hält den Endzustand (voll enthüllt), falls animationend je ausbleibt.
+  bolt.style.animation=`heroBoltStrike ${dur} steps(${n}) both`;
+  bolt.addEventListener('animationend',()=>{
+    bolt.style.animation='';       // Inline-Animation lösen …
+    bolt.classList.add('settled'); // … Endzustand fix per Klasse (scroll-Opacity greift)
+    bolt.classList.add('striking');// kurzer Return-Stroke-Flicker
+    bolt.addEventListener('animationend',()=>bolt.classList.remove('striking'),{once:true});
+  },{once:true});
+}
+
+function showHeroVisual(){
+  initHeroVisual();
+  document.getElementById('hero-visual')?.classList.add('visible');
+  updateHero();
+  playHeroBoltIntro();
+}
+function hideHeroVisual(){
+  document.getElementById('hero-visual')?.classList.remove('visible');
+}
+
 function showPage(key){
   activePage=key;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -3019,7 +3367,7 @@ function showPage(key){
   const titleEl=document.getElementById('page-title');if(titleEl)titleEl.textContent=pageTitles[key]||'Training Log';
   const headerEl=document.getElementById('main-header');if(headerEl)headerEl.classList.toggle('has-logo',key==='log');
   const logoStageEl=document.getElementById('logo-stage');if(logoStageEl)logoStageEl.classList.toggle('visible',key==='log');
-  if(key==='log'){ensureLogoFx();renderLog();}else teardownLogoFx();
+  if(key==='log'){ensureLogoFx();renderLog();showHeroVisual();}else{teardownLogoFx();hideHeroVisual();}
   if(key==='calendar')renderCalendar();
   if(key==='analytics')renderAnalytics();
   if(key==='settings-page')renderSettingsInline();
@@ -6734,61 +7082,7 @@ function renderWeeklyLoadDistribution(){
     (dailyTarget>0?`<span style="color:var(--acwr-optimal);">Optimum ${Math.round(dailyLo)}–${Math.round(dailyHi)}/Tag</span>`:`<span style="color:var(--text-faint);">Ø-Referenz sammelt sich</span>`);
 }
 
-// ── Zonenverteilung (letzte 7 Tage, Bayer-Halftone-Dithering) ────────────────
-const BAYER_MATRIX=[
-  [0,32,8,40,2,34,10,42],
-  [48,16,56,24,50,18,58,26],
-  [12,44,4,36,14,46,6,38],
-  [60,28,52,20,62,30,54,22],
-  [3,35,11,43,1,33,9,41],
-  [51,19,59,27,49,17,57,25],
-  [15,47,7,39,13,45,5,37],
-  [63,31,55,23,61,29,53,21]
-];
-
-function calculateZonePixelCounts(zoneMinutes){
-  const totalMinutes=Object.values(zoneMinutes).reduce((a,b)=>a+b,0);
-  if(totalMinutes===0)return{blue:0,gray:0,red:0};
-
-  const totalPixels=160*48;
-  const quotas={
-    blue:zoneMinutes.zone12/totalMinutes*totalPixels,
-    gray:zoneMinutes.zone3kraft/totalMinutes*totalPixels,
-    red:zoneMinutes.zone45/totalMinutes*totalPixels
-  };
-
-  const counts={blue:Math.floor(quotas.blue),gray:Math.floor(quotas.gray),red:Math.floor(quotas.red)};
-  const remainders={blue:quotas.blue-counts.blue,gray:quotas.gray-counts.gray,red:quotas.red-counts.red};
-
-  const needed=totalPixels-(counts.blue+counts.gray+counts.red);
-  const sorted=Object.entries(remainders).sort((a,b)=>b[1]-a[1]).slice(0,needed);
-  sorted.forEach(([zone])=>{counts[zone]++;});
-
-  return counts;
-}
-
-function isZonePixelActive(pixelIndex,zonePixels){
-  const w=160,h=48,totalPixels=w*h;
-  const x=pixelIndex%w,y=Math.floor(pixelIndex/w);
-
-  let blockSize,intensity;
-  if(pixelIndex<zonePixels.blue){
-    blockSize=2;
-    intensity=zonePixels.blue/totalPixels;
-  }else if(pixelIndex<zonePixels.blue+zonePixels.gray){
-    blockSize=1;
-    intensity=zonePixels.gray/totalPixels;
-  }else{
-    blockSize=2;
-    intensity=zonePixels.red/totalPixels;
-  }
-
-  const bx=Math.floor(x/blockSize)%8,by=Math.floor(y/blockSize)%8;
-  const bayerVal=BAYER_MATRIX[by][bx];
-
-  return bayerVal<intensity*64;
-}
-
+// ── Zonenverteilung (letzte 7 Tage) ──────────────────────────────────────────
 async function fetchLast7DaysZones(){
   const sevenDaysAgo=new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate()-6);
@@ -6817,6 +7111,56 @@ async function fetchLast7DaysZones(){
   return zoneMinutes;
 }
 
+// Cartoon-Motiv (Coyote → Roadrunner) wird zur Laufzeit per Bayer-8×8-Dithering
+// direkt aus img/IMG_5854.jpg gerastert (Canvas) und links→rechts nach der echten
+// Zonenverteilung eingefärbt: Coyote = ruhige Ausdauerzonen, Roadrunner = Spitze.
+// Zwei Auflösungen: grob (240er-Grid, 2×2-Dots) für die massiven Farbzonen,
+// fein (480er-Grid, 1×1) für den grauen Bereich — so bleibt dort Zeichnungsdetail.
+let _motifRasters=null;       // {coarse:{cells,GW,GH},fine:{cells,GW,GH}} – gecacht
+const ZONE_CHART_VIEWBOX='0 0 480 188'; // Fallback (Leerzustand)
+const ZONE_BAYER=[
+  [0,32,8,40,2,34,10,42],[48,16,56,24,50,18,58,26],
+  [12,44,4,36,14,46,6,38],[60,28,52,20,62,30,54,22],
+  [3,35,11,43,1,33,9,41],[51,19,59,27,49,17,57,25],
+  [15,47,7,39,13,45,5,37],[63,31,55,23,61,29,53,21]
+];
+// ▼▼▼ ZONEN-FARBEN — HIER ändern (gilt für Chart UND Legende) ▼▼▼
+// Poster-Palette (IMG_5771): Signal-Blau + Grau + Intensitäts-Lila statt Ampelfarben.
+const ZONE_COLORS={
+  blue:'#2441FF', // Zone 1–2  (ruhige Ausdauer)   = --met-endurance
+  gray:'#8A887F', // Zone 3 + Kraft — Grau, fein gerastert
+  red :'#7B5CD6'  // Zone 4–5  (Spitzenintensität) = --met-intensity
+};
+// ▲▲▲ ZONEN-FARBEN ▲▲▲
+async function loadMotifRasters(){
+  if(_motifRasters)return _motifRasters;
+  const img=new Image();
+  img.src='img/IMG_5854.jpg';
+  await img.decode();
+  const rast=GW=>{
+    const GH=Math.round(GW*img.naturalHeight/img.naturalWidth);
+    const cv=document.createElement('canvas');cv.width=GW;cv.height=GH;
+    const cx=cv.getContext('2d',{willReadFrequently:true});
+    cx.drawImage(img,0,0,GW,GH);
+    const d=cx.getImageData(0,0,GW,GH).data;
+    const cells=new Set();
+    for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){
+      const i=(y*GW+x)*4;
+      const lum=0.2126*d[i]+0.7152*d[i+1]+0.0722*d[i+2];
+      const chroma=(Math.max(d[i],d[i+1],d[i+2])-Math.min(d[i],d[i+1],d[i+2]))/255;
+      // Ink-Gewicht: dunkel ODER satt = dicht; Gamma hebt Mitteltöne, damit helle
+      // Flächen (Bauch, Flügel) nicht ausdünnen. Schwelle filtert Weiß/JPEG-Rauschen.
+      let w=Math.max(1-lum/255,chroma*0.85);
+      w=Math.pow(w,0.6);
+      if(w<0.16)continue;
+      if(ZONE_BAYER[y%8][x%8]<w*64)cells.add(y*GW+x);
+    }
+    return{cells,GW,GH};
+  };
+  _motifRasters={coarse:rast(240),fine:rast(480)};
+  return _motifRasters;
+}
+
 async function renderZonesDistribution(){
   const container=document.getElementById('zones-dist-chart');
   const legendDiv=document.getElementById('zones-dist-legend');
@@ -6827,7 +7171,8 @@ async function renderZonesDistribution(){
     const totalMinutes=Object.values(zoneMinutes).reduce((a,b)=>a+b,0);
 
     if(totalMinutes===0){
-      container.innerHTML='<p style="color:var(--text-faint);">Keine Trainingsdaten für die letzten 7 Tage</p>';
+      container.innerHTML='<text x="240" y="105" text-anchor="middle" fill="var(--text-faint)" font-size="13">Keine Trainingsdaten für die letzten 7 Tage</text>';
+      container.setAttribute('viewBox',ZONE_CHART_VIEWBOX);
       legendDiv.innerHTML='';
       return;
     }
@@ -6835,68 +7180,82 @@ async function renderZonesDistribution(){
     const pctBlue=zoneMinutes.zone12/totalMinutes;
     const pctGray=zoneMinutes.zone3kraft/totalMinutes;
     const pctRed=zoneMinutes.zone45/totalMinutes;
+    const cumBlueGray=pctBlue+pctGray;
 
-    const w=320,h=48;
-    const canvas=document.createElement('canvas');
-    canvas.width=w;canvas.height=h;
-    const ctx=canvas.getContext('2d');
+    const{coarse,fine}=await loadMotifRasters();
 
-    // Drei Zonen horizontal
-    const blueW=Math.round(w*pctBlue);
-    const grayW=Math.round(w*pctGray);
-    const redW=w-blueW-grayW;
+    // Bounds (in 480er-Einheiten) aus dem feinen Raster → eng zugeschnittene viewBox.
+    let xMin=Infinity,xMax=-Infinity,yMin=Infinity,yMax=-Infinity;
+    for(const idx of fine.cells){
+      const x=idx%fine.GW,y=Math.floor(idx/fine.GW);
+      if(x<xMin)xMin=x; if(x+1>xMax)xMax=x+1;
+      if(y<yMin)yMin=y; if(y+1>yMax)yMax=y+1;
+    }
+    const span=(xMax-xMin)||1;
 
-    // Zone 1-2 (Blau) mit Dithering
-    if(blueW>0){
-      for(let px=0;px<blueW;px++){
-        for(let py=0;py<h;py++){
-          const bx=px%8,by=py%8;
-          const bayerVal=BAYER_MATRIX[by][bx];
-          const intensity=pctBlue;
-          if(bayerVal<intensity*64){
-            ctx.fillStyle='#5BA3D0';
-            ctx.fillRect(px,py,1,1);
-          }
-        }
+    // Poster-Grammatik (Vorlage docs/moodboard/IMG_5771.JPG): massive grobe
+    // Pixelblöcke für die FARB-Zonen gegen feine graue Rasterung dazwischen.
+    //  · Z1–2 (Blau) und Z4–5 (Lila): grobe Dots → Blocksnapping auf 3×3 — ausreichend
+    //    gedeckte Blöcke werden massiv gefüllt → flache Flächen mit treppigen Kanten
+    //    wie die Solid-Hälfte der Vorlage. Blau (große Fläche) mit höherer Deckungs-
+    //    Schwelle, damit Konturen/Löcher als Zeichnung erhalten bleiben; Lila (kleine
+    //    Fläche) mit niedriger, damit die laute Geste nicht ausdünnt.
+    //  · Z3+Kraft (Grau): feines 1×1-Raster in doppelter Auflösung — Umrisslinien der
+    //    Zeichnung bleiben voll, Innenflächen werden im Schachbrett ausgedünnt, damit
+    //    der blockige Solid-Look den Farbzonen vorbehalten bleibt.
+    const BLK=3;
+    const blueCover=new Map(),redCover=new Map();
+    const addCover=(m,px,py)=>{
+      for(let dx=0;dx<2;dx++)for(let dy=0;dy<2;dy++){
+        const k=Math.floor((px+dx)/BLK)+','+Math.floor((py+dy)/BLK);
+        m.set(k,(m.get(k)||0)+1);
       }
+    };
+    for(const idx of coarse.cells){
+      const px=(idx%coarse.GW)*2,py=Math.floor(idx/coarse.GW)*2;
+      const frac=(px+1-xMin)/span;
+      if(frac<pctBlue)addCover(blueCover,px,py);
+      else if(!(frac<cumBlueGray||pctRed<1e-6))addCover(redCover,px,py);
+    }
+    const coverRects=(m,thr)=>{
+      let r='';
+      for(const[k,n]of m){
+        if(n<thr)continue;
+        const c=k.split(',');
+        r+=`<rect x="${c[0]*BLK}" y="${c[1]*BLK}" width="${BLK}" height="${BLK}"/>`;
+      }
+      return r;
+    };
+    const blueR=coverRects(blueCover,4);
+    const redR=coverRects(redCover,2);
+
+    let grayR='';
+    const has=(x,y)=>x>=0&&y>=0&&x<fine.GW&&y<fine.GH&&fine.cells.has(y*fine.GW+x);
+    for(const idx of fine.cells){
+      const x=idx%fine.GW,y=Math.floor(idx/fine.GW);
+      const frac=(x+0.5-xMin)/span;
+      if(frac<pctBlue||!(frac<cumBlueGray||pctRed<1e-6))continue;
+      const interior=has(x-1,y)&&has(x+1,y)&&has(x,y-1)&&has(x,y+1);
+      if(interior&&(x+y)%2===1)continue;
+      grayR+=`<rect x="${x}" y="${y}" width="1" height="1"/>`;
     }
 
-    // Zone 3 (Grau) mit Dithering
-    if(grayW>0){
-      for(let px=blueW;px<blueW+grayW;px++){
-        for(let py=0;py<h;py++){
-          const bx=(px-blueW)%8,by=py%8;
-          const bayerVal=BAYER_MATRIX[by][bx];
-          const intensity=pctGray;
-          if(bayerVal<intensity*64){
-            ctx.fillStyle='#888780';
-            ctx.fillRect(px,py,1,1);
-          }
-        }
-      }
-    }
-
-    // Zone 4-5 (Rot) mit Dithering
-    if(redW>0){
-      for(let px=blueW+grayW;px<w;px++){
-        for(let py=0;py<h;py++){
-          const bx=(px-blueW-grayW)%8,by=py%8;
-          const bayerVal=BAYER_MATRIX[by][bx];
-          const intensity=pctRed;
-          if(bayerVal<intensity*64){
-            ctx.fillStyle='#C82B30';
-            ctx.fillRect(px,py,1,1);
-          }
-        }
-      }
-    }
-
-    container.innerHTML=`<img src="${canvas.toDataURL()}" style="width:100%;height:auto;display:block;border-radius:4px;"/>`;
+    // Eng auf das Motiv zugeschnittene viewBox → füllt die volle Kastenbreite.
+    container.setAttribute('viewBox',`${xMin} ${yMin} ${xMax-xMin} ${yMax-yMin}`);
+    container.setAttribute('preserveAspectRatio','xMidYMid meet');
+    container.innerHTML=
+      `<g fill="${ZONE_COLORS.blue}">${blueR}</g>`+
+      `<g fill="${ZONE_COLORS.gray}">${grayR}</g>`+
+      `<g fill="${ZONE_COLORS.red}">${redR}</g>`;
 
     const pctBluePct=Math.round(pctBlue*100);
     const pctGrayPct=Math.round(pctGray*100);
     const pctRedPct=Math.round(pctRed*100);
-    legendDiv.innerHTML=`<span style="display:inline-flex;align-items:center;gap:.3rem;"><span style="width:12px;height:12px;background:#5BA3D0;border-radius:2px;"></span>Zone 1–2 ${pctBluePct}%</span><span style="display:inline-flex;align-items:center;gap:.3rem;"><span style="width:12px;height:12px;background:#888780;border-radius:2px;"></span>Zone 3 ${pctGrayPct}%</span><span style="display:inline-flex;align-items:center;gap:.3rem;"><span style="width:12px;height:12px;background:#C82B30;border-radius:2px;"></span>Zone 4–5 ${pctRedPct}%</span>`;
+    const swatch=c=>`<span style="width:10px;height:10px;background:${c};"></span>`;
+    legendDiv.innerHTML=
+      `<span style="display:inline-flex;align-items:center;gap:.3rem;">${swatch(ZONE_COLORS.blue)}Zone 1–2 ${pctBluePct}%</span>`+
+      `<span style="display:inline-flex;align-items:center;gap:.3rem;">${swatch(ZONE_COLORS.gray)}Zone 3 · Kraft ${pctGrayPct}%</span>`+
+      `<span style="display:inline-flex;align-items:center;gap:.3rem;">${swatch(ZONE_COLORS.red)}Zone 4–5 ${pctRedPct}%</span>`;
   }catch(err){
     console.error('Fehler bei Zonenverteilung:',err);
     legendDiv.innerHTML='<span style="color:var(--text-faint);">Fehler beim Laden</span>';
@@ -8588,7 +8947,9 @@ document.getElementById('wf-disconnect').addEventListener('click',async()=>{
 async function showApp(user){
   currentUser=user;
   document.getElementById('auth-screen').style.display='none';document.getElementById('app').style.display='';
-  if(activePage==='log'){ensureLogoFx();document.getElementById('logo-stage')?.classList.add('visible');}
+  // Logo-Assets schon laden lassen, aber Hero NOCH NICHT zeigen — Reveal passiert erst,
+  // wenn alle Assets fertig sind (weiter unten), damit nichts nacheinander aufploppt.
+  if(activePage==='log')ensureLogoFx();
   const meta=user.user_metadata||{};
   document.getElementById('user-name').textContent=meta.user_name||meta.name||user.email||'';
   const av=document.getElementById('user-avatar');if(meta.avatar_url){av.src=meta.avatar_url;av.style.display='';}
@@ -8610,6 +8971,23 @@ async function showApp(user){
   refreshGarminSyncButton().catch(()=>{});
   // Keine Voreintragungen mehr bei "Neue Einheit" — Datum und Dauer bleiben leer
   renderLog();
+  // ── Smoother Reveal: erst zeigen, wenn Hero-Assets fertig sind ──────────────
+  // Storm-Bild + Logo-Canvas (ensureLogoFx resolved nach erstem Dither-Frame) + Fonts
+  // parallel abwarten (Safety-Timeout, damit der Splash nie hängen bleibt), dann Hero
+  // + Blitz-Reveal frisch eintreten lassen und den Splash ausblenden.
+  if(activePage==='log'){
+    await Promise.race([
+      Promise.all([
+        ensureLogoFx().catch(()=>{}),
+        preloadImg('img/background-storm.png'),
+        (document.fonts?document.fonts.ready:Promise.resolve()).catch(()=>{}),
+      ]),
+      new Promise(r=>setTimeout(r,3500)),
+    ]);
+    document.getElementById('logo-stage')?.classList.add('visible');
+    showHeroVisual();
+  }
+  hideSplash();
   // Rückwärtsbefüllung Workload für alte Sessions mit HR
   backfillWorkload().then(()=>renderLog()).catch(()=>{});
   // Garmin-Tages-Wellness (Ruhepuls/HRV/Schlaf) best-effort aktualisieren, danach neu rendern
@@ -8624,12 +9002,29 @@ async function showApp(user){
 document.getElementById('btn-login').addEventListener('click',async()=>{await sb.auth.signInWithOAuth({provider:'github',options:{redirectTo:window.location.href}});});
 document.getElementById('btn-logout').addEventListener('click',async()=>{await sb.auth.signOut();currentUser=null;sessions=[];teardownLogoFx();document.getElementById('app').style.display='none';document.getElementById('auth-screen').style.display='';});
 
+// ── Splash-Helfer ───────────────────────────────────────────────────────────────
+function preloadImg(src){return new Promise(r=>{const i=new Image();i.onload=i.onerror=()=>r();i.src=src;});}
+function hideSplash(){
+  const s=document.getElementById('splash');
+  if(!s||s.dataset.hidden)return;
+  s.dataset.hidden='1';
+  s.classList.add('hidden');
+  setTimeout(()=>{s.style.display='none';},600);
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 loadCfg();
+// Safety: Splash NIE länger als 6s stehen lassen, egal was beim Boot schiefgeht.
+setTimeout(hideSplash,6000);
 (async()=>{
   const{data:{session}}=await sb.auth.getSession();
-  if(session?.user)await showApp(session.user);
-  else document.getElementById('auth-screen').style.display='';
+  if(session?.user){
+    try{await showApp(session.user);}catch(e){console.error('showApp:',e);}
+    finally{hideSplash();}          // showApp blendet i.d.R. selbst aus; hier als Fallback
+  }else{
+    document.getElementById('auth-screen').style.display='';
+    hideSplash();                    // Login-Screen sofort zeigen
+  }
   sb.auth.onAuthStateChange(async(event,session)=>{
     if(event==='SIGNED_IN'&&session?.user)await showApp(session.user);
     else if(event==='SIGNED_OUT'){teardownLogoFx();document.getElementById('auth-screen').style.display='';document.getElementById('app').style.display='none';}
