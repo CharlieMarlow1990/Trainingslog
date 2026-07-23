@@ -1110,9 +1110,9 @@
         "low": 27
       },
       "stress": {
-        "avg": 10
+        "avg": 16
       },
-      "steps": 77,
+      "steps": 3454,
       "trainingReadiness": {
         "score": 36,
         "level": "LOW"
@@ -467948,5 +467948,5 @@
       ]
     }
   ],
-  "generated": "2026-07-23T07:35:51+00:00"
+  "generated": "2026-07-23T12:32:21+00:00"
 }
