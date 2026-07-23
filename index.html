@@ -2781,6 +2781,14 @@ function hrDriftStatus(pct){
 const EF_MIN_DURATION=30;   // min Gesamtdauer für EF-Auswertung (Grundlageneinheiten)
 const EF_MIN_QUALIFIED=6;   // ab hier Trend-Band statt "Baseline im Aufbau"
 const EF_WARMUP_SEC=300;    // HF-Anlauf, vom Analysefenster abgezogen
+// Absolute (nicht pro Chart relative) Dauer→Radius-Skala für die EF-Punkte — dieselbe
+// Zuordnung in Lauf- und Rad-Karte, damit z.B. eine 30-min-Einheit in beiden Charts
+// gleich klein erscheint statt relativ zur jeweils eigenen Sport-Spanne skaliert zu werden.
+const EF_DOT_R_MIN=3,EF_DOT_R_MAX=8,EF_DOT_DUR_REF_MIN=EF_MIN_DURATION,EF_DOT_DUR_REF_MAX=120;
+function efDotRadius(dur){
+  const t=Math.max(0,Math.min(1,(dur-EF_DOT_DUR_REF_MIN)/(EF_DOT_DUR_REF_MAX-EF_DOT_DUR_REF_MIN)));
+  return EF_DOT_R_MIN+t*(EF_DOT_R_MAX-EF_DOT_R_MIN);
+}
 
 // Qualifikationsfilter: nur Rad-/Lauf-Grundlageneinheiten fließen in die EF-Serie.
 function qualifiesForEF(session){
@@ -6548,9 +6556,8 @@ function renderEfChartFor(sport,svgId,boxId,verdictId,legendId){
     const x=xAt(dayIdx(p.date)).toFixed(1),y=yDeco(p.decoupling).toFixed(1);
     return '<circle cx="'+x+'" cy="'+y+'" r="2.4" fill="'+decoColor+'" opacity="0.85"/>';
   }).join('');
-  // ── EF-Punkte (Größe ~ Dauer) ──
-  const durs=pts.map(p=>p.dur),dMin=Math.min(...durs),dMax=Math.max(...durs);
-  const radius=d=>dMax===dMin?4.5:3+((d-dMin)/(dMax-dMin))*4;
+  // ── EF-Punkte (Größe ~ Dauer, absolute Skala — siehe efDotRadius) ──
+  const radius=efDotRadius;
   const efDots=pts.map(p=>{
     const x=xAt(dayIdx(p.date)).toFixed(1),y=yEf(p.ef).toFixed(1),r=radius(p.dur).toFixed(1);
     const decoStr=p.decoupling!=null?(p.decoupling>=0?'+':'')+p.decoupling+'%':'–';
