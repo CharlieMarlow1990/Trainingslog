@@ -1112,7 +1112,7 @@
       "stress": {
         "avg": 21
       },
-      "steps": 10516,
+      "steps": 10561,
       "trainingReadiness": {
         "score": 36,
         "level": "LOW"
@@ -5367,7 +5367,10 @@
           "hr": 141,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 365,
+      "maxPowerW": 655,
+      "normPowerW": 378
     },
     {
       "id": 23694844441,
@@ -12576,7 +12579,10 @@
           "hr": 142,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 23668958553,
@@ -472197,5 +472203,5 @@
       ]
     }
   ],
-  "generated": "2026-07-23T12:35:33+00:00"
+  "generated": "2026-07-23T12:43:51+00:00"
 }
