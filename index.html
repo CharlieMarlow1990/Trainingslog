@@ -19,7 +19,7 @@
   src:url("font/kraut-type-fuck11.ttf") format("truetype");
   font-weight:normal;
   font-style:normal;
-  font-display:swap;
+  font-display:swap; 
 }
 /* Pixel-/Bitmap-Font — AUSSCHLIESSLICH für die eine Poster-Headline/Zahl pro Screen
    und kurze Zahlen-Akzente. Nie im Fließtext (Design-Briefing, Typografie-Regel). */
@@ -32,7 +32,7 @@
 }
 :root{
   /* === Feste Grammatik (Design-Briefing): Off-White-Papier, leicht grau === */
-  --paper:#EAE9E4;            /* Seiten-Grundfläche */
+  --paper:#d5d8d9;            /* Seiten-Grundfläche */
   --paper-raised:#F2F1ED;     /* Kacheln/Cards */
   --paper-dim:#E2E1DB;        /* Sekundärflächen (Tabs, Chips) */
   --chart-surface:#F7F6F1;    /* Chart-Panels: heller als --paper-raised, hebt sich rahmenlos ab (#6) */
@@ -134,14 +134,13 @@
   /* === Hero-Wetter (nur Log-Seite): Storm-Hintergrund + ASCII-Blitz.
      --hero-h ist die EINZIGE Höhen-Quelle: header.has-logo (Layout-Lücke),
      #logo-stage (top) und .hero-visual (height) lesen alle denselben Wert.
-     JS (updateHero() weiter unten im <script>) überschreibt ihn per
-     documentElement.style.setProperty() bei Scroll/Resize. Default = compact,
-     damit VOR dem ersten JS-Tick exakt das heutige statische Layout steht. */
-  --hero-compact-h:120px;     /* = bisheriger header.has-logo-Wert (Desktop) */
+     Der Hero KOLLABIERT NICHT mehr (Nutzer-Briefing): --hero-h bleibt konstant auf
+     --hero-full-h; updateHero() schrumpft nichts mehr, der Hero scrollt als absolutes
+     Element ganz normal mit dem Content weg. --hero-compact-h bleibt nur als Alt-Referenz. */
+  --hero-compact-h:120px;     /* Alt-Referenz (nicht mehr aktiv genutzt) */
   --hero-logo-gap:0px;        /* zusätzlicher #logo-stage-top-Versatz (Desktop: keiner) */
-  --hero-h:var(--hero-compact-h);
-  --hero-full-h:50vh;         /* FIXE Bild-/Intro-Höhe: entkoppelt vom schrumpfenden --hero-h,
-                                 damit das Foto beim Kollaps nur ABGESCHNITTEN, nicht rescaliert wird */
+  --hero-full-h:50vh;         /* FIXE Hero-/Bild-Höhe */
+  --hero-h:var(--hero-full-h);/* konstant = full: Logo-Anker & Header-Lücke bleiben in der Vollposition */
   --hero-logo-anchor:0.60;    /* Logo-Vertikalposition als Anteil der Hero-Höhe (~über der Feld-Kante) */
   --hero-field-fade-start:85%;/* = gemessene Wolken-Feld-Kante (84.9%): Storm voll opak bis zum
                                  Horizont, erst das Feld darunter fadet ins Off-White */
@@ -281,6 +280,15 @@ input,select,textarea{border:1px solid var(--border-strong);border-radius:var(--
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light);}
 textarea{resize:vertical;min-height:3rem;}
 textarea.note-expanded{min-height:9rem;}
+/* Mobil: Notiz-/Anmerkungsfelder in der Detailansicht komfortabel groß, und iOS-Zoom
+   beim Fokussieren unterbinden (Felder <16px lösen einen Auto-Zoom aus, der den Viewport
+   verschiebt und den Fokus aus dem Feld reißen kann). */
+@media(max-width:600px){
+  .ed-note{min-height:6.5rem;}
+  .ed-note.note-expanded,textarea.note-expanded{min-height:11rem;}
+  .ed-feedback{min-height:5rem;}
+  input,select,textarea{font-size:16px;}
+}
 /* Whiteboard-Notizfeld: Board-Foto-Hintergrund (heller Scrim für Lesbarkeit) +
    eckiger, handgezeichnet wirkender Rahmen. Getippter Text bleibt in klarer
    Grotesk-Schrift (bewusst KEIN Handschrift-Font). Größe: großer Start, wächst per
@@ -403,15 +411,9 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
   /* scroll-gesteuerter Fade der Storm-Ebenen (JS setzt 1→0 beim Einfahren);
      als Faktor, damit die Basis-Opacities der Grain-Layer erhalten bleiben. */
   --hero-fade:1;
-  /* Gemeinsame Masken-Definition: NUR unten über dem Feld ausfaden (voll opak bis zur
-     Feld-Kante, volle Transparenz an der Unterkante). Links/rechts bleibt full-bleed.
-     WICHTIG: Maske sitzt auf dem CONTAINER (Höhe --hero-h), NICHT auf den Foto-Layern
-     (feste --hero-full-h). Sonst schneidet .hero-visual (overflow:hidden) das Foto beim
-     Kollaps ab, BEVOR die Maske 100%/transparent erreicht → harte Kante. Auf dem Container
-     liegt "100% = transparent" immer exakt an der sichtbaren Unterkante → Fade läuft in
-     JEDEM Zustand (voll/gescrollt/kollabierend) sauber auf 0% Deckkraft aus. */
-  --hero-edge-mask:linear-gradient(to bottom,#000 0%,#000 var(--hero-field-fade-start),transparent 100%);
-  -webkit-mask-image:var(--hero-edge-mask);mask-image:var(--hero-edge-mask);
+  /* Kein Bottom-Fadeout mehr (Nutzer-Briefing): der Storm füllt die Hero-Box bis zur
+     Unterkante mit sauberer Kante, statt ins Off-White auszufaden. */
+  -webkit-mask-image:none;mask-image:none;
 }
 .hero-visual.visible{opacity:1;}
 
@@ -428,15 +430,20 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
   /* background-position Y = Feld-Kante (85%): CSS richtet den 85%-Punkt des Bildes am
      85%-Punkt der Box aus — unabhängig vom cover-Scaling. Dadurch liegt der Horizont
      auf ALLEN Screens (auch breitem Desktop) bei 85% und der Blitz endet immer darauf. */
+  /* Quelle = scharfes Original (background-storm.jpg); Blur/Matt/Grain werden zur LAUFZEIT
+     über das Bild gelegt (Nutzer-Briefing). blur(5px) am Foto-Layer weichzeichnet; die matten
+     Farb-Filter (saturate/contrast/brightness/sepia) heben die Schwarzwerte an; die Grain-Layer
+     (.hero-film / .hero-film-top) liegen darüber. transform:scale(1.04) kaschiert die durch
+     blur() entstehenden weichen Ränder. */
   background:
     linear-gradient(to bottom,rgba(214,178,138,.14) 0%,rgba(214,178,138,.05) 42%,rgba(228,196,150,.20) 74%,rgba(232,202,158,.38) 85%,rgba(230,200,156,.16) 93%,transparent 100%),
-    url("img/background-storm.png") center var(--hero-field-fade-start) / cover no-repeat;
-  /* Stärkerer Blur + wärmerer, matterer Grade → verträumt-malerisch statt scharf-dramatisch.
-     Der Dunst-Schleier bündelt sich auf der Feld-Kante (85%) + mehr Blur → keine harte
-     Wolke/Feld-Grenze mehr, der Horizont geht weich ineinander über. */
-  filter:saturate(.78) contrast(.86) brightness(1.08) sepia(.16) blur(5px);
-  transform:scale(1.06);
+    url("img/background-storm.jpg") center var(--hero-field-fade-start) / cover no-repeat;
+  filter:saturate(.78) contrast(.86) brightness(1.08) sepia(.16) blur(2px);
+  transform:scale(1.04);
   opacity:var(--hero-fade);
+  /* Opacity wird pro Scroll-Frame animiert → Layer promoten, damit nur komponiert
+     (nicht neu gerastert) wird. */
+  will-change:opacity;
 }
 
 /* Körniger, matter Film ÜBER dem Foto, UNTER dem Blitz (eigener Layer, damit der Grain
@@ -451,6 +458,7 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
   background-size:auto,140px 140px;
   mix-blend-mode:overlay;
   opacity:calc(.72 * var(--hero-fade));
+  will-change:opacity; /* Opacity scroll-getrieben → Rausch-Layer promoten, nicht neu rastern */
 }
 
 /* Zweiter Grain-Layer ÜBER dem Blitz (z-index 2 > .hero-bolt z-index 1): gibt dem
@@ -464,6 +472,41 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
   background-size:120px 120px;
   mix-blend-mode:overlay;
   opacity:calc(.16 * var(--hero-fade));
+  will-change:opacity; /* wie .hero-film */
+}
+
+/* Progressiver Blur von oben nach unten (Nutzer-Briefing, gleiches Prinzip wie .hero-shade):
+   unten bleibt es beim Grund-Blur der .hero-bg (2px), oben kommt per backdrop-filter ein
+   ZUSÄTZLICHER Blur dazu. Die Verlaufs-Maske blendet diesen Extra-Blur oben voll ein und
+   unten (ab ~62%) komplett aus. Liegt direkt über der .hero-bg, damit nur das Foto
+   nachgeschärft/-geblurrt wird. */
+.hero-blur{
+  position:absolute;top:0;left:0;right:0;
+  height:var(--hero-full-h);
+  z-index:1;pointer-events:none;
+  -webkit-backdrop-filter:blur(6px);
+  backdrop-filter:blur(6px);
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 18%,transparent 62%);
+  mask-image:linear-gradient(to bottom,#000 0%,#000 18%,transparent 62%);
+  opacity:var(--hero-fade);
+  will-change:opacity;
+}
+
+/* Abdunkel-Verlauf von oben nach unten (Nutzer-Briefing): oben spürbar dunkler,
+   nach unten hin ausdünnend — der untere Bild-/Feldbereich bleibt nahezu unberührt.
+   Liegt ÜBER Foto + Grain, aber UNTER dem Blitz (DOM-Reihenfolge), damit der ASCII-
+   Blitz voll leuchtend bleibt. Gleiche fixe Höhe wie die übrigen Hero-Layer. */
+.hero-shade{
+  position:absolute;top:0;left:0;right:0;
+  height:var(--hero-full-h);
+  z-index:1;pointer-events:none;
+  background:linear-gradient(to bottom,
+    rgba(20,18,16,.42) 0%,
+    rgba(20,18,16,.24) 28%,
+    rgba(20,18,16,.08) 55%,
+    transparent 78%);
+  opacity:var(--hero-fade);
+  will-change:opacity;
 }
 
 .hero-bolt{
@@ -471,6 +514,11 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
   font-family:var(--font-mono);
   line-height:1;
   letter-spacing:0;white-space:pre;font-variant-ligatures:none;
+  /* Größe folgt dem Kollaps per transform:scale (GPU-composited), NICHT per font-size —
+     so entfällt das Reflow + der Bloom-Repaint pro Scroll-Frame. Anker oben-mittig,
+     damit der Blitz wie zuvor von der Oberkante aus schrumpft. */
+  transform-origin:top center;
+  will-change:transform,opacity;
   /* Kern leicht warm-weiß (Moodboard-Glühen), unten in Ink übergehend. */
   background:linear-gradient(to bottom,#FFF6EC 0%,#FFF6EC var(--hero-ink-stop),var(--ink) 100%);
   -webkit-background-clip:text;background-clip:text;color:transparent;
@@ -563,11 +611,14 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 @media(min-width:720px){#workload-chart-svg-box{height:340px;}}
 
 /* Log-Header: Garmin-Sync links, schwebender [+]-Button rechts oben */
-.log-header{display:flex;justify-content:space-between;align-items:center;margin:0 0 .8rem;position:relative;gap:.6rem;flex-wrap:wrap;}
+/* margin-top: Abstand zwischen der Hero-Unterkante und der Button-Zeile (Nutzer-Briefing). */
+.log-header{display:flex;justify-content:space-between;align-items:center;margin:1.2rem 0 .8rem;position:relative;gap:.6rem;flex-wrap:wrap;}
 /* Garmin- & +-Button: Pixelschrift (VCR) mit Ruhe-Blur, der bei Interaktion aufgeht.
    Der Blur ist der Ruhezustand; Hover/Fokus/Tap (auch Touch ohne Hover via :active)
    lösen ihn auf → das Label „scharfstellt" sich. */
-.log-sync-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.65rem 1.7rem;border-radius:0;border:none;background:var(--signal-lav);color:var(--ink);font-family:var(--font-pixel);font-size:1rem;letter-spacing:.04em;font-weight:400;cursor:pointer;transition:background .12s,filter .2s ease;filter:blur(1.4px);}
+/* height:44px = exakt die Höhe des quadratischen [+]-Buttons (.log-add-fab) → beide Buttons
+   gleich hoch, damit die Kopf-Zeile gleichmäßig sitzt (gleicher Abstand oben/unten). */
+.log-sync-btn{display:inline-flex;align-items:center;gap:.4rem;height:44px;padding:0 1.7rem;border-radius:0;border:none;background:var(--signal-lav);color:var(--ink);font-family:var(--font-pixel);font-size:1rem;letter-spacing:.04em;font-weight:400;cursor:pointer;transition:background .12s,filter .2s ease;filter:blur(1.4px);}
 .log-sync-btn:hover:not(:disabled),.log-sync-btn:focus-visible,.log-sync-btn:active{background:var(--signal-lav-deep);filter:blur(0);}
 .log-sync-btn:disabled{opacity:.4;cursor:not-allowed;}
 .log-sync-btn.syncing i{animation:spin 1s linear infinite;}
@@ -798,6 +849,8 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 .lib-filter-pill{padding:.3rem .6rem;border:1px solid var(--border);border-radius:0;background:var(--surface);color:var(--text-muted);font-size:.72rem;cursor:pointer;white-space:nowrap;transition:all .12s;}
 .lib-filter-pill:hover{border-color:var(--accent);color:var(--text);}
 .lib-filter-pill.active{background:var(--text);color:var(--surface);border-color:var(--text);}
+.lib-filter-pill.lib-cat-add{border-style:dashed;color:var(--accent);}
+.lib-filter-pill.lib-cat-add:hover{border-color:var(--accent);color:var(--accent);}
 .lib-template-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.7rem .8rem;margin-bottom:.5rem;cursor:pointer;transition:all .12s;}
 .lib-template-card:hover{border-color:var(--accent);background:var(--surface-alt);}
 .lib-template-title{font-weight:600;font-size:.88rem;color:var(--text);margin-bottom:.25rem;}
@@ -988,7 +1041,9 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
      #logo-stage über showPage()/showApp() gesteuert (nur Log-Seite). -->
 <div id="hero-visual" class="hero-visual" aria-hidden="true">
   <div id="hero-bg" class="hero-bg"></div>
+  <div class="hero-blur"></div>
   <div class="hero-film"></div>
+  <div class="hero-shade"></div>
   <pre id="hero-bolt" class="hero-bolt"></pre>
   <div class="hero-film-top"></div>
 </div>
@@ -1299,6 +1354,20 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
       </div>
     </div>
     <div class="card" style="margin-top:1rem;">
+      <h2><i class="ti ti-heart-rate-monitor"></i> Aerobe Effizienz</h2>
+      <p style="font-size:.74rem;color:var(--text-muted);margin:-.3rem 0 .7rem;">EF (Leistung bzw. Tempo je Herzschlag) über die Zeit für Grundlageneinheiten &ge;30 min. Steigende EF bei stabilem Decoupling = wachsende aerobe Fitness. Decoupling (rechte Achse, invertiert) = HF-Drift 1. vs. 2. Hälfte. Zeitfenster folgt der Workload-Progression.</p>
+      <div style="margin-bottom:.4rem;">
+        <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;"><i class="ti ti-run"></i> Lauf <span id="ef-verdict-run" style="font-weight:400;"></span></div>
+        <div class="workload-chart-box wlc-paper" id="ef-chart-run-box" style="height:190px;"><svg id="ef-chart-run-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
+        <div id="ef-legend-run" style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
+      </div>
+      <div style="margin-top:.9rem;">
+        <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;"><i class="ti ti-bike"></i> Rad <span id="ef-verdict-bike" style="font-weight:400;"></span></div>
+        <div class="workload-chart-box wlc-paper" id="ef-chart-bike-box" style="height:190px;"><svg id="ef-chart-bike-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
+        <div id="ef-legend-bike" style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1rem;">
       <h2><i class="ti ti-chart-line"></i> Aufschlüsselung nach Kategorie</h2>
       <p style="font-size:.74rem;color:var(--text-muted);margin:-.3rem 0 .7rem;">Entwicklung einzelner Kategorien über die Zeit — Metrik(en) auswählen und Zeitraum wechseln.</p>
       <div class="sport-filter" id="breakdown-metric-filter"></div>
@@ -1323,11 +1392,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
     <div id="lib-add-form" style="display:none;">
       <div class="grid" style="margin-bottom:.55rem;">
         <div class="field"><label>Titel</label><input type="text" id="lib-new-title" placeholder="z.B. Strength Upper"></div>
-        <div class="field"><label>Ziel</label><select id="lib-new-goal">
-          <option value="">– wählen –</option>
-          <option>Kraft</option><option>Schnellkraft</option><option>Capacity</option>
-          <option>Grundlagenausdauer</option><option>Intervalle</option>
-        </select></div>
+        <div class="field"><label>Ziel</label><select id="lib-new-goal"></select></div>
         <div class="field"><label>Dauer (min, geschätzt)</label><input type="number" id="lib-new-duration" min="10" step="5" placeholder="60"></div>
         <div class="field"><label>Quelle (optional)</label><input type="text" id="lib-new-source" placeholder="z.B. Gym Jones"></div>
       </div>
@@ -1363,6 +1428,10 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
       <div>
         <label style="font-size:.7rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.04em;">Modalität</label>
         <div id="lib-modality-tabs" style="display:flex;flex-wrap:wrap;gap:.35rem;"></div>
+      </div>
+      <div>
+        <label style="font-size:.7rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.04em;">Format</label>
+        <div id="lib-format-tabs" style="display:flex;flex-wrap:wrap;gap:.35rem;"></div>
       </div>
       <div>
         <label style="font-size:.7rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.04em;">Verfügbare Zeit</label>
@@ -1439,6 +1508,10 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
     <div class="row" style="margin-top:.6rem;">
       <button class="ghost" id="garmin-backfill-btn"><i class="ti ti-history"></i> HF-Verlauf f&#xFC;r bestehende Garmin-Tage nachziehen</button>
       <span class="status" id="garmin-backfill-status"></span>
+    </div>
+    <div class="row" style="margin-top:.6rem;">
+      <button class="ghost" id="garmin-power-backfill-btn"><i class="ti ti-bolt"></i> Power f&#xFC;r bestehende Garmin-Einheiten nachziehen</button>
+      <span class="status" id="garmin-power-backfill-status"></span>
     </div>
   </div>
 
@@ -1643,7 +1716,7 @@ const DB={
         }catch(e2){
           // Stufe 2: vollständiger Fallback für ältere DB-Schemata
           if(e2.message&&e2.message.includes('column')){
-            const{srpe,workload,workload_method,avg_power_w,peak_power_w,normalized_power_w,intensity_factor,tss,hr_series,planned,marker_color,...base}=s;
+            const{srpe,workload,workload_method,avg_power_w,peak_power_w,normalized_power_w,intensity_factor,tss,hr_series,planned,marker_color,ef,decoupling,analysis_window_sec,...base}=s;
             const r=await sb.from('sessions').insert([{...base,avg_pace:null}]).select().single();
             if(r.error)throw r.error;return r.data;
           }
@@ -1673,7 +1746,7 @@ const DB={
             // Stufe 2: vollständiger Fallback
             if(e2.message&&e2.message.includes('column')){
               try{
-                const{srpe,workload,workload_method,avg_power_w,peak_power_w,normalized_power_w,intensity_factor,tss,hr_series,planned,marker_color,...base}=s;
+                const{srpe,workload,workload_method,avg_power_w,peak_power_w,normalized_power_w,intensity_factor,tss,hr_series,planned,marker_color,ef,decoupling,analysis_window_sec,...base}=s;
                 const r=await sb.from('sessions').insert([{...base,avg_pace:null}]).select().single();
                 if(r.error)throw r.error;results.push(r.data);continue;
               }catch(e3){errors.push({date:s.date,sport:s.sport,err:e3.message});}
@@ -1706,7 +1779,7 @@ const DB={
         }catch(e2){
           // Stufe 2: vollständiger Fallback
           if(e2.message&&e2.message.includes('column')){
-            const{srpe,workload,workload_method,avg_power_w,peak_power_w,normalized_power_w,intensity_factor,tss,hr_series,planned,marker_color,...base}=s;
+            const{srpe,workload,workload_method,avg_power_w,peak_power_w,normalized_power_w,intensity_factor,tss,hr_series,planned,marker_color,ef,decoupling,analysis_window_sec,...base}=s;
             const r=await sb.from('sessions').update(base).eq('id',id).select().single();
             if(r.error)throw r.error;return r.data;
           }
@@ -1901,6 +1974,26 @@ function ditherCanvasPattern(ctx,ink,density,background,fallbackColor){
   const tile=ditherTile(ink,density,background);
   return tile?ctx.createPattern(tile,'repeat'):fallbackColor;
 }
+// CanvasPattern mit VERTIKALEM Dichte-Verlauf (Balken): unten dicht, nach oben ausdünnend —
+// feiner Dither-Look als Verlauf statt flächiger Umrandung. Die Alpha-Rampe im Quellfeld wird
+// von ditherField in Punktdichte übersetzt; feines Grain (1). Die Kachel ist so hoch wie die
+// Chartfläche und wird an der Canvas-Oberkante verankert (kein vertikaler Repeat sichtbar),
+// sodass alle Balken denselben, absolut verankerten Verlauf zeigen.
+function ditherGradientPattern(ctx,ink,heightPx,fallbackColor){
+  if(!DITHER.ready||!DITHER.lib)return fallbackColor;
+  const W=64,H=Math.max(16,Math.round(heightPx));
+  const field=document.createElement('canvas');field.width=W;field.height=H;
+  const fx=field.getContext('2d');
+  const g=fx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'rgba(0,0,0,0)');   // oben = dünn
+  g.addColorStop(1,'rgba(0,0,0,1)');   // unten = dicht
+  fx.fillStyle=g;fx.fillRect(0,0,W,H);
+  const tile=DITHER.lib.ditherField(field,{
+    density:1.0,grain:1,ink,background:ink,colorLevels:2,
+    threshold:DITHER.lib.thresholdFn('blue',DITHER.bn)
+  });
+  return ctx.createPattern(tile,'repeat');
+}
 Chart.defaults.color=cssVar('--text-muted','#5f5e5a');   // Ticks, Legend-Labels, Achsentitel
 Chart.defaults.borderColor='rgba(44,44,42,.08)';    // Default-Gridlinien
 Chart.defaults.font.family=cssVar('--font-sans')||Chart.defaults.font.family;
@@ -1944,7 +2037,56 @@ const TEMPLATE_DURATION_BUCKETS=[
   {key:'xlong',label:'>90 min',min:90,max:9999}
 ];
 let templates=[];
-let libFilters={goal:null,modality:null,duration:null,search:''};
+let libFilters={goal:null,modality:null,format:null,duration:null,search:''};
+
+// ── Erweiterbare Vorlagen-Kategorien ──────────────────────────────────────────
+// Die fest kodierten TEMPLATE_* sind die Basis; selbst angelegte Kategorien liegen in
+// cfg.templateCats (goals/modalities/formats) und werden dadurch via user_config in
+// Supabase synchronisiert (gerätübergreifend). allX() = Basis + eigene, ohne Duplikate.
+function customCats(dim){
+  if(!cfg.templateCats||typeof cfg.templateCats!=='object')cfg.templateCats={};
+  if(!Array.isArray(cfg.templateCats[dim]))cfg.templateCats[dim]=[];
+  return cfg.templateCats[dim];
+}
+function mergeCats(base,dim){const seen=new Set(base);const out=[...base];customCats(dim).forEach(v=>{if(v&&!seen.has(v)){seen.add(v);out.push(v);}});return out;}
+function allGoals(){return mergeCats(TEMPLATE_GOALS,'goals');}
+function allModalities(){return mergeCats(TEMPLATE_MODALITIES,'modalities');}
+function allFormats(){return mergeCats(TEMPLATE_FORMATS,'formats');}
+const CAT_DIM_LABEL={goals:'Ziel',modalities:'Modalität',formats:'Format'};
+const CAT_DIM_BASE={goals:()=>TEMPLATE_GOALS,modalities:()=>TEMPLATE_MODALITIES,formats:()=>TEMPLATE_FORMATS};
+// Fragt nach einem Namen und legt (falls neu) eine Kategorie an. Gibt den Namen zurück
+// (auch wenn bereits vorhanden) oder null bei Abbruch/leer. Persistiert via saveCfg().
+function addTemplateCat(dim){
+  const name=(prompt('Neue Kategorie für „'+(CAT_DIM_LABEL[dim]||dim)+'":')||'').trim();
+  if(!name)return null;
+  const base=(CAT_DIM_BASE[dim]||(()=>[]))();
+  const list=customCats(dim);
+  if(!base.includes(name)&&!list.includes(name)){list.push(name);saveCfg();}
+  return name;
+}
+function goalSelectHTML(val,placeholder){
+  return `<option value="">${placeholder||'– –'}</option>`+
+    allGoals().map(g=>`<option ${g===val?'selected':''}>${esc(g)}</option>`).join('')+
+    `<option value="__add__">+ Neue Kategorie…</option>`;
+}
+function catChipValues(dim){return dim==='formats'?allFormats():dim==='modalities'?allModalities():allGoals();}
+// Multi-Select-Chips (Format/Modalität) inkl. „+ Neu". `stateSet` hält die Auswahl;
+// baut sich nach dem Anlegen einer Kategorie selbst neu auf. Von Einfüge- UND Edit-Formular genutzt.
+function buildCatChips(containerId,dim,stateSet){
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  el.innerHTML=catChipValues(dim).map(item=>
+    `<span class="lib-filter-pill ${stateSet.has(item)?'active':''}" data-val="${esc(item)}">${esc(item)}</span>`
+  ).join('')+`<span class="lib-filter-pill lib-cat-add" data-add="${dim}">+ Neu</span>`;
+  el.querySelectorAll('.lib-filter-pill').forEach(p=>{
+    p.addEventListener('click',()=>{
+      if(p.dataset.add){const name=addTemplateCat(p.dataset.add);if(name){stateSet.add(name);buildCatChips(containerId,dim,stateSet);}return;}
+      const v=p.dataset.val;
+      if(stateSet.has(v)){stateSet.delete(v);p.classList.remove('active');}
+      else{stateSet.add(v);p.classList.add('active');}
+    });
+  });
+}
 let currentUser=null,trainingProfile='';
 let activePage='log';
 let analyticsPeriod='week',analyticsMetric='time',analyticsActiveSports=new Set();
@@ -2629,6 +2771,120 @@ function hrDriftStatus(pct){
   if(pct<10)return{label:'Leichter Drift',color:cssVar('--acwr-caution')};
   return{label:'Starker Drift',color:cssVar('--acwr-high')};
 }
+
+// ── AEROBE EFFIZIENZ (EF + DECOUPLING) ──────────────────────────────────────
+// Aggregat-basiert (mangels gespeicherter Pace/Power-Zeitreihe pro Session):
+//   Rad:  EF = NP (oder Ø-Power) / Ø-HF                 → Watt pro Schlag
+//   Lauf: EF = mittlere Geschwindigkeit (m/min) / Ø-HF  → Meter/Min pro Schlag
+// Decoupling ≈ HF-Drift (computeHrDrift, HF 1. vs. 2. Hälfte des HF-Verlaufs); echtes
+// Pa:HR-/Pw:HR-Decoupling ist ohne aligned Leistungs-Zeitreihe nicht rechenbar.
+const EF_MIN_DURATION=30;   // min Gesamtdauer für EF-Auswertung (Grundlageneinheiten)
+const EF_MIN_QUALIFIED=6;   // ab hier Trend-Band statt "Baseline im Aufbau"
+const EF_WARMUP_SEC=300;    // HF-Anlauf, vom Analysefenster abgezogen
+
+// Qualifikationsfilter: nur Rad-/Lauf-Grundlageneinheiten fließen in die EF-Serie.
+function qualifiesForEF(session){
+  if(!session||isSpecialEntry(session)||isPlanned(session))return false;
+  if(session.sport!=='Rad'&&session.sport!=='Lauf')return false;
+  if(!(session.duration>=EF_MIN_DURATION))return false;
+  if(!(session.hr_avg>0))return false;
+  // EF-Rohwert muss überhaupt berechenbar sein
+  if(session.sport==='Rad'){
+    if(!(session.normalized_power_w>0)&&!(session.avg_power_w>0))return false;
+  }else if(!(session.distance_km>0))return false;
+  // Grundlagen-Filter: Ø-HF muss in Z1/Z2 liegen. cfg-Zonen bevorzugt (inferZone),
+  // sonst %HFmax-Fallback (Z2-Obergrenze = 70% HFmax, analog calcEdwardsTRIMP).
+  const z=inferZone(session.hr_avg,session.sport);
+  if(z){ if(z!=='Z1'&&z!=='Z2')return false; }
+  else if(session.hr_avg/(cfg.hrMax||192)>=0.70)return false;
+  return true;
+}
+
+// Analysefenster in Sekunden: Summe der hr_series-Segmente minus Warmup, sonst duration-basiert.
+function efAnalysisWindowSec(session){
+  let series=session.hr_series;
+  if(typeof series==='string'){try{series=JSON.parse(series);}catch(e){series=null;}}
+  let total=null;
+  if(series&&Array.isArray(series)&&series.length){
+    total=series.reduce((a,p)=>a+((p&&p.sec>0)?p.sec:0),0);
+  }
+  if(!total||total<=0)total=(session.duration||0)*60;
+  return Math.max(0,Math.round(total-EF_WARMUP_SEC));
+}
+
+// EF + Decoupling einer Einzelsession. Rückgabe null, wenn nicht qualifiziert/berechenbar.
+function computeEfficiency(session){
+  if(!qualifiesForEF(session))return null;
+  let ef=null;
+  if(session.sport==='Rad'){
+    const pw=session.normalized_power_w>0?session.normalized_power_w:session.avg_power_w;
+    ef=pw/session.hr_avg;
+  }else{
+    const speedMPerMin=(session.distance_km*1000)/session.duration; // duration in Minuten
+    ef=speedMPerMin/session.hr_avg;
+  }
+  if(!(ef>0)||!isFinite(ef))return null;
+  ef=Math.round(ef*1000)/1000;
+  const drift=computeHrDrift(session);
+  const decoupling=drift?drift.driftPct:null;
+  return{ef,decoupling,analysisWindowSec:efAnalysisWindowSec(session)};
+}
+
+// Trend-Aggregation pro Modalität: Rolling-Median-Band (±MAD) + Verdict.
+function computeEfTrend(sport){
+  const qualified=actualSessions()
+    .filter(s=>s.sport===sport&&qualifiesForEF(s))
+    .map(s=>{const e=computeEfficiency(s);return e?{id:s.id,date:s.date,ef:e.ef,decoupling:e.decoupling,
+      dur:s.duration,hr:s.hr_avg,pw:(sport==='Rad'?(s.normalized_power_w||s.avg_power_w):null),distKm:s.distance_km}:null;})
+    .filter(Boolean)
+    .sort((a,b)=>a.date.localeCompare(b.date));
+  const n=qualified.length;
+  if(n<EF_MIN_QUALIFIED){
+    return{sport,qualified,band:null,baseline:null,current:null,
+      verdict:{key:'building',label:'Baseline im Aufbau',color:cssVar('--text-muted'),
+        detail:n+' / '+EF_MIN_QUALIFIED+' qualifizierten Einheiten'}};
+  }
+  // Rolling Median (±MAD) über die letzten 5 qualifizierten Sessions
+  const WIN=5;
+  const band=qualified.map((_,i)=>{
+    const slice=qualified.slice(Math.max(0,i-WIN+1),i+1).map(q=>q.ef);
+    const med=median(slice);
+    const mad=median(slice.map(v=>Math.abs(v-med)))||0;
+    return{date:qualified[i].date,med,lo:med-mad,hi:med+mad};
+  });
+  // Baseline (Median erste Hälfte der letzten ~8 Wochen) vs. aktuell (Median letzte 3)
+  const eightWeeksAgo=toISODate(new Date(Date.now()-56*86400000));
+  const recent=qualified.filter(q=>q.date>=eightWeeksAgo);
+  const baseSet=recent.length>=2?recent.slice(0,Math.ceil(recent.length/2)):qualified.slice(0,Math.ceil(n/2));
+  const baseline=median(baseSet.map(q=>q.ef));
+  const current=median(qualified.slice(-3).map(q=>q.ef));
+  const efDeltaPct=baseline?((current-baseline)/baseline)*100:0;
+  // Decoupling-Trend (Median Baseline vs. letzte 3), steigend = Warnsignal
+  const decoBase=median(baseSet.map(q=>q.decoupling).filter(v=>v!=null));
+  const decoNow=median(qualified.slice(-3).map(q=>q.decoupling).filter(v=>v!=null));
+  const decoRising=(decoBase!=null&&decoNow!=null)&&decoNow>decoBase+1;
+  let verdict;
+  if(efDeltaPct>=3&&!decoRising){
+    verdict={key:'up',label:'Fitness steigt',color:cssVar('--acwr-optimal')};
+  }else if(efDeltaPct>=3&&decoRising){
+    verdict={key:'check',label:'Prüfen — EF hoch, Decoupling steigt',color:cssVar('--acwr-caution')};
+  }else if(efDeltaPct<=-3){
+    verdict={key:'context',label:'Kontext prüfen — EF fällt',color:cssVar('--acwr-caution')};
+  }else{
+    verdict={key:'stable',label:'Stabil',color:cssVar('--text-muted')};
+  }
+  verdict.detail='EF '+(efDeltaPct>=0?'+':'')+(Math.round(efDeltaPct*10)/10)+'%';
+  return{sport,qualified,band,baseline,current,verdict};
+}
+
+// Setzt die abgeleiteten EF-Felder am Session-Objekt vor Insert/Update (analog Workload-Muster).
+function applyEfFields(session){
+  const e=computeEfficiency(session);
+  session.ef=e?e.ef:null;
+  session.decoupling=e?e.decoupling:null;
+  session.analysis_window_sec=e?e.analysisWindowSec:null;
+  return session;
+}
 const TRENDBAND_WINDOW   = 14;
 const TRENDBAND_MIN_DAYS = 4;
 const TRENDBAND_GAP_RESET= 5;
@@ -2766,6 +3022,8 @@ const ASCII_CHAR_AR=0.5; // Zeichenzelle ~2x so hoch wie breit
 // Sport→Bildquelle: dedizierte Sport-Icons (schwarze Silhouette auf transparent, currentColor)
 const SPORT_IMG={
   Rad:'img/SVG/sport-icon-rad.svg',
+  Capacity: 'img/SVG/sport-icon-capcity.svg', 
+  Kraft: 'img/SVG/sport-icon-kraft.svg', 
   Lauf:'img/SVG/sport-icon-laufen.svg',
   Kampfsport:'img/SVG/sport-icon-kampfsport.svg',
   _default:'img/SVG/sport-icon-laufen.svg'
@@ -2886,17 +3144,49 @@ function armHeroAsciiIntro(heroEl){
 // Einscrollen des Balkens in den sichtbaren Bildschirmbereich, siehe armHeroAsciiIntro)
 // bleiben die Zeilen nur gecacht (_lines) und das <pre> leer; danach — bzw. bei jedem
 // weiteren Re-Render, wenn das Intro schon lief — sofort statisch voll gesetzt.
+// ASCII-Ergebnisse cachen: renderLog() läuft oft, die Kanvas-Pipeline (getImageData +
+// Pixel-Schleife) ist aber rein deterministisch pro Dauer-String bzw. Sportbild.
+const _heroAsciiCache={time:new Map(),icon:new Map()};
+
+// Hero-ASCII-Zeile (Icon links, Dauer rechts) auf die Kachelbreite einpassen. Beide <pre>
+// haben white-space:pre + feste Schriftgröße → intrinsische Breite; auf schmalen Screens
+// überläuft die Summe die Kachel (overflow:hidden schneidet die Dauer rechts ab). Wir messen
+// die vollen Texte (unabhängig vom Intro-/Typewriter-Zustand) und skalieren beide Schrift-
+// größen exakt so weit herunter, dass sie mit Lücke nebeneinander passen. Immun gegen Font-
+// Metrik-Annahmen, passt sich jeder Breite an.
+function fitLhAscii(row){
+  if(!row)return;
+  const kids=[...row.querySelectorAll('pre')];
+  if(!kids.length)return;
+  const saved=kids.map(el=>el.textContent);
+  // auf CSS-Clamp zurücksetzen + volle Texte einsetzen, um die echte Maximalbreite zu messen
+  kids.forEach(el=>{el.style.fontSize='';if(el._lines&&el._lines.length)el.textContent=el._lines.join('\n');});
+  const cs=getComputedStyle(row);
+  const gap=parseFloat(cs.columnGap||cs.gap||'0')||0;
+  let total=gap*Math.max(0,kids.length-1);
+  kids.forEach(el=>{total+=el.scrollWidth;});
+  const avail=row.clientWidth;
+  if(total>avail&&avail>0){
+    const f=(avail/total)*0.97; // 3% Sicherheitsrand
+    kids.forEach(el=>{const px=parseFloat(getComputedStyle(el).fontSize);el.style.fontSize=(px*f).toFixed(2)+'px';});
+  }
+  kids.forEach((el,i)=>{el.textContent=saved[i];}); // ursprünglichen (ggf. Blank-/Teil-)Text zurück
+}
 function renderHeroAscii(hero,iconEl,timeEl){
   if(timeEl){
-    const timeLines=textToAscii(fmtMin(hero.duration),{cols:34,threshold:0.05});
+    const key=fmtMin(hero.duration);
+    let timeLines=_heroAsciiCache.time.get(key);
+    if(!timeLines){timeLines=textToAscii(key,{cols:34,threshold:0.05});_heroAsciiCache.time.set(key,timeLines);}
     timeEl._lines=timeLines;
     timeEl.textContent=heroIntroPlayed?timeLines.join("\n"):blankLines(timeLines);
   }
   if(iconEl){
-    const img=new Image();
-    img.onload=()=>{
-      const iconLines=sourceToAscii(img,ASCII_IMG_OPT);
+    const url=SPORT_IMG[hero.sport]||SPORT_IMG._default;
+    const applyIcon=iconLines=>{
       iconEl._lines=iconLines;
+      // Jetzt sind Icon- UND Dauer-Zeilen bekannt → Zeile auf die Kachelbreite einpassen,
+      // BEVOR der Typewriter läuft (Schriftgröße bleibt dann während des Aufbaus stabil).
+      fitLhAscii(iconEl.closest('.lh-ascii'));
       if(iconEl._pendingIntro){
         iconEl._pendingIntro=false;
         typewriteLines(iconEl,iconLines,16);
@@ -2904,8 +3194,16 @@ function renderHeroAscii(hero,iconEl,timeEl){
         iconEl.textContent=heroIntroPlayed?iconLines.join("\n"):blankLines(iconLines);
       }
     };
+    const cached=_heroAsciiCache.icon.get(url);
+    if(cached){applyIcon(cached);return;}
+    const img=new Image();
+    img.onload=()=>{
+      const iconLines=sourceToAscii(img,ASCII_IMG_OPT);
+      _heroAsciiCache.icon.set(url,iconLines);
+      applyIcon(iconLines);
+    };
     img.onerror=()=>{iconEl._lines=[];};
-    img.src=SPORT_IMG[hero.sport]||SPORT_IMG._default;
+    img.src=url;
   }
 }
 // ===== ASCII_HERO_END =====
@@ -3187,18 +3485,21 @@ function teardownLogoFx(){
 // Konfiguration zentral hier oben (mirrors die --hero-* CSS-Variablen oben).
 const HERO_CFG={
   introVh:0.5,     // Zielhöhe beim ersten Laden = 50% Viewport-Höhe (= --hero-full-h)
-  fontFactor:0.95, // fontSize = heroHeightPx * fontFactor / Zeilenzahl → Blitz-Box-Unterkante bei
-                   // 95% der Hero-Höhe. Die letzten ASCII-Zeilen sind der dünner werdende
-                   // Blitz-Tip: dessen DICHTER Teil landet so auf der Feld-Kante (~85%/84.9%),
-                   // der ausdünnende Rest reicht bis ~95% in das Feld hinein (Einschlag am Boden
-                   // statt in der Luft). (Auf sehr breitem Desktop schiebt der cover-Crop den Horizont aus dem Bild.)
-                   // Skaliert weiter mit --hero-h (Zeichengröße/Dichte); nur das Foto bleibt fix.
+  fontFactor:0.80, // fontSize = heroHeightPx * fontFactor / Zeilenzahl → Blitz-Box-Unterkante bei
+                   // ~80% der Hero-Höhe. Der Blitz soll an der WOLKENKANTE enden (Nutzer-Briefing),
+                   // also an der geschwungenen Unterkante des Sturms (~76-80% mittig), NICHT erst am
+                   // Land-Horizont (~85%). Die letzten ASCII-Zeilen (ausdünnender Tip) lösen sich per
+                   // Bolt-Maske genau an dieser Kante auf.
 };
 let heroInited=false;        // DOM-Refs geholt + asciiArt normalisiert + Listener gebunden?
 let stormIntroPlayed=false;  // Bolt-Reveal schon gespielt? (Session-Latch, nie zurückgesetzt)
-let heroLatched=false;       // Hero schon auf compactHeight eingerastet? (Session-Latch)
-let heroTicking=false;
 let heroLines=[];
+let heroCompactH=120;        // gecachte --hero-compact-h (Media-Query 90/120) — vermeidet
+                             // getComputedStyle pro Scroll-Frame (Layout-Thrash); refresh bei Resize
+let heroBoltBaseH=0;         // introH, für den die Blitz-Basis-fontSize gesetzt ist (Resize → neu)
+function refreshHeroCompactH(){
+  heroCompactH=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hero-compact-h'))||120;
+}
 
 // 39 rohe, ungleich lange Mono-Export-Zeilen (48 Spalten) — vom Nutzer bereitsgestellt:
 const asciiArt=[
@@ -3268,54 +3569,52 @@ function initHeroVisual(){
   if(!bolt)return;
   heroLines=remapBoltCharset(normalizeAsciiArt(asciiArt));
   bolt.textContent=heroLines.join('\n');
-  window.addEventListener('scroll',onHeroScroll,{passive:true});
-  window.addEventListener('resize',updateHero);
-  window.addEventListener('orientationchange',updateHero);
+  refreshHeroCompactH();
+  // Während in ein Text-/Zahlenfeld getippt wird, KEIN Hero-Relayout: auf Mobil löst das
+  // Einblenden der Tastatur ein resize/scroll aus → würde die Hero-Höhe (und damit die
+  // Feldposition) verschieben, das Feld springt weg und verliert den Fokus. orientationchange
+  // ist eine echte Geräte-Drehung und bleibt erlaubt.
+  const onHeroResize=()=>{if(isTypingInField())return;refreshHeroCompactH();heroBoltBaseH=0;updateHero();};
+  // Kein Scroll-Listener mehr: der Hero kollabiert nicht, er scrollt einfach als absolutes
+  // Element mit dem Content weg. Nur Resize/Orientation rechnen die Blitz-Basisgröße neu.
+  window.addEventListener('resize',onHeroResize);
+  window.addEventListener('orientationchange',()=>{refreshHeroCompactH();heroBoltBaseH=0;updateHero();});
   heroInited=true;
 }
 
-function onHeroScroll(){
-  if(heroLatched||activePage!=='log')return;
-  if(heroTicking)return;
-  heroTicking=true;
-  requestAnimationFrame(()=>{updateHero();heroTicking=false;});
+// True, solange der Fokus in einem editierbaren Text-/Zahlenfeld liegt (mobile Tastatur offen).
+function isTypingInField(){
+  const a=document.activeElement;
+  if(!a)return false;
+  const tag=a.tagName;
+  return tag==='TEXTAREA'||tag==='INPUT'||a.isContentEditable===true;
 }
-
+// Hero kollabiert nicht mehr: konstante Vollhöhe, Blitz & Storm dauerhaft voll sichtbar.
+// --hero-h steht bereits per CSS auf --hero-full-h (responsiv, in vh) — hier nur die
+// Blitz-Basisgröße (font-size aus introH) und die konstanten Fades setzen.
 function updateHero(){
-  const root=document.documentElement;
-  const compactH=parseFloat(getComputedStyle(root).getPropertyValue('--hero-compact-h'))||120;
-  if(heroLatched){
-    root.style.setProperty('--hero-h',compactH+'px');
-    setBoltFontSize(compactH);
-    setBoltFade(0);            // eingerastet → Blitz vollständig verschwunden (nur Logo bleibt)
-    setHeroFade(0);            // eingerastet → Storm-Bild vollständig eingefahren (kein Rest-Streifen)
-    return;
-  }
   const introH=window.innerHeight*HERO_CFG.introVh;
-  const scrolled=window.scrollY||document.documentElement.scrollTop||0;
-  let h=Math.max(compactH,introH-scrolled);
-  if(h<=compactH+0.5){h=compactH;heroLatched=true;}
-  root.style.setProperty('--hero-h',h+'px');
-  setBoltFontSize(h);
-  // Opacity an den Scroll-Fortschritt koppeln: fadet aus und ist schon knapp über
-  // compactH bei 0 → statt winzig zu schrumpfen, verschwindet der Blitz ganz.
-  const range=introH-compactH;
-  const prog=range>0?(h-compactH)/range:1;      // 1 = voll ausgefahren, 0 = compact
-  const fade=Math.max(0,Math.min(1,(prog-0.2)/0.8));
-  setBoltFade(fade);
-  // Storm-Bild fährt beim Scrollen vollständig ein (mit der Höhe schrumpfend UND ausfadend),
-  // sodass beim/nach dem Einrasten KEIN dunkler Rest-Streifen unter dem Logo bleibt.
-  setHeroFade(Math.max(0,Math.min(1,prog)));
+  setBoltTransform(introH,introH);   // scale=1; setzt die Blitz-Basis-fontSize (nur bei Resize neu)
+  setBoltFade(1);
+  setHeroFade(1);
 }
 
 function setHeroFade(fade){
   document.getElementById('hero-visual')?.style.setProperty('--hero-fade',String(fade));
 }
 
-function setBoltFontSize(heroHeightPx){
+// Blitz-Größe: Basis-fontSize wird nur einmal pro introH gesetzt (also nur bei Resize neu);
+// der eigentliche Kollaps läuft pro Frame über transform:scale — GPU-composited, kein
+// Reflow und kein Neu-Rastern des Bloom/Blur. transform-origin:top center (CSS) hält den
+// Anker oben, damit der Blitz wie zuvor von der Oberkante her schrumpft.
+function setBoltTransform(heroHeightPx,introH){
   const bolt=document.getElementById('hero-bolt');
-  if(!bolt||!heroLines.length)return;
-  bolt.style.fontSize=(heroHeightPx*HERO_CFG.fontFactor/heroLines.length)+'px';
+  if(!bolt||!heroLines.length||introH<=0)return;
+  if(heroBoltBaseH!==introH){
+    bolt.style.fontSize=(introH*HERO_CFG.fontFactor/heroLines.length)+'px';
+    heroBoltBaseH=introH;
+  }
+  bolt.style.transform='scale('+(heroHeightPx/introH).toFixed(4)+')';
 }
 
 // Greift erst nach Abschluss der Reveal-Animation zuverlässig (.settled entfernt den
@@ -3417,23 +3716,27 @@ function renderLibrary(){
   renderLibList();
 }
 
+// Baut eine Filter-Pillenzeile (Alle + Kategorien + „+ Neu"). `attr` = data-Attribut,
+// `values` = Kategorienliste, `active` = aktueller Filterwert, `dim` = Kategorie-Dimension
+// für „+ Neu". Klick auf eine Kategorie setzt/löscht den Filter; „+ Neu" legt eine an.
+function renderFilterPills(el,attr,values,active,dim,onPick){
+  if(!el)return;
+  el.innerHTML=
+    `<span class="lib-filter-pill ${!active?'active':''}" data-${attr}="">Alle</span>`+
+    values.map(v=>`<span class="lib-filter-pill ${active===v?'active':''}" data-${attr}="${esc(v)}">${esc(v)}</span>`).join('')+
+    `<span class="lib-filter-pill lib-cat-add" data-add="${dim}">+ Neu</span>`;
+  el.querySelectorAll('.lib-filter-pill').forEach(p=>p.addEventListener('click',()=>{
+    if(p.dataset.add){if(addTemplateCat(p.dataset.add))renderLibrary();return;}
+    onPick(p.getAttribute('data-'+attr)||null);renderLibrary();
+  }));
+}
 function renderLibFilterTabs(){
-  // Ziel-Filter
-  const goalEl=document.getElementById('lib-goal-tabs');
-  goalEl.innerHTML=
-    `<span class="lib-filter-pill ${!libFilters.goal?'active':''}" data-goal="">Alle</span>`+
-    TEMPLATE_GOALS.map(g=>`<span class="lib-filter-pill ${libFilters.goal===g?'active':''}" data-goal="${esc(g)}">${esc(g)}</span>`).join('');
-  goalEl.querySelectorAll('.lib-filter-pill').forEach(p=>p.addEventListener('click',()=>{
-    libFilters.goal=p.dataset.goal||null;renderLibrary();
-  }));
-  // Modalität-Filter
-  const modEl=document.getElementById('lib-modality-tabs');
-  modEl.innerHTML=
-    `<span class="lib-filter-pill ${!libFilters.modality?'active':''}" data-modality="">Alle</span>`+
-    TEMPLATE_MODALITIES.map(m=>`<span class="lib-filter-pill ${libFilters.modality===m?'active':''}" data-modality="${esc(m)}">${esc(m)}</span>`).join('');
-  modEl.querySelectorAll('.lib-filter-pill').forEach(p=>p.addEventListener('click',()=>{
-    libFilters.modality=p.dataset.modality||null;renderLibrary();
-  }));
+  renderFilterPills(document.getElementById('lib-goal-tabs'),'goal',allGoals(),libFilters.goal,'goals',v=>libFilters.goal=v);
+  renderFilterPills(document.getElementById('lib-modality-tabs'),'modality',allModalities(),libFilters.modality,'modalities',v=>libFilters.modality=v);
+  renderFilterPills(document.getElementById('lib-format-tabs'),'format',allFormats(),libFilters.format,'formats',v=>libFilters.format=v);
+  // Ziel-Select im Einfüge-Formular an neue Kategorien angleichen (Auswahl bleibt erhalten).
+  const gsel=document.getElementById('lib-new-goal');
+  if(gsel)gsel.innerHTML=goalSelectHTML(gsel.value&&gsel.value!=='__add__'?gsel.value:'','– wählen –');
   // Dauer-Filter
   const durEl=document.getElementById('lib-duration-tabs');
   durEl.innerHTML=
@@ -3455,6 +3758,7 @@ function filterTemplates(){
   return templates.filter(t=>{
     if(libFilters.goal&&t.goal!==libFilters.goal)return false;
     if(libFilters.modality&&!(t.modalities||[]).includes(libFilters.modality))return false;
+    if(libFilters.format&&!(t.formats||[]).includes(libFilters.format))return false;
     if(libFilters.duration){
       const bucket=TEMPLATE_DURATION_BUCKETS.find(d=>d.key===libFilters.duration);
       if(bucket){
@@ -3524,7 +3828,7 @@ function openTemplateModal(id){
     ${t.source_pdf?`<p style="font-size:.7rem;color:var(--text-faint);margin-top:.5rem;">Quelle: ${esc(t.source_pdf)}</p>`:''}
     <div class="modal-actions" style="margin-top:.8rem;">
       <button class="danger" id="template-delete-btn"><i class="ti ti-trash"></i> Löschen</button>
-      <button id="template-edit-class-btn" style="padding:.55rem .9rem;"><i class="ti ti-pencil"></i> Klassifikation</button>
+      <button id="template-edit-class-btn" style="padding:.55rem .9rem;"><i class="ti ti-pencil"></i> Bearbeiten</button>
       <button class="primary" id="template-use-btn"><i class="ti ti-arrow-right"></i> Als Eintrag übernehmen</button>
     </div>`;
   document.getElementById('template-modal').classList.add('open');
@@ -3551,22 +3855,20 @@ function closeTemplateModal(){
 function initLibAddForm(){
   const newSelected={formats:new Set(),modalities:new Set()};
 
-  function buildChips(containerId,items,stateSet){
-    const el=document.getElementById(containerId);
-    if(!el)return;
-    el.innerHTML=items.map(item=>
-      `<span class="lib-filter-pill" data-val="${esc(item)}">${esc(item)}</span>`
-    ).join('');
-    el.querySelectorAll('.lib-filter-pill').forEach(p=>{
-      p.addEventListener('click',()=>{
-        const v=p.dataset.val;
-        if(stateSet.has(v)){stateSet.delete(v);p.classList.remove('active');}
-        else{stateSet.add(v);p.classList.add('active');}
-      });
+  buildCatChips('lib-new-formats','formats',newSelected.formats);
+  buildCatChips('lib-new-modalities','modalities',newSelected.modalities);
+
+  // Ziel-Auswahl dynamisch (Basis + eigene Kategorien) inkl. „+ Neue Kategorie…".
+  const goalSel=document.getElementById('lib-new-goal');
+  if(goalSel){
+    goalSel.innerHTML=goalSelectHTML('','– wählen –');
+    goalSel.addEventListener('change',()=>{
+      if(goalSel.value==='__add__'){
+        const name=addTemplateCat('goals');
+        goalSel.innerHTML=goalSelectHTML(name||'','– wählen –');
+      }
     });
   }
-  buildChips('lib-new-formats',TEMPLATE_FORMATS,newSelected.formats);
-  buildChips('lib-new-modalities',TEMPLATE_MODALITIES,newSelected.modalities);
 
   // Toggle Formular auf/zu
   const toggleBtn=document.getElementById('lib-add-toggle');
@@ -3637,9 +3939,9 @@ function initLibAddForm(){
   return newSelected;
 }
 
-// Edit-Formular im Template-Modal (zum nachträglichen Korrigieren der Klassifikation)
+// Vollständiger Inline-Editor im Template-Modal: Titel, Inhalt, Quelle UND Klassifikation
+// (Ziel/Dauer/Format/Modalität) sind bearbeitbar. Kategorien via „+ Neu" erweiterbar.
 function openTemplateEditPanel(t){
-  // Öffnet ein Inline-Edit direkt im Modal
   const sel={formats:new Set(t.formats||[]),modalities:new Set(t.modalities||[])};
   const mc=document.getElementById('template-modal-content');
   const editPanel=mc.querySelector('#template-edit-panel');
@@ -3648,45 +3950,49 @@ function openTemplateEditPanel(t){
   panel.id='template-edit-panel';
   panel.style.cssText='margin-top:.8rem;border-top:1px solid var(--border);padding-top:.8rem;';
   panel.innerHTML=`
+    <div class="field" style="margin-bottom:.5rem;"><label>Titel</label>
+      <input type="text" id="te-title" value="${esc(t.title||'')}" style="width:100%;"></div>
     <div class="grid" style="margin-bottom:.5rem;">
-      <div class="field"><label>Ziel</label><select id="te-goal">
-        <option value="">– –</option>
-        ${TEMPLATE_GOALS.map(g=>`<option ${t.goal===g?'selected':''}>${g}</option>`).join('')}
-      </select></div>
+      <div class="field"><label>Ziel</label><select id="te-goal">${goalSelectHTML(t.goal||'')}</select></div>
       <div class="field"><label>Dauer (min)</label><input type="number" id="te-duration" value="${t.duration_min||''}" min="10" step="5" style="width:100%;"></div>
     </div>
+    <div class="field" style="margin-bottom:.5rem;"><label>Quelle (optional)</label>
+      <input type="text" id="te-source" value="${esc(t.source_pdf||'')}" style="width:100%;"></div>
     <div style="margin-bottom:.4rem;">
       <label style="font-size:.7rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:.3rem;text-transform:uppercase;">Format</label>
-      <div id="te-formats" style="display:flex;flex-wrap:wrap;gap:.3rem;">
-        ${TEMPLATE_FORMATS.map(f=>`<span class="lib-filter-pill ${sel.formats.has(f)?'active':''}" data-val="${f}">${f}</span>`).join('')}
-      </div>
+      <div id="te-formats" style="display:flex;flex-wrap:wrap;gap:.3rem;"></div>
     </div>
-    <div style="margin-bottom:.6rem;">
+    <div style="margin-bottom:.55rem;">
       <label style="font-size:.7rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:.3rem;text-transform:uppercase;">Modalität</label>
-      <div id="te-modalities" style="display:flex;flex-wrap:wrap;gap:.3rem;">
-        ${TEMPLATE_MODALITIES.map(m=>`<span class="lib-filter-pill ${sel.modalities.has(m)?'active':''}" data-val="${m}">${m}</span>`).join('')}
-      </div>
+      <div id="te-modalities" style="display:flex;flex-wrap:wrap;gap:.3rem;"></div>
     </div>
+    <div class="field" style="margin-bottom:.6rem;"><label>Inhalt</label>
+      <textarea id="te-content" class="note-paper" rows="8" style="width:100%;padding:.55rem .65rem;border-radius:var(--radius);color:var(--text);font-size:.83rem;line-height:1.55;resize:vertical;font-family:var(--font-mono);">${esc(t.content||'')}</textarea></div>
     <div style="display:flex;gap:.5rem;">
-      <button class="primary" id="te-save" style="flex:1;font-size:.8rem;"><i class="ti ti-check"></i> Klassifikation speichern</button>
+      <button class="primary" id="te-save" style="flex:1;font-size:.8rem;"><i class="ti ti-check"></i> Änderungen speichern</button>
     </div>
     <span id="te-status" style="display:block;text-align:center;font-size:.76rem;margin-top:.35rem;"></span>`;
   mc.appendChild(panel);
 
-  panel.querySelectorAll('#te-formats .lib-filter-pill,#te-modalities .lib-filter-pill').forEach(p=>{
-    p.addEventListener('click',()=>{
-      const set=p.closest('#te-formats')?sel.formats:sel.modalities;
-      const v=p.dataset.val;
-      if(set.has(v)){set.delete(v);p.classList.remove('active');}
-      else{set.add(v);p.classList.add('active');}
-    });
+  buildCatChips('te-formats','formats',sel.formats);
+  buildCatChips('te-modalities','modalities',sel.modalities);
+
+  const goalSel=panel.querySelector('#te-goal');
+  goalSel.addEventListener('change',()=>{
+    if(goalSel.value==='__add__'){
+      const name=addTemplateCat('goals');
+      goalSel.innerHTML=goalSelectHTML(name||'');
+    }
   });
 
   panel.querySelector('#te-save').addEventListener('click',async()=>{
     const statusEl=panel.querySelector('#te-status');
     const patch={
-      goal:document.getElementById('te-goal').value||null,
+      title:document.getElementById('te-title').value.trim()||null,
+      goal:document.getElementById('te-goal').value&&document.getElementById('te-goal').value!=='__add__'?document.getElementById('te-goal').value:null,
       duration_min:document.getElementById('te-duration').value?parseInt(document.getElementById('te-duration').value):null,
+      source_pdf:document.getElementById('te-source').value.trim()||null,
+      content:document.getElementById('te-content').value.trim()||null,
       formats:[...sel.formats],
       modalities:[...sel.modalities]
     };
@@ -3697,7 +4003,7 @@ function openTemplateEditPanel(t){
       if(idx>=0)templates[idx]={...templates[idx],...updated};
       statusEl.textContent='✓ Gespeichert';
       renderLibList();
-      setTimeout(()=>{closeTemplateModal();},1200);
+      setTimeout(()=>{closeTemplateModal();},900);
     }catch(e){statusEl.textContent='Fehler: '+e.message;}
   });
 }
@@ -4075,6 +4381,7 @@ async function saveSession(){
     user_id:currentUser.id,srpe:null,workload:null,workload_method:null};
   const wl=berechneWorkload(session);
   if(wl.value!=null){session.workload=wl.value;session.workload_method=wl.method;if(wl.method==='tss'){session.tss=wl.tss;session.intensity_factor=wl.intensityFactor;}}
+  applyEfFields(session);
   setSyncState('syncing');
   try{
     const saved=await DB.addSession(session);sessions.unshift(saved);setSyncState('ok');
@@ -4244,6 +4551,8 @@ async function handleSaveEdit(id){
   const wl=berechneWorkload(merged);
   updates.workload=wl.value;updates.workload_method=wl.method;
   if(wl.method==='tss'){updates.tss=wl.tss;updates.intensity_factor=wl.intensityFactor;}
+  applyEfFields(merged);
+  updates.ef=merged.ef;updates.decoupling=merged.decoupling;updates.analysis_window_sec=merged.analysis_window_sec;
   setSyncState('syncing');
   try{const saved=await DB.updateSession(id,updates);const idx=sessions.findIndex(s=>String(s.id)===String(id));if(idx!==-1)sessions[idx]=saved;setSyncState('ok');statusEl.textContent='✓';setTimeout(()=>renderLog(),600);}
   catch(e){setSyncState('error');statusEl.textContent='Fehler';}
@@ -5972,7 +6281,10 @@ function renderAnalyticsAreaChart(labels,datasets,getColor){
 
   // Die Sport-Flächen selbst nehmen die Fein-Korn-Weichzeichnung an (Filter auf der
   // Gruppe), statt eines geblurten Hintergrunds dahinter.
-  svg.innerHTML=defs+gridLines+startAxisLine+xLabels+'<g mask="url(#area-soft)" filter="url(#area-fineblur)">'+fills.join('')+'</g>'+todayMarker;
+  // mask UND filter getrennt auf verschachtelte Gruppen — auf demselben Element kombiniert
+  // rendert iOS-Safari die Gruppe unsichtbar (leerer Chart). Verschachtelt umgeht den Bug;
+  // Optik bleibt identisch. (Alle anderen Charts nutzen bewusst nur je eines von beiden.)
+  svg.innerHTML=defs+gridLines+startAxisLine+xLabels+'<g mask="url(#area-soft)"><g filter="url(#area-fineblur)">'+fills.join('')+'</g></g>'+todayMarker;
 
   if(yaxisSvg){
     const fadeCol=cssVar('--chart-surface')||cssVar('--paper-raised')||cssVar('--surface');
@@ -6060,6 +6372,7 @@ function renderAnalytics(){
 
   weeklyChartData=computeWeeklyTrendData(Math.max(28,acwrWeeks+4));
   renderWorkloadChart();
+  renderAerobicEfficiencyChart();
   renderCategoryBreakdownChart();
 }
 
@@ -6144,6 +6457,118 @@ function bandFillDef(id){
     +`<stop offset="67%" stop-color="${c}" stop-opacity="0.85"/>`
     +`<stop offset="100%" stop-color="${c}" stop-opacity="0.2"/>`
     +`</linearGradient>`;
+}
+
+// ── AEROBE-EFFIZIENZ-CHART (EF-Punkte + Median-Band, Decoupling invertiert) ──
+// Zwei getrennte SVGs (Lauf / Rad), gleiches X-Zeitfenster wie die Workload-Progression.
+// EF (aggregat) als Punkte auf linker Achse + Rolling-Median-Band; Decoupling (HF-Drift)
+// als dünne Linie auf rechter, INVERTIERTER Achse (0% oben). Design vorläufig, wird später
+// verfeinert — nutzt ausschließlich bestehende CSS-Variablen und Band-Defs.
+function renderAerobicEfficiencyChart(){
+  renderEfChartFor('Lauf','ef-chart-run-svg','ef-chart-run-box','ef-verdict-run','ef-legend-run');
+  renderEfChartFor('Rad','ef-chart-bike-svg','ef-chart-bike-box','ef-verdict-bike','ef-legend-bike');
+}
+function renderEfChartFor(sport,svgId,boxId,verdictId,legendId){
+  const svg=document.getElementById(svgId);
+  if(!svg)return;
+  const trend=computeEfTrend(sport);
+  const verdictEl=document.getElementById(verdictId);
+  const legendEl=document.getElementById(legendId);
+  if(verdictEl){
+    verdictEl.innerHTML='<span style="color:'+trend.verdict.color+';font-weight:600;">'+trend.verdict.label+'</span>'
+      +(trend.verdict.detail?'<span style="color:var(--text-muted);"> · '+trend.verdict.detail+'</span>':'');
+  }
+  const box=document.getElementById(boxId);
+  const W=(box&&box.clientWidth)||svg.clientWidth||360;
+  const H=(box&&box.clientHeight)||svg.clientHeight||200;
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+  const padL=38,padR=34,padT=14,padB=26;   // padR: rechte Decoupling-Achse
+  const innerW=W-padL-padR,innerH=H-padT-padB;
+  const axF=cssVar('--font-sans'),axC=cssVar('--text-muted'),dotFill=cssVar('--text');
+  const decoColor=cssVar('--acwr-low');
+  const emptyMsg=()=>{
+    svg.innerHTML='<text x="50%" y="50%" text-anchor="middle" fill="'+cssVar('--text-faint')+'" font-family="'+axF+'" font-size="12">Keine qualifizierten '+(sportCfg(sport).label||sport)+'-Einheiten im Zeitraum</text>';
+    if(legendEl)legendEl.innerHTML='';
+  };
+  // X-Fenster identisch zur Workload-Progression
+  const windowDays=acwrWeeks*7;
+  const today=new Date();today.setHours(23,59,59,999);
+  const displayStart=new Date(today);displayStart.setDate(displayStart.getDate()-windowDays+1);displayStart.setHours(0,0,0,0);
+  const startIso=toISODate(displayStart),endIso=toISODate(today);
+  const pts=trend.qualified.filter(q=>q.date>=startIso&&q.date<=endIso);
+  const excluded=actualSessions().filter(s=>s.sport===sport&&!qualifiesForEF(s)&&s.date>=startIso&&s.date<=endIso);
+  if(pts.length===0&&excluded.length===0){emptyMsg();return;}
+  const dayIdx=iso=>Math.round((new Date(iso+'T00:00:00')-displayStart)/86400000);
+  const xAt=di=>padL+(windowDays<=1?0.5:di/(windowDays-1))*innerW;
+  // EF-Skala (links)
+  const bandInWin=(trend.band||[]).filter(b=>b.date>=startIso&&b.date<=endIso);
+  const efVals=pts.map(p=>p.ef);bandInWin.forEach(b=>{efVals.push(b.lo,b.hi);});
+  if(efVals.length===0){emptyMsg();return;}
+  let efMin=Math.min(...efVals),efMax=Math.max(...efVals);
+  const efPad=(efMax-efMin)*0.15||efMax*0.05||1;efMin-=efPad;efMax+=efPad;
+  const yEf=v=>padT+innerH-((v-efMin)/(efMax-efMin||1))*innerH;
+  // Decoupling-Skala (rechts, INVERTIERT: kleiner/negativer Wert = besser = oben)
+  const decoVals=pts.map(p=>p.decoupling).filter(v=>v!=null);
+  const decoLo=Math.min(0,...decoVals),decoHi=Math.max(10,...decoVals);
+  const yDeco=v=>padT+((v-decoLo)/(decoHi-decoLo||1))*innerH;
+  const fmtPace=mpk=>{const m=Math.floor(mpk),s=Math.round((mpk-m)*60);return (s===60?(m+1):m)+':'+String(s===60?0:s).padStart(2,'0');};
+  const efLabel=v=>sport==='Rad'?v.toFixed(2):v.toFixed(2);
+  // ── Achsen / Gridlines ──
+  const yLabels=Array.from({length:4},(_,i)=>{
+    const v=efMin+(efMax-efMin)*(i/3);const y=yEf(v);
+    return '<text x="'+(padL-5)+'" y="'+(y+3)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="end">'+efLabel(v)+'</text>'+
+           '<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="rgba(44,44,42,0.06)" stroke-width="0.5"/>';
+  }).join('');
+  // Referenzlinien 5% / 10% Decoupling (rechte Achse) + rechte Achsenbeschriftung
+  const refLine=(pct,dash)=>{const y=yDeco(pct);if(y<padT||y>padT+innerH)return'';
+    return '<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y.toFixed(1)+'" stroke="'+decoColor+'" stroke-width="0.7" stroke-dasharray="'+dash+'" opacity="0.5"/>'+
+           '<text x="'+(W-padR+4)+'" y="'+(y+3).toFixed(1)+'" font-family="'+axF+'" font-size="8" fill="'+decoColor+'" text-anchor="start">'+pct+'%</text>';};
+  const refLines=refLine(5,'2 2')+refLine(10,'4 2');
+  // X-Achsen-Datumslabels
+  let xLabels='';const step=windowDays<=28?7:14;
+  for(let i=0;i<windowDays;i+=step){const d=new Date(displayStart);d.setDate(d.getDate()+i);
+    xLabels+='<text x="'+xAt(i).toFixed(1)+'" y="'+(H-7)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="middle">'+d.getDate()+'.'+(d.getMonth()+1)+'.</text>';}
+  // ── Median-Band (nur ab EF_MIN_QUALIFIED) ──
+  let bandPath='';
+  if(trend.band&&bandInWin.length>1){
+    const up=bandInWin.map(b=>xAt(dayIdx(b.date)).toFixed(1)+','+yEf(b.hi).toFixed(1));
+    const lo=bandInWin.slice().reverse().map(b=>xAt(dayIdx(b.date)).toFixed(1)+','+yEf(b.lo).toFixed(1));
+    bandPath='M '+up.join(' L ')+' L '+lo.join(' L ')+' Z';
+  }
+  const commonDefs='<defs>'+bandBlurFilterDef('ef-fineblur-'+sport)+bandFillDef('ef-band-'+sport)+'</defs>';
+  const bp=bandPath?'<path d="'+bandPath+'" fill="url(#ef-band-'+sport+')" filter="url(#ef-fineblur-'+sport+')"/>':'';
+  // ── Decoupling-Linie (rechte Achse, invertiert) ──
+  const decoPts=pts.filter(p=>p.decoupling!=null);
+  let decoLineEl='';
+  if(decoPts.length>1){
+    const poly=decoPts.map(p=>xAt(dayIdx(p.date)).toFixed(1)+','+yDeco(p.decoupling).toFixed(1)).join(' ');
+    decoLineEl='<polyline points="'+poly+'" fill="none" stroke="'+decoColor+'" stroke-width="1.2" opacity="0.75"/>';
+  }
+  const decoDots=decoPts.map(p=>{
+    const x=xAt(dayIdx(p.date)).toFixed(1),y=yDeco(p.decoupling).toFixed(1);
+    return '<circle cx="'+x+'" cy="'+y+'" r="2.4" fill="'+decoColor+'" opacity="0.85"/>';
+  }).join('');
+  // ── EF-Punkte (Größe ~ Dauer) ──
+  const durs=pts.map(p=>p.dur),dMin=Math.min(...durs),dMax=Math.max(...durs);
+  const radius=d=>dMax===dMin?4.5:3+((d-dMin)/(dMax-dMin))*4;
+  const efDots=pts.map(p=>{
+    const x=xAt(dayIdx(p.date)).toFixed(1),y=yEf(p.ef).toFixed(1),r=radius(p.dur).toFixed(1);
+    const decoStr=p.decoupling!=null?(p.decoupling>=0?'+':'')+p.decoupling+'%':'–';
+    const perf=sport==='Rad'?(p.pw?Math.round(p.pw)+' W':'–'):(p.distKm>0?fmtPace(p.dur/p.distKm)+' /km':'–');
+    const tip=p.date+' · '+p.dur+' min · '+p.hr+' bpm · '+perf+' · EF '+efLabel(p.ef)+' · Dec '+decoStr;
+    return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+dotFill+'" style="cursor:pointer;" data-sid="'+(p.id||'')+'" onclick="wlcDotClick(this)"><title>'+tip+'</title></circle>';
+  }).join('');
+  // ── Graue Ticks für nicht-qualifizierte Sessions ──
+  const excMarks=excluded.map(s=>{
+    const x=xAt(dayIdx(s.date)).toFixed(1),y=(padT+innerH-2).toFixed(1);
+    return '<line x1="'+x+'" y1="'+y+'" x2="'+x+'" y2="'+(padT+innerH-9)+'" stroke="'+cssVar('--text-faint')+'" stroke-width="1.4" opacity="0.55"><title>'+s.date+' · nicht qualifiziert (kein Grundlagen-Fenster ≥45min)</title></line>';
+  }).join('');
+  svg.innerHTML=commonDefs+yLabels+refLines+xLabels+bp+decoLineEl+decoDots+efDots+excMarks;
+  if(legendEl)legendEl.innerHTML=
+    '<span style="color:var(--text);">EF · Punktgröße = Dauer</span>'+
+    (trend.band?'<span style="color:var(--acwr-low);">Median ±MAD</span>':'<span style="color:var(--text-muted);">Baseline im Aufbau</span>')+
+    '<span style="color:'+decoColor+';">Decoupling (rechts, 0% oben)</span>'+
+    (excluded.length?'<span style="color:var(--text-faint);">ausgeschlossen</span>':'');
 }
 
 function renderWorkloadChart(){
@@ -7289,18 +7714,18 @@ function openWeeklyDetail(idx){
   const canvas=document.getElementById('weekly-detail-chart');
   const dayLabels=['Mo','Di','Mi','Do','Fr','Sa','So'];
 
-  // Balken = Load-Metrik → Signal-Blau; Füllung als Dither-Raster (CanvasPattern),
-  // Dichte kodiert nichts pro Balken (fixe Stufe), Poster-Kante statt Rundung.
+  // Balken = Load-Metrik → Signal-Blau; Füllung als Dither-Raster mit vertikalem Dichte-
+  // Verlauf (unten dicht → oben ausdünnend), keine Umrandung, Poster-Kante statt Rundung.
   const wdCtx=canvas.getContext('2d');
   const wdBlue=cssVar('--met-endurance','#2441FF');
-  const wdFill=ditherCanvasPattern(wdCtx,wdBlue,0.7,'transparent',wdBlue);
+  const boxH=(canvas.parentElement&&canvas.parentElement.clientHeight)||180;
+  const wdFill=ditherGradientPattern(wdCtx,wdBlue,boxH,cssVar('--met-endurance-tint','#D9DEFA'));
   weeklyDetailChart=new Chart(canvas,{
     type:'bar',
     data:{labels:dayLabels,datasets:[{
       data:w.daily,
-      backgroundColor:w.daily.map(v=>v>0?wdFill:cssVar('--met-endurance-tint','#D9DEFA')),
-      borderColor:w.daily.map(v=>v>0?wdBlue:'transparent'),
-      borderWidth:1,
+      backgroundColor:wdFill,
+      borderWidth:0,
       borderRadius:0,maxBarThickness:44
     }]},
     options:{responsive:true,maintainAspectRatio:false,
@@ -7348,6 +7773,9 @@ document.getElementById('acwr-weeks-tabs').querySelectorAll('button').forEach(bt
 document.getElementById('breakdown-weeks-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{breakdownWeeks=parseInt(btn.dataset.weeks);document.getElementById('breakdown-weeks-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderCategoryBreakdownChart();});});
 let _wlcResizeTimer=null;
 window.addEventListener('resize',()=>{clearTimeout(_wlcResizeTimer);_wlcResizeTimer=setTimeout(()=>{const p=document.getElementById('page-analytics');if(p&&p.classList.contains('active')&&document.getElementById('workload-chart-svg'))renderAnalytics();},180);});
+// Hero-ASCII-Zeile bei Breitenänderung neu einpassen (siehe fitLhAscii).
+let _lhFitTimer=null;
+window.addEventListener('resize',()=>{clearTimeout(_lhFitTimer);_lhFitTimer=setTimeout(()=>{const r=document.querySelector('#log-hero .lh-ascii');if(r)fitLhAscii(r);},180);});
 
 // Log-[+]-Button: Menü mit drei Eingabe-Optionen. Wählt eine Option → blendet die
 // zugehörige Karte ein, klappt ihren Body auf, scrollt zu ihr, schließt das Menü.
@@ -8244,6 +8672,8 @@ async function linkActivityToSession(activity,sessionId){
   const merged={...s,...patch};
   const wl=berechneWorkload(merged);
   patch.workload=wl.value;patch.workload_method=wl.method;
+  applyEfFields(merged);
+  patch.ef=merged.ef;patch.decoupling=merged.decoupling;patch.analysis_window_sec=merged.analysis_window_sec;
   // Zone aus Ø-HF nachziehen, falls Session noch keine echte Zone hat
   if(activity.hrAvg&&(!s.zone||s.zone==='-')&&!isSportFreitext(s.sport)){
     const z=inferZone(activity.hrAvg,activity.sport);if(z)patch.zone=z;
@@ -8351,6 +8781,7 @@ document.getElementById('gpx-save').addEventListener('click',async()=>{
       const wl=berechneWorkload(base);
       const extra={workload:wl.value,workload_method:wl.method};
       if(wl.method==='tss'){extra.tss=wl.tss;extra.intensity_factor=wl.intensityFactor;}
+      applyEfFields(base);
       return{...base,...extra};
     });
     setSyncState('syncing');
@@ -8391,6 +8822,7 @@ document.getElementById('gpx-save').addEventListener('click',async()=>{
   const wl2=berechneWorkload(session);
   session.workload=wl2.value;session.workload_method=wl2.method;
   if(wl2.method==='tss'){session.tss=wl2.tss;session.intensity_factor=wl2.intensityFactor;}
+  applyEfFields(session);
   setSyncState('syncing');
   statusEl.textContent='Speichere…';
   console.log('[GPX Single] Session-Objekt:',session);
@@ -8711,12 +9143,14 @@ function buildGarminSessionFields(date,acts){
   const maxHrs=acts.map(a=>a.maxHr).filter(x=>x);
   const distKm=Math.round(acts.reduce((s,a)=>s+(a.distanceKm||0),0)*100)/100||null;
   const note='Garmin-Sync'+(acts.length>1?' ('+acts.map(a=>a.type).join(', ')+')':'');
+  // Power aus der Aktivität mit Wattdaten (Rad/Zwift) — bevorzugt die Primär-Aktivität.
+  const powerAct=acts.find(a=>a.avgPowerW!=null||a.normPowerW!=null)||primary;
   return{date,duration,sport:mapGarminSport(primary.type),zone:'-',
     title:primary.name||null,note,
     hr_avg,hr_max:maxHrs.length?Math.max(...maxHrs):null,
     hr_series:primary.hrSeries?JSON.stringify(primary.hrSeries):null,
     distance_km:distKm,elevation_m:null,avg_pace:null,
-    avg_power_w:null,peak_power_w:null,normalized_power_w:null};
+    avg_power_w:powerAct.avgPowerW??null,peak_power_w:powerAct.maxPowerW??null,normalized_power_w:powerAct.normPowerW??null};
 }
 async function importGarminActivities(){
   const btn=document.getElementById('garmin-import-btn');
@@ -8727,23 +9161,58 @@ async function importGarminActivities(){
     try{byDate=await fetchGarminByDate();}
     catch(e){st.textContent='garmin/data.json nicht gefunden ('+e.message+').';return;}
     if(!Object.keys(byDate).length){st.textContent='Keine Aktivitäten im Sync gefunden.';return;}
-    const existing=new Set(sessions.filter(s=>!isSpecialEntry(s)).map(s=>s.date));
-    const rows=[];let skipped=0;
+    // Bestehende Einheiten pro Tag (ohne Sondereinträge) — für Neu-Import UND Verknüpfung.
+    const byDay={};
+    sessions.filter(s=>!isSpecialEntry(s)).forEach(s=>{(byDay[s.date]=byDay[s.date]||[]).push(s);});
+    const rows=[];const links=[];let skipped=0;
     Object.keys(byDate).sort().forEach(date=>{
-      if(existing.has(date)){skipped++;return;}
+      const existingForDay=byDay[date];
+      if(existingForDay&&existingForDay.length){
+        // Tag existiert bereits. Statt ihn pauschal zu überspringen: HF-Daten in eine
+        // verknüpfbare Einheit (Kraft/Capacity) OHNE HF-Verlauf ziehen — so wird z.B. eine
+        // manuell gespeicherte Capacity-Notiz beim Sync automatisch mit den Garmin-HF-Daten
+        // verknüpft (bisher nur per manuellem FIT/GPX-Upload möglich).
+        const fields=buildGarminSessionFields(date,byDate[date]);
+        const cand=existingForDay.filter(s=>isSportLinkable(s.sport)&&
+          !(s.hr_series&&s.hr_series!=='null'&&s.hr_series!=='[]'));
+        if(fields.hr_series&&cand.length===1)links.push({session:cand[0],fields});
+        else skipped++;
+        return;
+      }
       // Spalten exakt wie beim regulären saveSession (Schema-treu)
       const session={...buildGarminSessionFields(date,byDate[date]),
         user_id:currentUser.id,srpe:null,workload:null,workload_method:null};
       const wl=berechneWorkload(session);
       if(wl.value!=null){session.workload=wl.value;session.workload_method=wl.method;
         if(wl.method==='tss'){session.tss=wl.tss;session.intensity_factor=wl.intensityFactor;}}
+      applyEfFields(session);
       rows.push(session);
     });
-    if(!rows.length){st.textContent=`Nichts Neues – alle ${Object.keys(byDate).length} Tage bereits in der App.`;return;}
-    setSyncState('syncing');btn.textContent=`Importiere ${rows.length}…`;
-    const saved=await DB.addSessions(rows);
-    sessions=[...sessions,...saved];setSyncState('ok');
-    st.textContent=`✓ ${saved.length} importiert${skipped?`, ${skipped} Tag(e) übersprungen`:''}.`;
+    if(!rows.length&&!links.length){st.textContent=`Nichts Neues – alle ${Object.keys(byDate).length} Tage bereits in der App.`;return;}
+    setSyncState('syncing');btn.textContent=`Importiere ${rows.length+links.length}…`;
+    let saved=[];
+    if(rows.length){saved=await DB.addSessions(rows);sessions=[...sessions,...saved];}
+    // Verknüpfungen anwenden: HF-Verlauf in bestehende Einheiten schreiben.
+    let linked=0;
+    for(const{session:s,fields}of links){
+      const patch={hr_series:fields.hr_series,hr_avg:fields.hr_avg??s.hr_avg,hr_max:fields.hr_max??s.hr_max,
+        duration:fields.duration||s.duration,distance_km:s.distance_km??fields.distance_km,planned:false};
+      const merged={...s,...patch};
+      const wl=berechneWorkload(merged);
+      if(wl.value!=null){patch.workload=wl.value;patch.workload_method=wl.method;
+        if(wl.method==='tss'){patch.tss=wl.tss;patch.intensity_factor=wl.intensityFactor;}}
+      applyEfFields(merged);
+      patch.ef=merged.ef;patch.decoupling=merged.decoupling;patch.analysis_window_sec=merged.analysis_window_sec;
+      if(fields.hr_avg&&(!s.zone||s.zone==='-')&&!isSportFreitext(s.sport)){
+        const z=inferZone(fields.hr_avg,s.sport);if(z)patch.zone=z;}
+      try{
+        const updated=await DB.updateSession(s.id,patch);
+        const idx=sessions.findIndex(x=>x.id===s.id);if(idx!==-1)sessions[idx]=updated;
+        linked++;
+      }catch(e){console.warn('[Garmin-Link]',e.message||e);}
+    }
+    setSyncState('ok');
+    st.textContent=`✓ ${saved.length} importiert${linked?`, ${linked} verknüpft`:''}${skipped?`, ${skipped} Tag(e) übersprungen`:''}.`;
     renderLog();
   }catch(e){setSyncState('error');st.textContent='Fehler: '+(e.message||e);}
   finally{btn.disabled=false;btn.innerHTML=orig;}
@@ -8767,9 +9236,12 @@ async function backfillGarminHrSeries(){
       const fields=buildGarminSessionFields(s.date,byDate[s.date]);
       if(!fields.hr_series)continue;
       const patch={hr_series:fields.hr_series,hr_avg:fields.hr_avg??s.hr_avg,hr_max:fields.hr_max??s.hr_max};
-      const wl=berechneWorkload({...s,...patch});
+      const merged={...s,...patch};
+      const wl=berechneWorkload(merged);
       if(wl.value!=null){patch.workload=wl.value;patch.workload_method=wl.method;
         if(wl.method==='tss'){patch.tss=wl.tss;patch.intensity_factor=wl.intensityFactor;}}
+      applyEfFields(merged);
+      patch.ef=merged.ef;patch.decoupling=merged.decoupling;patch.analysis_window_sec=merged.analysis_window_sec;
       const updatedSession=await DB.updateSession(s.id,patch);
       const idx=sessions.findIndex(x=>x.id===s.id);
       if(idx!==-1)sessions[idx]=updatedSession;
@@ -8780,8 +9252,45 @@ async function backfillGarminHrSeries(){
   }catch(e){st.textContent='Fehler: '+(e.message||e);}
   finally{btn.disabled=false;btn.innerHTML=orig;}
 }
+// Ergänzt Power (Ø/Max/NP) bei bereits importierten Garmin-Sync-Einheiten, die
+// noch keine haben — z.B. Radeinheiten, die vor dem Power-Sync-Fix synchronisiert
+// wurden. Rührt nur "Garmin-Sync"-Notizen an. Power dient ausschließlich der EF;
+// der Workload bleibt bewusst unangetastet (TRIMP/HF-basiert).
+async function backfillGarminPower(){
+  const btn=document.getElementById('garmin-power-backfill-btn');
+  const st=document.getElementById('garmin-power-backfill-status');
+  const orig=btn.innerHTML;btn.disabled=true;btn.textContent='Lade…';st.textContent='';
+  try{
+    let byDate;
+    try{byDate=await fetchGarminByDate();}
+    catch(e){st.textContent='garmin/data.json nicht gefunden ('+e.message+').';return;}
+    const candidates=sessions.filter(s=>s.note&&s.note.startsWith('Garmin-Sync')&&
+      s.avg_power_w==null&&s.normalized_power_w==null&&byDate[s.date]);
+    if(!candidates.length){st.textContent='Keine Garmin-Einheiten ohne Power gefunden.';return;}
+    let updated=0,noPower=0;
+    for(const s of candidates){
+      const fields=buildGarminSessionFields(s.date,byDate[s.date]);
+      if(fields.avg_power_w==null&&fields.normalized_power_w==null){noPower++;continue;}
+      const patch={avg_power_w:fields.avg_power_w,peak_power_w:fields.peak_power_w,normalized_power_w:fields.normalized_power_w};
+      const merged={...s,...patch};
+      // Workload NICHT neu berechnen — Power ist nur EF-Grundlage, der bestehende
+      // TRIMP/HF-Workload bleibt erhalten.
+      applyEfFields(merged);
+      patch.ef=merged.ef;patch.decoupling=merged.decoupling;patch.analysis_window_sec=merged.analysis_window_sec;
+      const updatedSession=await DB.updateSession(s.id,patch);
+      const idx=sessions.findIndex(x=>x.id===s.id);
+      if(idx!==-1)sessions[idx]=updatedSession;
+      updated++;
+    }
+    st.textContent=updated?`✓ ${updated} Einheit(en) mit Power ergänzt${noPower?` · ${noPower} ohne Power in der Quelle`:''}.`
+      :`Keine Power in der Quelle gefunden${noPower?` (${noPower} geprüft)`:''} — ggf. Garmin-Sync mit aktualisiertem Script neu laufen lassen.`;
+    renderLog();
+  }catch(e){st.textContent='Fehler: '+(e.message||e);}
+  finally{btn.disabled=false;btn.innerHTML=orig;}
+}
 document.getElementById('garmin-import-btn')?.addEventListener('click',importGarminActivities);
 document.getElementById('garmin-backfill-btn')?.addEventListener('click',backfillGarminHrSeries);
+document.getElementById('garmin-power-backfill-btn')?.addEventListener('click',backfillGarminPower);
 
 // Ordner verbinden (User-Geste)
 async function wfConnect(){
@@ -8979,7 +9488,7 @@ async function showApp(user){
     await Promise.race([
       Promise.all([
         ensureLogoFx().catch(()=>{}),
-        preloadImg('img/background-storm.png'),
+        preloadImg('img/background-storm.jpg'),
         (document.fonts?document.fonts.ready:Promise.resolve()).catch(()=>{}),
       ]),
       new Promise(r=>setTimeout(r,3500)),

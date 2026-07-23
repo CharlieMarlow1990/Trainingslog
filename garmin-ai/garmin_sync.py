@@ -264,6 +264,46 @@ def _hr_series(details):
     return series or None
 
 
+def _power_aggregates(details):
+    """Extrahiert Ø-/Max-/Normalized-Power aus get_activity_details() — über
+    denselben metricDescriptors/activityDetailMetrics-Mechanismus wie _hr_series
+    (Power-Kanal 'directPower'). Dient als Fallback, falls die Aktivitäts-
+    Zusammenfassung keine Power-Felder liefert. Gibt {'avg','max','np'} (ints)
+    zurück oder None, wenn kein Power-Kanal vorhanden ist."""
+    if not isinstance(details, dict):
+        return None
+    descriptors = details.get("metricDescriptors") or []
+    rows = details.get("activityDetailMetrics") or []
+    if not descriptors or not rows:
+        return None
+    pw_idx = None
+    for d in descriptors:
+        key = (d.get("key") or "")
+        idx = d.get("metricsIndex")
+        if key == "directPower" or (pw_idx is None and "ower" in key):
+            pw_idx = idx
+    if pw_idx is None:
+        return None
+    vals = []
+    for row in rows:
+        metrics = row.get("metrics") or []
+        if pw_idx < len(metrics):
+            v = metrics[pw_idx]
+            if isinstance(v, (int, float)) and v >= 0:
+                vals.append(v)
+    if sum(1 for v in vals if v > 0) < 10:
+        return None
+    avg = round(sum(vals) / len(vals))
+    mx = round(max(vals))
+    # Normalized Power: 30-Punkt-Rollmittel → 4.-Potenz-Mittel → ^0.25 (Näherung).
+    np = None
+    if len(vals) >= 30:
+        roll = [sum(vals[i - 29:i + 1]) / 30 for i in range(29, len(vals))]
+        if roll:
+            np = round((sum(p ** 4 for p in roll) / len(roll)) ** 0.25)
+    return {"avg": avg, "max": mx, "np": np}
+
+
 def collect_workouts(api, start, end):
     print(f"→ Workouts {start} … {end}")
     acts = safe(api.get_activities_by_date, start.isoformat(), end.isoformat()) or []
@@ -272,6 +312,18 @@ def collect_workouts(api, start, end):
         dur_s = a.get("duration") or 0
         activity_id = a.get("activityId")
         details = safe(api.get_activity_details, activity_id) if activity_id else None
+        # Power: bevorzugt aus der Zusammenfassung, sonst aus dem Detail-Zeitverlauf.
+        pw = _power_aggregates(details)
+        avg_power = a.get("avgPower")
+        max_power = a.get("maxPower")
+        norm_power = a.get("normPower") if a.get("normPower") is not None else a.get("normalizedPower")
+        if pw:
+            if avg_power is None:
+                avg_power = pw["avg"]
+            if max_power is None:
+                max_power = pw["max"]
+            if norm_power is None:
+                norm_power = pw["np"]
         out.append({
             "id": activity_id,
             "date": (a.get("startTimeLocal") or "")[:10],
@@ -283,6 +335,9 @@ def collect_workouts(api, start, end):
             "distanceKm": round((a.get("distance") or 0) / 1000, 2) if a.get("distance") else None,
             "calories": a.get("calories"),
             "hrSeries": _hr_series(details),
+            "avgPowerW": round(avg_power) if avg_power is not None else None,
+            "maxPowerW": round(max_power) if max_power is not None else None,
+            "normPowerW": round(norm_power) if norm_power is not None else None,
         })
     return out
 
@@ -339,6 +394,9 @@ def write_workout_md(w, folder):
         L.append(f"- Distanz: {w['distanceKm']} km")
     if w.get("avgHr") is not None:
         L.append(f"- Ø-Herzfrequenz: {w['avgHr']} bpm" + (f" (max {w['maxHr']})" if w.get("maxHr") else ""))
+    if w.get("avgPowerW") is not None:
+        np = f", NP {w['normPowerW']} W" if w.get("normPowerW") is not None else ""
+        L.append(f"- Ø-Leistung: {w['avgPowerW']} W" + (f" (max {w['maxPowerW']})" if w.get("maxPowerW") else "") + np)
     if w.get("calories") is not None:
         L.append(f"- Kalorien: {w['calories']} kcal")
     (folder / fname).write_text("\n".join(L) + "\n", encoding="utf-8")
