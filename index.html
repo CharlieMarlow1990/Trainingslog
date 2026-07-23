@@ -32,7 +32,7 @@
 }
 :root{
   /* === Feste Grammatik (Design-Briefing): Off-White-Papier, leicht grau === */
-  --paper:#d5d8d9;            /* Seiten-Grundfläche */
+  --paper:#c9cccd;            /* Seiten-Grundfläche */
   --paper-raised:#F2F1ED;     /* Kacheln/Cards */
   --paper-dim:#E2E1DB;        /* Sekundärflächen (Tabs, Chips) */
   --chart-surface:#F7F6F1;    /* Chart-Panels: heller als --paper-raised, hebt sich rahmenlos ab (#6) */
@@ -9264,9 +9264,15 @@ async function backfillGarminPower(){
     let byDate;
     try{byDate=await fetchGarminByDate();}
     catch(e){st.textContent='garmin/data.json nicht gefunden ('+e.message+').';return;}
+    // Nur Rad: (a) das ist der angefragte Umfang (Zwift/Rad indoor/Rad), (b) Laufleistung
+    // (Running Power) ist ein anderes Signal, das der Nutzer hier nicht angefordert hat,
+    // (c) an Tagen mit mehreren Garmin-Aktivitäten mergt buildGarminSessionFields alles in
+    // eine Zeile — Power einer Cardio-Aktivität würde sonst fälschlich einer
+    // Kraft/Capacity-Session zugeschrieben werden.
     const candidates=sessions.filter(s=>s.note&&s.note.startsWith('Garmin-Sync')&&
+      s.sport==='Rad'&&
       s.avg_power_w==null&&s.normalized_power_w==null&&byDate[s.date]);
-    if(!candidates.length){st.textContent='Keine Garmin-Einheiten ohne Power gefunden.';return;}
+    if(!candidates.length){st.textContent='Keine Garmin-Rad-Einheiten ohne Power gefunden.';return;}
     let updated=0,noPower=0;
     for(const s of candidates){
       const fields=buildGarminSessionFields(s.date,byDate[s.date]);
