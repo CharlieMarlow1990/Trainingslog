@@ -18919,7 +18919,10 @@
           "hr": 110,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 118,
+      "maxPowerW": 128,
+      "normPowerW": 120
     },
     {
       "id": 23650929700,
@@ -23808,7 +23811,10 @@
           "hr": 144,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 366,
+      "maxPowerW": 633,
+      "normPowerW": 386
     },
     {
       "id": 23649392091,
@@ -31149,7 +31155,10 @@
           "hr": 137,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 23617978588,
@@ -35386,7 +35395,10 @@
           "hr": 159,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 356,
+      "maxPowerW": 547,
+      "normPowerW": 362
     },
     {
       "id": 23594030622,
@@ -42939,7 +42951,10 @@
           "hr": 129,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 23585207387,
@@ -48624,7 +48639,10 @@
           "hr": 146,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 136,
+      "maxPowerW": 428,
+      "normPowerW": 141
     },
     {
       "id": 23574723046,
@@ -54869,7 +54887,10 @@
           "hr": 145,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 23551154959,
@@ -59746,7 +59767,10 @@
           "hr": 147,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 340,
+      "maxPowerW": 686,
+      "normPowerW": 364
     },
     {
       "id": 23507362244,
@@ -66963,7 +66987,10 @@
           "hr": 150,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 343,
+      "maxPowerW": 548,
+      "normPowerW": 353
     },
     {
       "id": 23501821113,
@@ -74600,7 +74627,10 @@
           "hr": 126,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 23492107506,
@@ -81457,7 +81487,10 @@
           "hr": 116,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 124,
+      "maxPowerW": 141,
+      "normPowerW": 128
     },
     {
       "id": 23429424256,
@@ -87202,7 +87235,10 @@
           "hr": 110,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 125,
+      "maxPowerW": 147,
+      "normPowerW": 130
     },
     {
       "id": 23395832112,
@@ -91475,7 +91511,10 @@
           "hr": 163,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 374,
+      "maxPowerW": 771,
+      "normPowerW": 413
     },
     {
       "id": 23386193235,
@@ -99324,7 +99363,10 @@
           "hr": 141,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 23364859019,
@@ -106589,7 +106631,10 @@
           "hr": 111,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 118,
+      "maxPowerW": 137,
+      "normPowerW": 122
     },
     {
       "id": 23350471964,
@@ -111942,7 +111987,10 @@
           "hr": 135,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 23338852540,
@@ -116315,7 +116363,10 @@
           "hr": 166,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 373,
+      "maxPowerW": 836,
+      "normPowerW": 397
     },
     {
       "id": 23316752504,
@@ -124016,7 +124067,10 @@
           "hr": 136,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 23297620541,
@@ -127769,7 +127823,10 @@
           "hr": 121,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 115,
+      "maxPowerW": 229,
+      "normPowerW": 119
     },
     {
       "id": 23280604221,
@@ -133842,7 +133899,10 @@
           "hr": 136,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 23261428558,
@@ -138095,7 +138155,10 @@
           "hr": 155,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 352,
+      "maxPowerW": 871,
+      "normPowerW": 361
     },
     {
       "id": 23234608316,
@@ -145576,7 +145639,10 @@
           "hr": 140,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 23202930393,
@@ -145588,7 +145654,10 @@
       "maxHr": null,
       "distanceKm": null,
       "calories": 1700.0,
-      "hrSeries": null
+      "hrSeries": null,
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 23202976327,
@@ -145600,7 +145669,10 @@
       "maxHr": null,
       "distanceKm": null,
       "calories": 1500.0,
-      "hrSeries": null
+      "hrSeries": null,
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 23202895685,
@@ -152817,7 +152889,10 @@
           "hr": 148,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 329,
+      "maxPowerW": 514,
+      "normPowerW": 335
     },
     {
       "id": 23102851173,
@@ -160178,7 +160253,10 @@
           "hr": 131,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 117,
+      "maxPowerW": 134,
+      "normPowerW": 120
     },
     {
       "id": 23090389188,
@@ -165975,7 +166053,10 @@
           "hr": 153,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 353,
+      "maxPowerW": 544,
+      "normPowerW": 362
     },
     {
       "id": 23053129705,
@@ -173280,7 +173361,10 @@
           "hr": 108,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 136,
+      "maxPowerW": 154,
+      "normPowerW": 140
     },
     {
       "id": 23041689438,
@@ -179973,7 +180057,10 @@
           "hr": 158,
           "sec": 3
         }
-      ]
+      ],
+      "avgPowerW": 191,
+      "maxPowerW": 532,
+      "normPowerW": 261
     },
     {
       "id": 23028407534,
@@ -186726,7 +186813,10 @@
           "hr": 157,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 344,
+      "maxPowerW": 568,
+      "normPowerW": 347
     },
     {
       "id": 23002419970,
@@ -194011,7 +194101,10 @@
           "hr": 102,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 113,
+      "maxPowerW": 119,
+      "normPowerW": 114
     },
     {
       "id": 22715244851,
@@ -200852,7 +200945,10 @@
           "hr": 155,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 22701083557,
@@ -206345,7 +206441,10 @@
           "hr": 116,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 131,
+      "maxPowerW": 1204,
+      "normPowerW": 144
     },
     {
       "id": 22693970589,
@@ -213562,7 +213661,10 @@
           "hr": 132,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 309,
+      "maxPowerW": 413,
+      "normPowerW": 314
     },
     {
       "id": 22681460353,
@@ -219223,7 +219325,10 @@
           "hr": 154,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 22665887227,
@@ -226060,7 +226165,10 @@
           "hr": 110,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 129,
+      "maxPowerW": 256,
+      "normPowerW": 132
     },
     {
       "id": 22652507000,
@@ -232145,7 +232253,10 @@
           "hr": 144,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 373,
+      "maxPowerW": 706,
+      "normPowerW": 407
     },
     {
       "id": 22630355888,
@@ -238102,7 +238213,10 @@
           "hr": 127,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 22617354552,
@@ -242347,7 +242461,10 @@
           "hr": 139,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 333,
+      "maxPowerW": 541,
+      "normPowerW": 344
     },
     {
       "id": 22603865222,
@@ -248412,7 +248529,10 @@
           "hr": 109,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 105,
+      "maxPowerW": 252,
+      "normPowerW": 110
     },
     {
       "id": 22579695611,
@@ -254005,7 +254125,10 @@
           "hr": 190,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 482,
+      "maxPowerW": 698,
+      "normPowerW": 487
     },
     {
       "id": 22544595149,
@@ -259458,7 +259581,10 @@
           "hr": 99,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 122,
+      "maxPowerW": 154,
+      "normPowerW": 129
     },
     {
       "id": 22525540132,
@@ -264767,7 +264893,10 @@
           "hr": 148,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 383,
+      "maxPowerW": 631,
+      "normPowerW": 401
     },
     {
       "id": 22514841337,
@@ -272436,7 +272565,10 @@
           "hr": 119,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 145,
+      "maxPowerW": 339,
+      "normPowerW": 155
     },
     {
       "id": 22477085331,
@@ -276745,7 +276877,10 @@
           "hr": 100,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 109,
+      "maxPowerW": 190,
+      "normPowerW": 113
     },
     {
       "id": 22464878477,
@@ -282266,7 +282401,10 @@
           "hr": 148,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 348,
+      "maxPowerW": 548,
+      "normPowerW": 353
     },
     {
       "id": 22392976757,
@@ -289587,7 +289725,10 @@
           "hr": 113,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 125,
+      "maxPowerW": 895,
+      "normPowerW": 154
     },
     {
       "id": 22386863246,
@@ -296684,7 +296825,10 @@
           "hr": 110,
           "sec": 7
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 22370803612,
@@ -302369,7 +302513,10 @@
           "hr": 147,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 346,
+      "maxPowerW": 1025,
+      "normPowerW": 362
     },
     {
       "id": 22359114759,
@@ -308074,7 +308221,10 @@
           "hr": 117,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 126,
+      "maxPowerW": 324,
+      "normPowerW": 173
     },
     {
       "id": 22337537364,
@@ -313895,7 +314045,10 @@
           "hr": 154,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 415,
+      "maxPowerW": 666,
+      "normPowerW": 438
     },
     {
       "id": 23394827968,
@@ -320856,7 +321009,10 @@
           "hr": 94,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 115,
+      "maxPowerW": 168,
+      "normPowerW": 118
     },
     {
       "id": 22326898885,
@@ -328125,7 +328281,10 @@
           "hr": 97,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 113,
+      "maxPowerW": 169,
+      "normPowerW": 117
     },
     {
       "id": 22314783900,
@@ -332302,7 +332461,10 @@
           "hr": 131,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 22299471146,
@@ -339575,7 +339737,10 @@
           "hr": 112,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 129,
+      "maxPowerW": 826,
+      "normPowerW": 139
     },
     {
       "id": 22282845517,
@@ -345036,7 +345201,10 @@
           "hr": 134,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 338,
+      "maxPowerW": 455,
+      "normPowerW": 343
     },
     {
       "id": 22273918024,
@@ -350893,7 +351061,10 @@
           "hr": 115,
           "sec": 5
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 22265483195,
@@ -358154,7 +358325,10 @@
           "hr": 133,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 336,
+      "maxPowerW": 575,
+      "normPowerW": 347
     },
     {
       "id": 22252934160,
@@ -364695,7 +364869,10 @@
           "hr": 142,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 336,
+      "maxPowerW": 550,
+      "normPowerW": 342
     },
     {
       "id": 22226340895,
@@ -370220,7 +370397,10 @@
           "hr": 136,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 341,
+      "maxPowerW": 631,
+      "normPowerW": 363
     },
     {
       "id": 22226327522,
@@ -374401,7 +374581,10 @@
           "hr": 74,
           "sec": 4
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 22181276213,
@@ -382374,7 +382557,10 @@
           "hr": 129,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 22163513784,
@@ -387427,7 +387613,10 @@
           "hr": 138,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 327,
+      "maxPowerW": 491,
+      "normPowerW": 332
     },
     {
       "id": 22151888208,
@@ -395020,7 +395209,10 @@
           "hr": 125,
           "sec": 3
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 22134921989,
@@ -399841,7 +400033,10 @@
           "hr": 134,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 22129468277,
@@ -405290,7 +405485,10 @@
           "hr": 140,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 323,
+      "maxPowerW": 465,
+      "normPowerW": 330
     },
     {
       "id": 22100830946,
@@ -412547,7 +412745,10 @@
           "hr": 157,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 332,
+      "maxPowerW": 870,
+      "normPowerW": 344
     },
     {
       "id": 22084945311,
@@ -416636,7 +416837,10 @@
           "hr": 150,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 22059963638,
@@ -421869,7 +422073,10 @@
           "hr": 155,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": 306,
+      "maxPowerW": 948,
+      "normPowerW": 333
     },
     {
       "id": 22035063255,
@@ -425954,7 +426161,10 @@
           "hr": 139,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 22034577868,
@@ -429511,7 +429721,10 @@
           "hr": 160,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 367,
+      "maxPowerW": 531,
+      "normPowerW": 377
     },
     {
       "id": 22015485751,
@@ -437512,7 +437725,10 @@
           "hr": 140,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 22014495424,
@@ -441065,7 +441281,10 @@
           "hr": 154,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 376,
+      "maxPowerW": 489,
+      "normPowerW": 382
     },
     {
       "id": 22005883576,
@@ -445586,7 +445805,10 @@
           "hr": 179,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": 356,
+      "maxPowerW": 662,
+      "normPowerW": 363
     },
     {
       "id": 21836649802,
@@ -453571,7 +453793,10 @@
           "hr": 161,
           "sec": 5
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 21812776007,
@@ -458144,7 +458369,10 @@
           "hr": 154,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 21790694905,
@@ -462153,7 +462381,10 @@
           "hr": 145,
           "sec": 2
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 21772445832,
@@ -465570,7 +465801,10 @@
           "hr": 111,
           "sec": 1
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 21765497455,
@@ -469567,7 +469801,10 @@
           "hr": 129,
           "sec": 5
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     },
     {
       "id": 21764761019,
@@ -472200,8 +472437,11 @@
           "hr": 93,
           "sec": 7
         }
-      ]
+      ],
+      "avgPowerW": null,
+      "maxPowerW": null,
+      "normPowerW": null
     }
   ],
-  "generated": "2026-07-23T12:50:48+00:00"
+  "generated": "2026-07-23T12:55:25+00:00"
 }
