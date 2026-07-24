@@ -843,7 +843,95 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 .pill .ti{font-size:.85em;vertical-align:-.05em;margin-right:.2rem;}
 .workload-row .ti, .modal-row .ti{font-size:.9em;vertical-align:-.1em;}
 .gpx-preview-box h3 .ti{font-size:1em;vertical-align:-.1em;margin-right:.3rem;}
-.cal-chip{cursor:pointer;}
+.cal-chip{cursor:pointer;touch-action:none;}
+
+/* ── Paket A: Ghost-Sessions ─────────────────────────────────────────────── */
+/* A2: Undo-Toast (alle Drag-/Schnell-Interaktionen bestätigen mit Undo) */
+.tlog-toast{position:fixed;left:50%;bottom:calc(78px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink,#2c2c2a);color:var(--paper,#f4f2ec);padding:.55rem .9rem;font-size:.8rem;display:flex;gap:.9rem;align-items:center;z-index:1200;box-shadow:0 4px 14px rgba(0,0,0,.28);white-space:nowrap;max-width:92vw;}
+.tlog-toast button{background:none;border:none;color:#9db4ff;font-weight:700;font-size:.76rem;cursor:pointer;padding:.2rem;text-transform:uppercase;letter-spacing:.05em;min-height:auto;}
+/* A2: Halbmodal (Bottom-Sheet) zur Ghost-Schnellanlage */
+.ghost-sheet-backdrop{position:fixed;inset:0;background:rgba(30,30,28,.35);z-index:1100;opacity:0;transition:opacity .18s;}
+.ghost-sheet{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:2px solid var(--ink,#2c2c2a);padding:.9rem 1rem calc(1.1rem + env(safe-area-inset-bottom));z-index:1101;transform:translateY(100%);transition:transform .22s ease;}
+.ghost-sheet.open{transform:translateY(0);}
+.ghost-sheet-title{font-size:.78rem;font-weight:600;color:var(--text-muted);margin:0 0 .7rem;text-transform:uppercase;letter-spacing:.05em;}
+.ghost-sheet-sports{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;}
+.ghost-sport-btn{display:flex;flex-direction:column;align-items:center;gap:.15rem;min-height:56px;padding:.55rem .4rem;background:transparent;border:1.5px solid currentColor;border-radius:var(--radius);font-weight:600;font-size:.84rem;cursor:pointer;}
+.ghost-sport-btn .ghost-sport-default{font-size:.66rem;font-weight:500;color:var(--text-faint);}
+/* A4: angehobener Block beim Ziehen */
+.cal-drag-ghost{position:fixed;z-index:1070;pointer-events:none;margin:0;opacity:.95;transform:scale(1.04) rotate(-.6deg);box-shadow:0 8px 22px rgba(30,30,28,.28);background:var(--paper-raised);}
+.cal-chip-dragging{opacity:.3;}
+body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
+/* A4: Lösch-Zone am linken Bildschirmrand */
+.cal-delete-zone{position:fixed;left:0;top:0;bottom:0;width:40px;z-index:1050;background:linear-gradient(90deg,rgba(196,51,46,.28),rgba(196,51,46,0));display:flex;align-items:center;justify-content:center;color:#c4332e;font-size:1.1rem;opacity:.55;pointer-events:none;}
+.cal-delete-zone.armed{opacity:1;background:linear-gradient(90deg,rgba(196,51,46,.5),rgba(196,51,46,0));}
+/* A5: Live-Load-Band am oberen Rand während des Ziehens */
+.cal-load-band{position:fixed;top:0;left:0;right:0;z-index:1060;background:var(--ink,#2c2c2a);color:var(--paper,#f4f2ec);font-family:var(--font-mono);font-size:.72rem;letter-spacing:.03em;text-align:center;padding:.4rem .6rem calc(.4rem + env(safe-area-inset-top));pointer-events:none;}
+.cal-load-band.warn{background:#7a2f2b;}
+.cal-load-band.low{opacity:.75;}
+/* A3/A7: Plan-Ist-Zeile über dem gekoppelten Block */
+.cal-plan-ist{display:block;font-size:.56rem;line-height:1.25;color:var(--text-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:.05rem;}
+.cal-plan-ist.deviates{color:#b3701e;font-weight:600;}
+.plan-ist-line{font-size:.72rem;color:var(--text-muted);}
+.plan-ist-line.deviates{color:#b3701e;font-weight:600;}
+
+/* ── Paket B1: horizontale Sektionen (Swipe-Slots) ───────────────────────── */
+.hswipe{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.hswipe::-webkit-scrollbar{display:none;}
+.hswipe>*{flex:0 0 100%;scroll-snap-align:center;min-width:0;}
+.hswipe-dots{display:flex;justify-content:center;gap:.4rem;margin-top:.6rem;}
+.hswipe-dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:background .15s;}
+.hswipe-dot.active{background:var(--text);}
+@keyframes hswipePeek{0%{transform:translateX(0);}35%{transform:translateX(-12px);}100%{transform:translateX(0);}}
+.hswipe-peek>*:first-child{animation:hswipePeek .7s ease .4s 1;}
+.hswipe{align-items:flex-start;}
+/* B2: Budget-Slot + Nächste-Einheiten-Slot */
+.budget-head{font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin:.4rem 0 .6rem;padding-bottom:.3rem;border-bottom:1px solid var(--border);}
+.budget-bar{display:flex;height:18px;border:1px solid var(--ink);background:repeating-linear-gradient(90deg,transparent 0 6px,var(--border) 6px 8px);overflow:hidden;}
+.budget-seg{height:100%;flex-shrink:0;}
+.budget-rest{flex:1;}
+.budget-vol{font-family:var(--font-mono);font-size:.74rem;color:var(--text);margin:.45rem 0 .6rem;}
+.budget-lines{display:flex;flex-direction:column;gap:.3rem;font-size:.8rem;color:var(--text);}
+.budget-lines .budget-target{color:var(--text-faint);font-size:.72rem;}
+.next-ghost-row{display:flex;align-items:center;gap:.5rem;padding:.55rem .2rem;border-bottom:1px solid var(--border);cursor:pointer;font-size:.8rem;}
+.next-ghost-row .ngr-main{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.next-ghost-row .ngr-when{font-family:var(--font-mono);font-size:.7rem;color:var(--text-muted);flex-shrink:0;}
+/* B4: Quartals-/Jahresansicht des Kalenders */
+.cal-q-row{display:flex;align-items:center;gap:.5rem;padding:.32rem 0;border-bottom:1px solid var(--border);}
+.cal-q-label{font-family:var(--font-mono);font-size:.68rem;color:var(--text-muted);width:92px;flex-shrink:0;}
+.cal-q-bar{flex:1;display:flex;height:14px;background:var(--paper-raised);overflow:hidden;}
+.cal-q-seg{height:100%;flex-shrink:0;}
+.cal-q-total{font-family:var(--font-mono);font-size:.68rem;color:var(--text);width:52px;text-align:right;flex-shrink:0;}
+.cal-res-hint{font-size:.7rem;color:var(--text-faint);margin:.5rem 0 0;text-align:center;}
+/* ── Paket F: Blöcke ──────────────────────────────────────────────────────── */
+/* Monat: getönte Hinterlegung HINTER den Tageszellen (F3). Zellinhalte müssen
+   über der Tönung liegen. */
+.cal-cell>.cal-daynum,.cal-cell>.cal-entries{position:relative;z-index:1;}
+.cal-block-bg{position:absolute;inset:0;z-index:0;pointer-events:none;background:color-mix(in srgb,var(--blockcolor) 15%,transparent);border-top:2px solid color-mix(in srgb,var(--blockcolor) 50%,transparent);}
+.cal-block-title{position:absolute;top:1px;left:2px;z-index:1;font-family:var(--font-mono);font-size:.5rem;font-weight:600;letter-spacing:.02em;pointer-events:none;max-width:calc(100% - 4px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.85;}
+/* Quartal/Jahr: durchgehender Balken als Ebene hinter den Zeilen. */
+.cal-quarter,.cal-year{position:relative;}
+.cal-block-layer{position:absolute;inset:0;z-index:0;pointer-events:none;}
+.cal-q-row{position:relative;z-index:1;}
+.cal-block-bar{position:absolute;left:0;right:0;background:color-mix(in srgb,var(--blockcolor) 16%,transparent);border-left:3px solid var(--blockcolor);}
+.cal-block-bar-title{position:absolute;top:2px;left:8px;font-family:var(--font-mono);font-size:.6rem;font-weight:600;color:color-mix(in srgb,var(--blockcolor) 72%,var(--ink));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 12px);}
+/* Block-Modus: Ebene interaktiv, Kanten-Handles (Touch-Ziel ≥40 px). */
+.cal-block-mode .cal-block-layer{pointer-events:auto;}
+.cal-block-mode .cal-q-row{cursor:crosshair;}
+.cal-block-handle{position:absolute;left:0;right:0;height:40px;cursor:ns-resize;background:transparent;pointer-events:auto;}
+.cal-block-handle-top{top:-20px;}
+.cal-block-handle-bottom{bottom:-20px;}
+.cal-block-handle::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:28px;height:4px;background:var(--blockcolor);border-radius:2px;opacity:.75;}
+.cal-block-preview{--blockcolor:var(--met-endurance);border-left:3px dashed var(--met-endurance);}
+/* Block-Modal (Bottom-Sheet, gleiche Grammatik wie .ghost-sheet). */
+.block-sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:520px;background:var(--surface);border-top:2px solid var(--ink,#2c2c2a);padding:.9rem 1rem calc(1.1rem + env(safe-area-inset-bottom));z-index:1101;transform:translateY(100%);transition:transform .22s ease;}
+.block-sheet.open{transform:translateY(0);}
+.block-field-lbl{display:block;font-size:.7rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin:.6rem 0 .25rem;}
+.block-swatches{display:flex;gap:.5rem;flex-wrap:wrap;}
+.block-swatch{width:36px;height:36px;border-radius:0;border:2px solid transparent;cursor:pointer;padding:0;}
+.block-swatch.active{border-color:var(--surface);box-shadow:0 0 0 2px var(--ink);}
+.block-sheet-actions{display:flex;justify-content:space-between;align-items:center;margin-top:1rem;gap:.5rem;}
+.block-btn-save{background:var(--ink,#2c2c2a);color:var(--paper,#f4f2ec);font-weight:600;}
+.block-btn-delete{background:#fef2f2;border:1px solid #fca5a5;color:#c4544a;}
 
 /* Bibliothek: Vorlagen-Karten und Filter-Pills */
 .lib-filter-pill{padding:.3rem .6rem;border:1px solid var(--border);border-radius:0;background:var(--surface);color:var(--text-muted);font-size:.72rem;cursor:pointer;white-space:nowrap;transition:all .12s;}
@@ -1233,7 +1321,7 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
            Von der Auswertung hierher verlagert, damit der Regenerationsbedarf und seine Treiber
            zusammen an einem Ort sichtbar sind. -->
       <div id="monotony-detail" style="display:none;margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--border);">
-        <p style="font-size:.72rem;color:var(--text-muted);margin:0 0 .6rem;">Monotonie misst die Gleichförmigkeit der Belastung innerhalb der Woche. Hohe Monotonie bei hoher Last erhöht das Übertrainingsrisiko — Variation (harte und leichte Tage) ist erwünscht.</p>
+        <p style="font-size:.72rem;color:var(--text-muted);margin:0 0 .6rem;">Monotonie misst die Gleichförmigkeit der Belastung innerhalb der Woche. Hohe Monotonie bei hoher Last erhöht das Übertrainingsrisiko — Variation (harte und leichte Tage) ist erwünscht. Basis: alle Tage inkl. Ruhetage.</p>
         <div class="metrics metrics-3" id="monotony-cards" style="margin-bottom:.8rem;"></div>
         <div class="workload-chart-box chart-dark" style="height:200px;"><canvas id="monotony-chart"></canvas></div>
         <div id="monotony-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
@@ -1263,18 +1351,28 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
        papercut-texturierter Fläche. Danach die kompakte Liste. -->
   <div class="card">
     <h2>Aktuelle Einheiten</h2>
-    <div class="log-hero" id="log-hero" style="display:none;"></div>
-    <div id="t-list"></div>
+    <!-- Paket B2: drei horizontale Slots — Liste / Budget / Nächste geplante Einheiten -->
+    <div class="hswipe" id="log-hswipe">
+      <div class="hswipe-slot">
+        <div class="log-hero" id="log-hero" style="display:none;"></div>
+        <div id="t-list"></div>
+      </div>
+      <div class="hswipe-slot" id="log-slot-budget"></div>
+      <div class="hswipe-slot" id="log-slot-next"></div>
+    </div>
   </div>
 </div>
 
 <!-- KALENDER -->
 <div class="page" id="page-calendar">
   <div class="card">
-    <div class="row" style="margin-bottom:1rem;justify-content:space-between;">
+    <!-- Paket B4: Swipen dieser Kopfzeile wechselt Monat ⇄ Quartal ⇄ Jahr -->
+    <div class="row" id="cal-header-row" style="margin-bottom:1rem;justify-content:space-between;touch-action:pan-y;">
       <div class="cal-tabs">
         <button id="cal-tab-month" class="active">Monat</button>
         <button id="cal-tab-4weeks">4 Wochen</button>
+        <button id="cal-tab-quarter">Quartal</button>
+        <button id="cal-tab-year">Jahr</button>
       </div>
       <div class="row" style="gap:.6rem;">
         <button class="icon" id="cal-prev"><i class="ti ti-arrow-left"></i></button>
@@ -1285,6 +1383,8 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
     <div class="cal-plan-toolbar">
       <button id="cal-tpl-plan-btn" class="cal-tpl-plan-btn"><i class="ti ti-books"></i> Aus Vorlage planen</button>
       <button id="cal-design-btn" class="cal-tpl-plan-btn"><i class="ti ti-pencil"></i> Gestalten</button>
+      <!-- Paket F2: nur in Quartals-/Jahresauflösung sichtbar (JS: updateCalBlockBtn) -->
+      <button id="cal-block-btn" class="cal-tpl-plan-btn" style="display:none;"><i class="ti ti-layout-rows"></i> Block</button>
     </div>
     <div id="cal-design-tools" class="cal-design-tools" style="display:none;"></div>
     <div id="cal-armed-banner" class="cal-armed-banner" style="display:none;"></div>
@@ -1310,6 +1410,8 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
 
     </div>
     <div class="sport-filter" id="analytics-sport-filter"></div>
+    <!-- Paket F5: Block-Filter „nur dieser Block" — begrenzt das Zeitfenster der Verteilung -->
+    <div class="sport-filter" id="analytics-block-filter"></div>
     <div class="analytics-chart-box chart-dark" id="analytics-chart-box" style="height:340px;">
       <div class="analytics-chart-scroll" id="analytics-chart-scroll">
         <svg id="analytics-chart-svg"></svg>
@@ -1355,16 +1457,33 @@ button .ti, label .ti{font-size:.95em;vertical-align:-.1em;}
     </div>
     <div class="card" style="margin-top:1rem;">
       <h2><i class="ti ti-heart-rate-monitor"></i> Aerobe Effizienz</h2>
-      <p style="font-size:.74rem;color:var(--text-muted);margin:-.3rem 0 .7rem;">EF (Leistung bzw. Tempo je Herzschlag) über die Zeit für Grundlageneinheiten &ge;30 min. Steigende EF bei stabilem Decoupling = wachsende aerobe Fitness. Decoupling (rechte Achse, invertiert) = HF-Drift 1. vs. 2. Hälfte. Zeitfenster folgt der Workload-Progression.</p>
-      <div style="margin-bottom:.4rem;">
-        <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;"><i class="ti ti-run"></i> Lauf <span id="ef-verdict-run" style="font-weight:400;"></span></div>
-        <div class="workload-chart-box wlc-paper" id="ef-chart-run-box" style="height:190px;"><svg id="ef-chart-run-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
-        <div id="ef-legend-run" style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
-      </div>
-      <div style="margin-top:.9rem;">
-        <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;"><i class="ti ti-bike"></i> Rad <span id="ef-verdict-bike" style="font-weight:400;"></span></div>
-        <div class="workload-chart-box wlc-paper" id="ef-chart-bike-box" style="height:190px;"><svg id="ef-chart-bike-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
-        <div id="ef-legend-bike" style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
+      <p style="font-size:.74rem;color:var(--text-muted);margin:-.3rem 0 .7rem;">EF (Leistung bzw. Tempo je Herzschlag) über die Zeit für Grundlageneinheiten &ge;30 min. Steigende EF bei stabilem Decoupling = wachsende aerobe Fitness. Decoupling (rechte Achse, invertiert) = HF-Drift 1. vs. 2. Hälfte. Zeitfenster folgt der Workload-Progression. Basis: nur Trainingseinheiten (Ruhetage ohne Einfluss).</p>
+      <!-- Paket B3: drei horizontale Perspektiven — EF über Zeit / EF gegen Load / Rad+Lauf indexiert -->
+      <div class="hswipe" id="ef-hswipe">
+        <div class="hswipe-slot">
+          <div style="margin-bottom:.4rem;">
+            <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;"><i class="ti ti-run"></i> Lauf <span id="ef-verdict-run" style="font-weight:400;"></span></div>
+            <div class="workload-chart-box wlc-paper" id="ef-chart-run-box" style="height:190px;"><svg id="ef-chart-run-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
+            <div id="ef-legend-run" style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
+          </div>
+          <div style="margin-top:.9rem;">
+            <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;"><i class="ti ti-bike"></i> Rad <span id="ef-verdict-bike" style="font-weight:400;"></span></div>
+            <div class="workload-chart-box wlc-paper" id="ef-chart-bike-box" style="height:190px;"><svg id="ef-chart-bike-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
+            <div id="ef-legend-bike" style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
+          </div>
+        </div>
+        <div class="hswipe-slot">
+          <p style="font-size:.72rem;color:var(--text-muted);margin:0 0 .5rem;">EF gegen 7-Tage-Load am Tag der Einheit — klärt, ob ein EF-Rückgang ermüdungsgetrieben ist oder Streuung. Gleiches Zeitfenster wie Slot 1. Basis: Trainingstage.</p>
+          <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);margin-bottom:.25rem;"><i class="ti ti-run"></i> Lauf</div>
+          <div class="workload-chart-box wlc-paper" id="ef-load-run-box" style="height:170px;"><svg id="ef-load-run-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
+          <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);margin:.7rem 0 .25rem;"><i class="ti ti-bike"></i> Rad</div>
+          <div class="workload-chart-box wlc-paper" id="ef-load-bike-box" style="height:170px;"><svg id="ef-load-bike-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
+        </div>
+        <div class="hswipe-slot">
+          <p style="font-size:.72rem;color:var(--text-muted);margin:0 0 .5rem;">Rad und Lauf übereinander, je auf den ersten Wert des Fensters normalisiert (Index 100). Basis: Trainingstage.</p>
+          <div class="workload-chart-box wlc-paper" id="ef-index-box" style="height:240px;"><svg id="ef-index-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
+          <div id="ef-index-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
+        </div>
       </div>
     </div>
     <div class="card" style="margin-top:1rem;">
@@ -1700,31 +1819,75 @@ let ANTHROPIC_KEY=localStorage.getItem('tlog_anthropic_key')||'';
 const BUCKET='sport-icons';
 
 // ── DATEN-LAYER ───────────────────────────────────────────────────────────────
+// Paket A1: Ghost-Sessions. Neue Spalten status ('planned'|'done'), planned_ref
+// (Kopplung Ist→Plan) und block_id (Paket F). Migration: docs/migrations/
+// 2026-07-24-paket-a.sql — bis sie gelaufen ist, greifen die Spalten-Fallbacks
+// unten (Inserts/Updates laufen dann ohne die neuen Spalten durch).
+const A1_COLS=['status','planned_ref','block_id'];
+const LEGACY_OPT_COLS=['srpe','workload','workload_method','avg_power_w','peak_power_w','normalized_power_w','intensity_factor','tss','planned','marker_color','ef','decoupling','analysis_window_sec'];
+function stripCols(obj,cols){const o={...obj};cols.forEach(c=>delete o[c]);return o;}
+// Fallback-Stufen (jeweils kumulativ): 1) A1-Spalten weg, 2) zusätzlich hr_series
+// weg (workload bleibt erhalten), 3) Legacy-Minimalschema.
+function dbPayloadVariants(s,forInsert){
+  const v1=stripCols(s,A1_COLS);
+  const v2=stripCols(v1,['hr_series']);
+  const v3=stripCols(v2,LEGACY_OPT_COLS);
+  return[s,v1,v2,forInsert?{...v3,avg_pace:null}:v3];
+}
+// Führt op(payload) mit progressiv reduzierten Payloads aus, bis kein
+// "column ... does not exist"-Fehler mehr auftritt. Andere Fehler (Constraints,
+// Netz) werden sofort und lesbar durchgereicht.
+async function dbTryProgressive(op,s,forInsert){
+  let lastErr=null;
+  for(const payload of dbPayloadVariants(s,forInsert)){
+    if(Object.keys(payload).length===0){
+      throw lastErr||new Error('Update nicht möglich: Die Ziel-Spalten fehlen in der Datenbank (Migration docs/migrations/2026-07-24-paket-a.sql ausführen).');
+    }
+    try{
+      const{data,error}=await op(payload);
+      if(error)throw error;
+      return data;
+    }catch(e){
+      if(e.message&&e.message.includes('column')){lastErr=e;continue;}
+      throw e;
+    }
+  }
+  throw lastErr||new Error('Speichern fehlgeschlagen');
+}
+// status konsistent aus dem bestehenden planned-Boolean ableiten, solange
+// Call-Sites nur planned setzen — beide Repräsentationen bleiben synchron.
+function withStatus(s){
+  if(('planned'in s)&&!('status'in s))return{...s,status:s.planned?'planned':'done'};
+  return s;
+}
 const DB={
-  async getSessions(){const{data,error}=await sb.from('sessions').select('*').order('date',{ascending:false});if(error)throw error;return data;},
+  // opts.status: 'planned'|'done' filtert serverseitig (Spec A1: Default 'done').
+  // Ohne opts lädt die App bewusst ALLE Sessions (Ghosts werden clientseitig via
+  // isPlanned/statusFilter aus den Auswertungen gehalten). Fallback: status-
+  // Spalte fehlt noch → ungefiltert laden und clientseitig filtern.
+  async getSessions(opts){
+    const base=()=>sb.from('sessions').select('*').order('date',{ascending:false});
+    if(opts&&opts.status){
+      const want=opts.status;
+      const{data,error}=await base().eq('status',want);
+      if(!error)return data;
+      if(!(error.message&&error.message.includes('column')))throw error;
+      const{data:all,error:e2}=await base();
+      if(e2)throw e2;
+      return all.filter(s=>(want==='planned')===!!(s.planned===true||s.planned===1));
+    }
+    const{data,error}=await base();
+    if(error)throw error;return data;
+  },
   async addSession(s){
     try{
-      const{data,error}=await sb.from('sessions').insert([s]).select().single();
-      if(error)throw error;return data;
+      return await dbTryProgressive(p=>sb.from('sessions').insert([p]).select().single(),withStatus(s),true);
     }catch(e){
-      if(e.message&&e.message.includes('column')){
-        // Stufe 1: nur hr_series entfernen — workload/workload_method bleiben erhalten
-        try{
-          const{hr_series,...withoutSeries}=s;
-          const r=await sb.from('sessions').insert([withoutSeries]).select().single();
-          if(r.error)throw r.error;return r.data;
-        }catch(e2){
-          // Stufe 2: vollständiger Fallback für ältere DB-Schemata
-          if(e2.message&&e2.message.includes('column')){
-            const{srpe,workload,workload_method,avg_power_w,peak_power_w,normalized_power_w,intensity_factor,tss,hr_series,planned,marker_color,ef,decoupling,analysis_window_sec,...base}=s;
-            const r=await sb.from('sessions').insert([{...base,avg_pace:null}]).select().single();
-            if(r.error)throw r.error;return r.data;
-          }
-          throw e2;
-        }
-      }
       if(e.code==='23505'||e.message?.includes('unique')||e.message?.includes('duplicate')){
         throw new Error('Für dieses Datum existiert bereits eine Einheit. Bitte Datum prüfen oder Duplikat manuell entfernen.');
+      }
+      if(e.code==='23514'||e.message?.includes('check constraint')){
+        throw new Error('Die Datenbank hat den Eintrag abgelehnt (Constraint): '+e.message);
       }
       throw e;
     }
@@ -1733,30 +1896,9 @@ const DB={
     const results=[];const errors=[];
     for(const s of arr){
       try{
-        const{data,error}=await sb.from('sessions').insert([s]).select().single();
-        if(error)throw error;results.push(data);
+        results.push(await this.addSession(s));
       }catch(e){
-        if(e.message&&e.message.includes('column')){
-          // Stufe 1: nur hr_series entfernen
-          try{
-            const{hr_series,...withoutSeries}=s;
-            const r=await sb.from('sessions').insert([withoutSeries]).select().single();
-            if(r.error)throw r.error;results.push(r.data);continue;
-          }catch(e2){
-            // Stufe 2: vollständiger Fallback
-            if(e2.message&&e2.message.includes('column')){
-              try{
-                const{srpe,workload,workload_method,avg_power_w,peak_power_w,normalized_power_w,intensity_factor,tss,hr_series,planned,marker_color,ef,decoupling,analysis_window_sec,...base}=s;
-                const r=await sb.from('sessions').insert([{...base,avg_pace:null}]).select().single();
-                if(r.error)throw r.error;results.push(r.data);continue;
-              }catch(e3){errors.push({date:s.date,sport:s.sport,err:e3.message});}
-            }else{errors.push({date:s.date,sport:s.sport,err:e2.message});}
-          }
-        }else if(e.code==='23505'||e.message?.includes('unique')||e.message?.includes('duplicate')){
-          errors.push({date:s.date,sport:s.sport,err:'Duplikat – Datum bereits vorhanden'});
-        }else{
-          errors.push({date:s.date,sport:s.sport,err:e.message});
-        }
+        errors.push({date:s.date,sport:s.sport,err:e.message});
       }
     }
     if(errors.length>0)console.warn('[DB] Übersprungene Sessions:',errors);
@@ -1766,32 +1908,23 @@ const DB={
     return results;
   },
   async updateSession(id,s){
-    try{
-      const{data,error}=await sb.from('sessions').update(s).eq('id',id).select().single();
-      if(error)throw error;return data;
-    }catch(e){
-      if(e.message&&e.message.includes('column')){
-        // Stufe 1: nur hr_series entfernen
-        try{
-          const{hr_series,...withoutSeries}=s;
-          const r=await sb.from('sessions').update(withoutSeries).eq('id',id).select().single();
-          if(r.error)throw r.error;return r.data;
-        }catch(e2){
-          // Stufe 2: vollständiger Fallback
-          if(e2.message&&e2.message.includes('column')){
-            const{srpe,workload,workload_method,avg_power_w,peak_power_w,normalized_power_w,intensity_factor,tss,hr_series,planned,marker_color,ef,decoupling,analysis_window_sec,...base}=s;
-            const r=await sb.from('sessions').update(base).eq('id',id).select().single();
-            if(r.error)throw r.error;return r.data;
-          }
-          throw e2;
-        }
-      }
-      throw e;
-    }
+    return dbTryProgressive(p=>sb.from('sessions').update(p).eq('id',id).select().single(),withStatus(s),false);
   },
   async deleteSession(id){
     const{error}=await sb.from('sessions').delete().eq('id',id);
     if(error)throw error;
+  },
+  // ── Paket A1: Ghost-Sessions ────────────────────────────────────────────────
+  async addPlannedSession(payload){
+    return this.addSession({...payload,planned:true,status:'planned'});
+  },
+  async movePlannedSession(id,newDate){
+    return this.updateSession(id,{date:newDate});
+  },
+  // Kopplung Ist→Plan: der Ghost bleibt unangetastet erhalten (die Plan-Ist-
+  // Differenz ist der eigentliche Datenwert), nur die Ist-Session referenziert ihn.
+  async linkPlannedToDone(plannedId,doneId){
+    return this.updateSession(doneId,{planned_ref:plannedId});
   },
   async getGithubPat(){
     if(!currentUser)return null;
@@ -1872,6 +2005,29 @@ const DB={
   async deleteTemplate(id){
     const{error}=await sb.from('templates').delete().eq('id',id);
     if(error)throw error;
+  },
+  // ── Paket F1: Blöcke ────────────────────────────────────────────────────────
+  // Zeitspannen mit Intention. Tabelle blocks (Migration 2026-07-24-paket-f.sql).
+  // Fehlt die Tabelle noch → leeres Array, App läuft weiter (wie getTemplates).
+  async getBlocks(){
+    const{data,error}=await sb.from('blocks').select('*').order('starts_on',{ascending:true});
+    if(error){
+      if(error.message?.includes('does not exist')||error.code==='42P01'||error.code==='PGRST205')return[];
+      throw error;
+    }
+    return data||[];
+  },
+  async addBlock(b){
+    const{data,error}=await sb.from('blocks').insert([{...b,user_id:currentUser.id}]).select().single();
+    if(error)throw error;return data;
+  },
+  async updateBlock(id,patch){
+    const{data,error}=await sb.from('blocks').update(patch).eq('id',id).select().single();
+    if(error)throw error;return data;
+  },
+  async deleteBlock(id){
+    const{error}=await sb.from('blocks').delete().eq('id',id);
+    if(error)throw error;
   }
 };
 
@@ -1890,18 +2046,26 @@ const DEFAULT_SPORTS=[
    Z4/Z5 Lila (Intensität). Greift nur für neue Configs — gespeicherte
    Nutzerfarben (cfg.zones) bleiben unangetastet. */
 const DEFAULT_ZONES=[
-  {key:'Z1',label:'Zone 1',hrMin:null,hrMax:null,color:'#B9C4F5'},
-  {key:'Z2',label:'Zone 2',hrMin:null,hrMax:null,color:'#7E93EC'},
-  {key:'Z3',label:'Zone 3',hrMin:null,hrMax:null,color:'#2441FF'},
-  {key:'Z4',label:'Zone 4',hrMin:null,hrMax:null,color:'#7B5CD6'},
-  {key:'Z5',label:'Zone 5',hrMin:null,hrMax:null,color:'#4F3796'},
-  {key:'-',label:'Keine Zone',hrMin:null,hrMax:null,color:'#c9c6bc'}
+  {key:'Z1',label:'Zone 1',hrMin:null,hrMax:null,color:'#B9C4F5',recoveryFactor:1.0},
+  {key:'Z2',label:'Zone 2',hrMin:null,hrMax:null,color:'#7E93EC',recoveryFactor:1.0},
+  {key:'Z3',label:'Zone 3',hrMin:null,hrMax:null,color:'#2441FF',recoveryFactor:1.0},
+  {key:'Z4',label:'Zone 4',hrMin:null,hrMax:null,color:'#7B5CD6',recoveryFactor:1.0},
+  {key:'Z5',label:'Zone 5',hrMin:null,hrMax:null,color:'#4F3796',recoveryFactor:1.0},
+  {key:'-',label:'Keine Zone',hrMin:null,hrMax:null,color:'#c9c6bc',recoveryFactor:1.0}
 ];
 // Backwards-Compat: alte Configs ohne freitext-Flag pro Sport
 const FREITEXT=['Kraft','Kampfsport','Sonstiges'];
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let sessions=[],chart1=null,chart2=null,analyticsChart=null,workloadChart=null,logWeekChart=null,weeklyTrendChart=null,weeklyDetailChart=null,weeklyChartData=[];
+// Paket F: Trainingsblöcke (Zeitspannen mit Intention), geladen via DB.getBlocks().
+let blocks=[];
+// Paket N1: Memo für buildDailyLoadSeries. _sessionsRev muss bei JEDER Mutation von
+// `sessions` UND bei Config-Änderungen (berechneWorkload hängt an cfg: hrMax/ftp/
+// radMethod/Zonen) über markSessionsDirty() erhöht werden — sonst liefern die
+// Load-Kennzahlen stale Werte.
+let _dlsCache=new Map(),_sessionsRev=0;
+function markSessionsDirty(){_sessionsRev++;_dlsCache.clear();}
 // Garmin-Tages-Wellness (Ruhepuls/HRV/Schlaf), Map iso->{rhr,hrvAvg,hrvStatus,sleepH}. Read-only
 // aus dem Garmin-Sync (garmin/data.json, Block `days`), gecached in localStorage 'tlog_wellness'.
 // Wird für die Recovery-Pressure-Sub-Signale (Ruhepuls/HRV/Schlaf) genutzt; leer => Fallback aufs
@@ -2090,6 +2254,9 @@ function buildCatChips(containerId,dim,stateSet){
 let currentUser=null,trainingProfile='';
 let activePage='log';
 let analyticsPeriod='week',analyticsMetric='time',analyticsActiveSports=new Set();
+// Paket F5: aktiver Block-Filter der Auswertung (null = alle). Begrenzt das
+// Zeitfenster der Verteilungs-Kurve auf [starts_on,ends_on] des Blocks.
+let analyticsBlockId=null;
 let analyticsChartScrolledOnce=false;
 let analyticsMode='time-sport-abs'; // time-sport-abs | time-zone
 let cfg={sports:JSON.parse(JSON.stringify(DEFAULT_SPORTS)),zones:JSON.parse(JSON.stringify(DEFAULT_ZONES)),sportZones:{},hrMax:192,hrRest:40,ftp:200,radMethod:'tss',calMarks:{},calImages:{}};
@@ -2134,11 +2301,14 @@ function loadCfg(){
           else cfg.sports.push(JSON.parse(JSON.stringify(ds)));
         }
       });
-      if(migrateSportIcons())saveCfg();
+      const iconMigrated=migrateSportIcons();
+      const rfMigrated=migrateZoneRecoveryFactors();
+      if(iconMigrated||rfMigrated)saveCfg();
     }
   }catch(e){}
 }
 function saveCfg(){
+  markSessionsDirty(); // berechneWorkload hängt an cfg (hrMax/ftp/radMethod/Zonen)
   localStorage.setItem('tlog_cfg',JSON.stringify(cfg));
   if(currentUser)DB.saveConfig(cfg).catch(e=>console.warn('saveConfig:',e));
 }
@@ -2164,6 +2334,19 @@ function migrateSportIcons(){
     s.icon=ds?ds.icon:(s.key==='Sonstiges'?'ti-bolt':'ti-medal');
     migrated=true;
   });
+  return migrated;
+}
+// Paket N4: recoveryFactor (Gewichtung der Erholungswirkung einer Zone, default 1.0)
+// auf alle Zonen-Profile migrieren — gespeicherte Configs (localStorage/Supabase)
+// stammen aus der Zeit vor dem Feld. Noch ohne Konsument; Recovery Pressure nutzt
+// es in einem späteren Paket.
+function migrateZoneRecoveryFactors(){
+  let migrated=false;
+  const fix=list=>{(list||[]).forEach(z=>{
+    if(typeof z.recoveryFactor!=='number'||!isFinite(z.recoveryFactor)){z.recoveryFactor=1.0;migrated=true;}
+  });};
+  fix(cfg.zones);
+  Object.values(cfg.sportZones||{}).forEach(fix);
   return migrated;
 }
 // Zonen-Auflösung pro Modalität: Lauf/Rad bekommen ggf. eigene Profile.
@@ -2352,15 +2535,26 @@ function lastCompletedTrainingDate(asOf){
 // einen dichten Tages-Vektor mit expliziten Nullen für Ruhetage. Kanonische Quelle für
 // alle tagesbasierten Aggregationen (löst die vormals dreifach duplizierte Tagesschleife
 // in computeMonotonyStrain/computeWeeklyTrendData/computeAcwrStats ab).
-function buildDailyLoadSeries({start,end,includePlanned=false,includeSpecial=false}){
-  const out=[];
+// Optionen (Paket N1):
+// - sportFilter: Sport-Key, beschränkt die Serie auf eine Sportart (null = alle).
+// - statusFilter: 'done' (Default) | 'all' — forward-kompatibel zu Paket A
+//   (Ghost-Sessions mit status-Spalte). Bis dahin mappt 'all' auf includePlanned,
+//   'done' entspricht dem bisherigen Verhalten (nur absolvierte Einheiten).
+// Rückgabe ist memoisiert — Konsumenten dürfen das Array/die Objekte NICHT mutieren.
+function buildDailyLoadSeries({start,end,includePlanned=false,includeSpecial=false,sportFilter=null,statusFilter='done'}){
+  if(statusFilter==='all')includePlanned=true;
   const cur=new Date(start);cur.setHours(0,0,0,0);
   const endD=new Date(end);endD.setHours(0,0,0,0);
+  const cacheKey=toISODate(cur)+'|'+toISODate(endD)+'|'+includePlanned+'|'+includeSpecial+'|'+(sportFilter||'')+'|'+statusFilter+'|'+_sessionsRev+'|'+sessions.length;
+  if(_dlsCache.has(cacheKey))return _dlsCache.get(cacheKey);
+  const out=[];
   while(cur<=endD){
     const iso=toISODate(cur);
-    const daySess=sessions.filter(s=>s.date===iso);
+    let daySess=sessions.filter(s=>s.date===iso);
+    if(sportFilter)daySess=daySess.filter(s=>s.sport===sportFilter);
     const actual=daySess.filter(s=>!isPlanned(s)&&!isSpecialEntry(s));
-    const planned=includePlanned?daySess.filter(s=>isPlanned(s)&&!isSpecialEntry(s)):[];
+    // Gekoppelte Ghosts (A6) zählen nicht mehr eigenständig — ihr Ist-Pendant ist in actual.
+    const planned=includePlanned?daySess.filter(s=>isPlanned(s)&&!isSpecialEntry(s)&&!isLinkedGhost(s)):[];
     const special=includeSpecial?daySess.filter(isSpecialEntry):[];
     const actVals=actual.map(s=>berechneWorkload(s).value).filter(v=>v!=null);
     const plnVals=planned.map(s=>berechneWorkload(s).value).filter(v=>v!=null);
@@ -2372,27 +2566,45 @@ function buildDailyLoadSeries({start,end,includePlanned=false,includeSpecial=fal
     });
     cur.setDate(cur.getDate()+1);
   }
+  if(_dlsCache.size>60)_dlsCache.clear();
+  _dlsCache.set(cacheKey,out);
   return out;
 }
+// Paket N3: abgeleitete Serie nur mit Trainingstagen (Load > 0) — für Charts, die
+// einen "typischen Trainingsumfang" zeigen. Dichte-Metriken (ACWR, Monotonie,
+// Recovery Pressure) nutzen weiterhin die volle Tagesreihe inkl. Ruhetagen.
+function trainingDaysOnly(series){return series.filter(d=>d.actualLoad>0);}
 
 // ── ACWR-STATS (gemeinsam genutzt von Log- und Auswertungsseite) ──────────────
 // Rollierendes ACWR: 7-Tage-Akutlast / Ø-Tageslast der letzten 28 Tage (auf 7-Tage-Basis
 // skaliert), für JEDEN Tag neu berechnet — nicht mehr an Kalenderwochen-Grenzen gebunden
 // (löst das "bucketed ACWR"-Problem: eine Wochenend-Lastspitze wurde vorher an der
 // Mo/So-Grenze durchgeschnitten und dadurch verdünnt statt korrekt erfasst).
+// Paket N2: Chronic erst ab ≥21 Tagen REALER Datenhistorie ausweisen (gemessen ab der
+// ersten absolvierten Session) — vorher ist die 28-Tage-Basis strukturell unvollständig
+// und ACWR nicht belastbar. Das frühere Gate (Slice-Länge ≥7) griff wegen des 27-Tage-
+// Vorlaufs praktisch nie.
+const CHRONIC_MIN_HISTORY_DAYS=21;
 function computeAcwrRollingSeries(days,asOf){
   days=days||90;
   const today=asOf?new Date(asOf):new Date();today.setHours(0,0,0,0);
   const start=new Date(today);start.setDate(start.getDate()-(days-1)-27); // 27 Tage Vorlauf für Chronic
   const series=buildDailyLoadSeries({start,end:today});
   const loads=series.map(d=>d.actualLoad);
+  let firstIso=null;
+  sessions.forEach(s=>{
+    if(isPlanned(s)||isSpecialEntry(s))return;
+    if(!firstIso||s.date<firstIso)firstIso=s.date;
+  });
+  const firstDate=firstIso?new Date(firstIso+'T00:00:00'):null;
   const out=[];
   for(let i=0;i<series.length;i++){
     const acuteSlice=loads.slice(Math.max(0,i-6),i+1);
     const chronicSlice=loads.slice(Math.max(0,i-27),i+1);
     const acute=acuteSlice.reduce((a,b)=>a+b,0);
     const n=chronicSlice.length;
-    const chronic=n>=7?Math.round((chronicSlice.reduce((a,b)=>a+b,0)/n)*7):null;
+    const historyDays=firstDate?Math.floor((new Date(series[i].iso+'T00:00:00')-firstDate)/86400000)+1:0;
+    const chronic=(historyDays>=CHRONIC_MIN_HISTORY_DAYS&&n>0)?Math.round((chronicSlice.reduce((a,b)=>a+b,0)/n)*7):null;
     out.push({iso:series[i].iso,acute:Math.round(acute),chronic,acwr:(chronic&&chronic>0)?acute/chronic:null});
   }
   const cutoffIso=toISODate(new Date(today.getTime()-(days-1)*86400000));
@@ -2403,13 +2615,16 @@ function computeAcwrRollingSeries(days,asOf){
 // aufgerufen, damit die Karten die angezeigte Woche widerspiegeln statt immer "heute".
 function computeAcwrStatsRolling(asOf){
   const cur=computeAcwrRollingSeries(1,asOf).slice(-1)[0]||{acute:null,chronic:null,acwr:null};
-  const currentStatus=cur.acwr!=null?acwrStatus(cur.acwr):{label:'Keine Daten',color:'#888780'};
-  return{currentLoad:cur.acute,currentChronic:cur.chronic,currentAcwr:cur.acwr,currentStatus};
+  // N2: Chronic wegen <21 Tagen Datenhistorie gegated, obwohl Sessions existieren
+  const baseIncomplete=cur.chronic==null&&sessions.some(s=>!isPlanned(s)&&!isSpecialEntry(s));
+  const currentStatus=cur.acwr!=null?acwrStatus(cur.acwr):
+    {label:baseIncomplete?'Basis unvollständig':'Keine Daten',color:'#888780'};
+  return{currentLoad:cur.acute,currentChronic:cur.chronic,currentAcwr:cur.acwr,currentStatus,baseIncomplete};
 }
 function acwrCardsHTML(stats){
   return`
     <div class="metric"><p class="m-label">Letzte 7 Tage</p><p class="m-value">${stats.currentLoad!=null?stats.currentLoad:'&#x2014;'}</p><p style="font-size:.66rem;color:var(--text-faint);margin:.1rem 0 0;">Punkte</p></div>
-    <div class="metric"><p class="m-label">Chronische Last</p><p class="m-value">${stats.currentChronic>0?stats.currentChronic:'&#x2014;'}</p><p style="font-size:.66rem;color:var(--text-faint);margin:.1rem 0 0;">&#xD8; letzte 28 Tage</p></div>
+    <div class="metric"><p class="m-label">Chronische Last</p><p class="m-value">${stats.currentChronic>0?stats.currentChronic:'&#x2014;'}</p><p style="font-size:.66rem;color:var(--text-faint);margin:.1rem 0 0;">${stats.baseIncomplete?'Basis unvollst&#xE4;ndig':'&#xD8; letzte 28 Tage'}</p></div>
     <div class="metric"><p class="m-label">ACWR</p><p class="m-value" style="color:${stats.currentStatus.color};">${stats.currentAcwr!=null?stats.currentAcwr.toFixed(2):'&#x2014;'}</p><p style="font-size:.66rem;color:${stats.currentStatus.color};margin:.1rem 0 0;font-weight:600;">${stats.currentStatus.label}</p></div>`;
 }
 // Kompakte 2-Karten-Variante für die Log-Seite: Last (7T/Ø28T) zusammengelegt + ACWR.
@@ -2463,6 +2678,7 @@ function rollingMonotonyAsOf(loads,i){
 
 // Sub-Signal B: Ruhetage-Streak. Reine Tageszählung, braucht keine historische
 // Kalibrierung (im Gegensatz zu C).
+// Paket N4: erfüllt zugleich "Load-Streak" der Spec (aufeinanderfolgende Tage mit Load > 0).
 const REST_STREAK_YELLOW=5; // ab 5 Tagen ohne Pause: gelb
 const REST_STREAK_RED=7;    // ab 7 Tagen ohne Pause: rot
 function computeRestStreak(asOf){
@@ -2476,6 +2692,16 @@ function computeRestStreak(asOf){
     else break;
   }
   return{streak};
+}
+// Paket N4: Recovery-Debt im Spec-Sinn "fehlende Ruhetage im 14-Tage-Fenster".
+// Reine Berechnungsfunktion, noch ohne UI-Konsument — Recovery Pressure nutzt weiterhin
+// das workload-basierte Schuld-Modell (dailyRecoveryDebtSeries/computeRecoveryDebt).
+function computeRestDayDeficit(asOf,{windowDays=14,targetRestDays=2}={}){
+  const today=asOf?new Date(asOf):new Date();today.setHours(0,0,0,0);
+  const start=new Date(today);start.setDate(start.getDate()-windowDays+1);
+  const series=buildDailyLoadSeries({start,end:today});
+  const restDays=series.filter(d=>d.actualLoad===0).length;
+  return{restDays,deficit:Math.max(0,targetRestDays-restDays)};
 }
 function restStreakStatus(streak){
   if(streak==null)return{label:'Keine Daten',color:'#888780',severity:null};
@@ -3437,7 +3663,7 @@ document.getElementById('qn-save-btn').addEventListener('click',async()=>{
   setSyncState('syncing');
   try{
     const saved=await DB.addSession(session);
-    sessions.unshift(saved);
+    sessions.unshift(saved);markSessionsDirty();
     qnClearDraft();
     ['qn-title','qn-duration','qn-note','qn-srpe'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('qn-planned').checked=false;
@@ -4072,9 +4298,85 @@ function populateSelects(){
 // erweiterte Notizfeld + Verknüpfungs-Workflow wie Kraft.
 function isSportLinkable(key){return key==='Kraft'||key==='Capacity';}
 
-// Geplante Einheit: planned=true (boolean) ODER planned===1 (smallint-Fallback).
+// Geplante Einheit ("Ghost", Paket A): status='planned' (neue Spalte) ODER
+// planned=true/1 (Bestands-Boolean, bleibt als Fallback synchron — siehe withStatus).
 // Eine geplante Einheit fließt NICHT in Ist-Auswertungen ein, wird aber visuell sichtbar gemacht.
-function isPlanned(s){return!!(s&&(s.planned===true||s.planned===1));}
+function isPlanned(s){return!!(s&&(s.status==='planned'||s.planned===true||s.planned===1));}
+// Kopplung (A6): die Ist-Session referenziert ihren Plan über planned_ref.
+// Der Ghost bleibt als Datensatz erhalten, wird aber nicht mehr eigenständig gerendert.
+function linkedPlanFor(done){
+  if(!done||!done.planned_ref)return null;
+  return sessions.find(p=>String(p.id)===String(done.planned_ref))||null;
+}
+function isLinkedGhost(s){
+  return isPlanned(s)&&sessions.some(d=>!isPlanned(d)&&d.planned_ref&&String(d.planned_ref)===String(s.id));
+}
+// A6: geplante, noch ungekoppelte Sessions derselben Sportart im Fenster ±1 Tag —
+// Kandidaten für die automatische Kopplung beim Import.
+function findPlannedCandidates(sport,dateIso){
+  const d=new Date(dateIso+'T00:00:00');
+  const lo=toISODate(new Date(d.getTime()-86400000)),hi=toISODate(new Date(d.getTime()+86400000));
+  return plannedSessions().filter(p=>p.sport===sport&&p.date>=lo&&p.date<=hi&&!isLinkedGhost(p));
+}
+// ── Paket A7/A8: Plan-Ist-Differenz ──────────────────────────────────────────
+// Zonenanteile (%) je Edwards-Zone Z1..Z5 aus dem HF-Verlauf; null ohne hr_series.
+function zoneShareOfSession(s){
+  const prof=zoneProfileMin(s);
+  if(!prof)return null;
+  const tot=prof.reduce((a,b)=>a+b,0);
+  if(tot<=0)return null;
+  return prof.map(m=>Math.round(m/tot*100));
+}
+// Kennzahlen pro gekoppeltem Paar (A8). Anzeige folgt in einem späteren Paket —
+// die Plan-Ist-Zeile (A7) nutzt dieselben Werte.
+// deltaZoneDistribution: %-Punkte Ist-Zeit AUSSERHALB der geplanten Zone.
+function computePlanIstDelta(done){
+  const plan=linkedPlanFor(done);
+  if(!plan)return null;
+  const planWl=berechneWorkload(plan).value,doneWl=berechneWorkload(done).value;
+  const share=zoneShareOfSession(done);
+  const planZoneIdx=/^Z[1-5]$/.test(plan.zone||'')?parseInt(plan.zone[1])-1:null;
+  const planZonePct=(share&&planZoneIdx!=null)?share[planZoneIdx]:null;
+  let domIdx=null;
+  if(share){const mx=Math.max(...share);if(mx>0)domIdx=share.indexOf(mx);}
+  return{
+    plan,done,
+    deltaDuration:done.duration-plan.duration,
+    deltaDurationPct:plan.duration>0?Math.round((done.duration-plan.duration)/plan.duration*100):null,
+    deltaLoad:(planWl!=null&&doneWl!=null)?Math.round((doneWl-planWl)*10)/10:null,
+    deltaZoneDistribution:planZonePct!=null?100-planZonePct:null,
+    domZone:domIdx!=null?'Z'+(domIdx+1):null,
+    domZonePct:domIdx!=null?share[domIdx]:null
+  };
+}
+const PLAN_IST_DUR_THRESHOLD=20;   // ±% Dauerabweichung, ab der hervorgehoben wird
+const PLAN_IST_ZONE_THRESHOLD=15;  // ±%-Punkte Zonenanteil-Abweichung
+function planIstDeviates(delta){
+  if(!delta)return false;
+  return(delta.deltaDurationPct!=null&&Math.abs(delta.deltaDurationPct)>=PLAN_IST_DUR_THRESHOLD)
+    ||(delta.deltaZoneDistribution!=null&&delta.deltaZoneDistribution>=PLAN_IST_ZONE_THRESHOLD);
+}
+// Ausfallquote (A8): Anteil geplanter Einheiten in der Vergangenheit, die weder
+// gekoppelt noch abgehakt wurden — gesamt sowie nach Wochentag und Sportart.
+function computePlanAusfallquote(){
+  const todayIso=toISODate(new Date());
+  const past=plannedSessions().filter(s=>s.date<todayIso);
+  const missed=past.filter(s=>!isLinkedGhost(s));
+  const agg=(list,keyFn)=>{
+    const m={};
+    list.forEach(s=>{const k=keyFn(s);(m[k]=m[k]||{planned:0,missed:0}).planned++;});
+    missed.forEach(s=>{const k=keyFn(s);if(m[k])m[k].missed++;});
+    Object.values(m).forEach(v=>{v.rate=v.planned>0?Math.round(v.missed/v.planned*100)/100:null;});
+    return m;
+  };
+  const weekday=s=>new Date(s.date+'T00:00:00').toLocaleDateString('de-DE',{weekday:'short'});
+  return{
+    planned:past.length,missed:missed.length,
+    rate:past.length>0?Math.round(missed.length/past.length*100)/100:null,
+    byWeekday:agg(past,weekday),
+    bySport:agg(past,s=>s.sport)
+  };
+}
 // Sondereintrag: Krankheit/Verletzung/Sonstiges statt einer Trainingseinheit.
 // Fließt nie in Workload-/ACWR-/Steigerungs-Statistiken ein.
 function isSpecialEntry(s){return!!(s&&s.category&&s.category!=='training');}
@@ -4392,7 +4694,7 @@ async function saveSession(){
   applyEfFields(session);
   setSyncState('syncing');
   try{
-    const saved=await DB.addSession(session);sessions.unshift(saved);setSyncState('ok');
+    const saved=await DB.addSession(session);sessions.unshift(saved);markSessionsDirty();setSyncState('ok');
     ['t-note','t-hravg','t-hrmax','t-distance','t-elevation','t-title','t-avgpower','t-peakpower'].forEach(id=>document.getElementById(id).value='');
     statusEl.textContent='Gespeichert <i class="ti ti-check"></i>';setTimeout(()=>{statusEl.textContent='';},2000);renderLog();
     // sRPE-Prompt wenn kein Workload automatisch berechnet
@@ -4562,7 +4864,7 @@ async function handleSaveEdit(id){
   applyEfFields(merged);
   updates.ef=merged.ef;updates.decoupling=merged.decoupling;updates.analysis_window_sec=merged.analysis_window_sec;
   setSyncState('syncing');
-  try{const saved=await DB.updateSession(id,updates);const idx=sessions.findIndex(s=>String(s.id)===String(id));if(idx!==-1)sessions[idx]=saved;setSyncState('ok');statusEl.textContent='✓';setTimeout(()=>renderLog(),600);}
+  try{const saved=await DB.updateSession(id,updates);const idx=sessions.findIndex(s=>String(s.id)===String(id));if(idx!==-1){sessions[idx]=saved;markSessionsDirty();}setSyncState('ok');statusEl.textContent='✓';setTimeout(()=>renderLog(),600);}
   catch(e){setSyncState('error');statusEl.textContent='Fehler';}
 }
 async function handleDelete(id){
@@ -4570,7 +4872,7 @@ async function handleDelete(id){
   setSyncState('syncing');
   try{
     await DB.deleteSession(id);
-    sessions=sessions.filter(s=>String(s.id)!==String(id));
+    sessions=sessions.filter(s=>String(s.id)!==String(id));markSessionsDirty();
     setSyncState('ok');renderLog();
   }catch(e){
     setSyncState('error');
@@ -4843,6 +5145,114 @@ function renderSportRose(ws,range){
   }
 }
 
+// ── PAKET B1: horizontale Sektionen ──────────────────────────────────────────
+// Leitprinzip: vertikal = anderes Thema, horizontal = andere Perspektive auf
+// dasselbe Thema. Ein wiederverwendbares Muster: .hswipe-Container mit
+// Scroll-Snap, Dot-Indicator darunter, einmaligem Peek-Hint (localStorage)
+// und Lazy-Rendering der Slots (onSlot beim ersten Sichtbarwerden).
+function initHSwipe(el,{key,onSlot}={}){
+  if(!el)return;
+  if(el._hswipeInit)return;
+  el._hswipeInit=true;
+  const slots=Array.from(el.children);
+  let dots=el.nextElementSibling&&el.nextElementSibling.classList&&el.nextElementSibling.classList.contains('hswipe-dots')?el.nextElementSibling:null;
+  if(!dots){dots=document.createElement('div');dots.className='hswipe-dots';el.after(dots);}
+  dots.innerHTML=slots.map((_,i)=>`<span class="hswipe-dot${i===0?' active':''}"></span>`).join('');
+  const seen=new Set();
+  const showSlot=i=>{
+    i=Math.max(0,Math.min(slots.length-1,i));
+    dots.querySelectorAll('.hswipe-dot').forEach((d,j)=>d.classList.toggle('active',j===i));
+    if(!seen.has(i)){seen.add(i);if(onSlot)onSlot(i,slots[i]);}
+  };
+  showSlot(0);
+  let ticking=false;
+  el.addEventListener('scroll',()=>{
+    if(ticking)return;ticking=true;
+    requestAnimationFrame(()=>{ticking=false;showSlot(Math.round(el.scrollLeft/(el.clientWidth||1)));});
+  },{passive:true});
+  // Peek-Hint: Inhalt federt einmalig ~12 px an, danach pro Sektion gemerkt.
+  const lsKey='tlog_hswipe_seen_'+key;
+  if(key&&!localStorage.getItem(lsKey)){
+    el.classList.add('hswipe-peek');
+    localStorage.setItem(lsKey,'1');
+    setTimeout(()=>el.classList.remove('hswipe-peek'),1600);
+  }
+}
+
+// ── PAKET B2: Log-Sektion "Aktuelle Einheiten", Slot 2+3 ─────────────────────
+// Slot 2 — Budget. Berechnungsbasis: rollierende 28 Tage (nicht die laufende
+// Woche, sonst montags immer 0 %), als Wochenäquivalent gegen das Ziel gestellt.
+// Zonenzuordnung: Z1+Z2 → LIT, Z3 separat (Grauzone), Z4+Z5 → HIT.
+function renderLogBudgetSlot(){
+  const el=document.getElementById('log-slot-budget');
+  if(!el)return;
+  const today=new Date();today.setHours(0,0,0,0);
+  const start=new Date(today);start.setDate(start.getDate()-27);
+  const series=buildDailyLoadSeries({start,end:today});
+  const sess=[];series.forEach(d=>d.sessions.forEach(s=>{if(!isPlanned(s)&&!isSpecialEntry(s))sess.push(s);}));
+  const targetMin=cfg.weeklyTargetMin||480;   // Wochenvolumen-Ziel (min) — Default 8 h
+  const litTarget=cfg.litTargetPct||80,hitTarget=100-litTarget;
+  const bySport={};let totalWeekMin=0;
+  sess.forEach(s=>{const m=(s.duration||0)/4;bySport[s.sport]=(bySport[s.sport]||0)+m;totalWeekMin+=m;});
+  // Balkensegmente in Sportfarben, gestrichelter Rest = offen
+  const segs=Object.entries(bySport).sort((a,b)=>b[1]-a[1]).map(([sport,min])=>{
+    const pct=Math.min(100,min/targetMin*100);
+    return`<div class="budget-seg" style="width:${pct.toFixed(1)}%;background:${sportCfg(sport).color};" title="${esc(sport)}: ${Math.round(min)} min/Woche"></div>`;
+  }).join('');
+  // Intensitätsverteilung: HF-Verlauf (Edwards-Zonen) bevorzugt, sonst Session-Zone
+  let lit=0,gz=0,hit=0;const hitBySport={};
+  sess.forEach(s=>{
+    const prof=zoneProfileMin(s);
+    let l=0,g=0,h=0;
+    if(prof){l=prof[0]+prof[1];g=prof[2];h=prof[3]+prof[4];}
+    else if(/^Z[1-5]$/.test(s.zone||'')){
+      const z=parseInt(s.zone[1]),d=s.duration||0;
+      if(z<=2)l=d;else if(z===3)g=d;else h=d;
+    }else l=s.duration||0;   // ohne Zonen-Info: konservativ LIT
+    lit+=l;gz+=g;hit+=h;
+    if(h>0)hitBySport[s.sport]=(hitBySport[s.sport]||0)+h;
+  });
+  const tot=lit+gz+hit;
+  const pct=v=>tot>0?Math.round(v/tot*100):0;
+  const hitSplit=Object.entries(hitBySport).sort((a,b)=>b[1]-a[1])
+    .map(([sp,m])=>`${esc(sp)} ${Math.round(m/hit*100)}%`).join(', ');
+  const volPct=Math.round(totalWeekMin/targetMin*100);
+  el.innerHTML=`
+    <div class="budget-head">Budget <span style="font-weight:400;color:var(--text-faint);">&#216; Woche, rollierend 28 Tage</span></div>
+    <div class="budget-bar">${segs}<div class="budget-rest"></div></div>
+    <div class="budget-vol">${fmtMin(Math.round(totalWeekMin))} h / Ziel ${fmtMin(targetMin)} h (${volPct}%)</div>
+    <div class="budget-lines">
+      <div>LIT ${pct(lit)}% <span class="budget-target">/ Ziel ${litTarget}%</span></div>
+      <div>HIT ${pct(hit)}% <span class="budget-target">/ Ziel ${hitTarget}%</span>${hitSplit?` <span class="budget-target">&#8212; davon ${hitSplit}</span>`:''}</div>
+      ${gz>0?`<div>Z3 (Grauzone) ${pct(gz)}%</div>`:''}
+    </div>`;
+}
+// Slot 3 — die drei nächsten geplanten Einheiten (Ghosts) mit Countdown.
+function renderLogNextSlot(){
+  const el=document.getElementById('log-slot-next');
+  if(!el)return;
+  const todayIso=toISODate(new Date());
+  const next=plannedSessions().filter(s=>s.date>=todayIso&&!isLinkedGhost(s))
+    .sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3);
+  if(!next.length){
+    el.innerHTML=`<div class="budget-head">N&#xE4;chste geplante Einheiten</div>
+      <p class="empty" style="padding:1.2rem 0;">Nichts geplant.<br>
+      <a href="#" onclick="showPage('calendar');return false;" style="color:var(--accent);">Im Kalender planen &#8594;</a></p>`;
+    return;
+  }
+  el.innerHTML=`<div class="budget-head">N&#xE4;chste geplante Einheiten</div>`+next.map(s=>{
+    const days=Math.round((new Date(s.date+'T00:00:00')-new Date(todayIso+'T00:00:00'))/86400000);
+    const cd=days===0?'heute':days===1?'morgen':'in '+days+' Tagen';
+    const sc=sportCfg(s.sport);
+    const d=new Date(s.date+'T00:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
+    return`<div class="next-ghost-row" onclick="openSessionModal('${s.id}')">
+      <span style="color:${sc.color};">${sportIconHTML(s.sport,16)}</span>
+      <span class="ngr-main">${esc(s.title||sc.label||s.sport)}${s.zone&&s.zone!=='-'?' &#183; '+esc(s.zone):''} &#183; ${fmtMin(s.duration)}</span>
+      <span class="ngr-when">${d} &#183; <strong>${cd}</strong></span>
+    </div>`;
+  }).join('');
+}
+
 function renderLog(){
   const range=getWeekRange();
   const tag=weekOffset===0?'<span class="current-tag">aktuelle Woche</span>':'';
@@ -4872,10 +5282,16 @@ function renderLog(){
   // ── Log-Chart (Wochenvergleich ⇄ Lastverteilung, umschaltbar) ──────────────
   setLogChartView(logChartView);
 
+  // Paket B2: Slots 2+3 und Swipe-Mechanik der Sektion "Aktuelle Einheiten"
+  initHSwipe(document.getElementById('log-hswipe'),{key:'log-einheiten'});
+  renderLogBudgetSlot();
+  renderLogNextSlot();
+
   const listEl=document.getElementById('t-list');
   // Trennung: zukünftige geplante Einheiten oben, vergangene/absolvierte unten
+  // (gekoppelte Ghosts erscheinen nicht mehr eigenständig)
   const todayIso=toISODate(new Date());
-  const allPlanned=plannedSessions().filter(s=>s.date>=todayIso).sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
+  const allPlanned=plannedSessions().filter(s=>s.date>=todayIso&&!isLinkedGhost(s)).sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
   const allActual=actualSessions().sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
   const recent=allActual.slice(0,logListCount);
   // ── Hero-Kachel: jüngste Einheit als Poster-Geste, Rest kompakt darunter ─────
@@ -4991,8 +5407,29 @@ function renderLog(){
 }
 
 // ── KALENDER ──────────────────────────────────────────────────────────────────
+// A7: Plan-Ist-Zeile. full=true → Langform ("geplant 60 min Z2 · gelaufen 78 min,
+// 41% Z3"), sonst Kurzform für enge Monatszellen. Abweichungen ab ±20 % Dauer
+// oder ±15 %-Punkten Zonenanteil werden hervorgehoben (planIstDeviates).
+function planIstLineText(delta,full){
+  const p=delta.plan,d=delta.done;
+  const zonePart=delta.domZone&&delta.domZonePct!=null?`, ${delta.domZonePct}% ${delta.domZone}`:'';
+  if(full){
+    const verb=d.sport==='Lauf'?'gelaufen':d.sport==='Rad'?'gefahren':'absolviert';
+    return`geplant ${p.duration} min ${p.zone!=='-'?p.zone:''} &#183; ${verb} ${d.duration} min${zonePart}`;
+  }
+  return`${p.duration}&#8242;${p.zone!=='-'?' '+p.zone:''} &#8594; ${d.duration}&#8242;`;
+}
+function calPlanIstHTML(done,weekMode){
+  const delta=computePlanIstDelta(done);
+  if(!delta)return'';
+  const dev=planIstDeviates(delta);
+  return`<span class="cal-plan-ist${dev?' deviates':''}" title="${esc(planIstLineText(delta,true).replace(/&#183;/g,'·').replace(/&#8242;/g,'′').replace(/&#8594;/g,'→'))}">${planIstLineText(delta,weekMode)}</span>`;
+}
 function renderCalCell(cellDate,isOutside,weekMode){
-  const iso=toISODate(cellDate);const entries=byDate(iso);
+  const iso=toISODate(cellDate);
+  // Gekoppelte Ghosts (A6) nicht eigenständig rendern — sie erscheinen als
+  // Plan-Ist-Zeile über ihrem Ist-Block (A3/A7).
+  const entries=byDate(iso).filter(s=>!isLinkedGhost(s));
   const isToday=isSameDate(cellDate,new Date());
   // Vergangene Tage können nicht mehr geplant werden (nur heute und Zukunft),
   // Sondereinträge (Krankheit/Verletzung/Sonstiges) können aber auch rückwirkend erfasst werden.
@@ -5010,17 +5447,20 @@ function renderCalCell(cellDate,isOutside,weekMode){
     const label=special?cat.label:(weekMode?(s.title||s.sport+(s.zone!=='-'?' · '+zoneCfg(s.zone).label:'')):s.sport);
     const iconHTML=special?`<span class="cal-chip-icon"><i class="ti ${cat.icon}"></i></span>`:(sc.imgUrl?`<img class="cal-chip-icon" src="${esc(sc.imgUrl)}" style="width:11px;height:11px;border-radius:2px;object-fit:cover;">`:`<span class="cal-chip-icon">${sportIconHTML(s.sport,11)}</span>`);
     const warnDot=needsDetail?'<span class="cal-chip-warn" title="Details fehlen"></span>':'';
+    // A3: Ghosts als gestrichelte, ungefüllte Blöcke in Sportfarbe.
     const chipStyle=special
       ?`background:${cat.color}22;color:${cat.color};border:1px solid ${cat.color}99;`
       :planned
-      ?`background:transparent;color:${sc.color};border:1px dashed ${sc.color}99;opacity:.7;`
+      ?`background:transparent;color:${sc.color};border:1.5px dashed ${sc.color};opacity:.55;`
       :`background:${sc.color}22;color:${sc.color};`;
     const plannedTitle=planned?' (geplant)':'';
     const titleText=special?(cat.label+(s.note?': '+s.note:'')):(s.sport+plannedTitle+(s.note?': '+s.note:needsDetail?' — Details fehlen':''));
     // Freie Farbmarkierung (marker_color): als linker Farbbalken am Chip, damit
     // die abgeleitete Sportfarbe/Form erhalten bleibt und die Zuordnung lesbar ist.
     const markerBar=s.marker_color?`<span class="cal-chip-marker" style="background:${esc(s.marker_color)};"></span>`:'';
-    return`<span class="cal-chip${needsDetail?' needs-detail':''}${planned?' planned':''}${s.marker_color?' has-marker':''}" data-session-id="${s.id}" draggable="false" style="${chipStyle}" title="${esc(titleText)}">
+    // A3/A7: gekoppelter Block trägt eine dünne Plan-Ist-Zeile darüber.
+    const planIst=!special&&!planned?calPlanIstHTML(s,weekMode):'';
+    return planIst+`<span class="cal-chip${needsDetail?' needs-detail':''}${planned?' planned':''}${s.marker_color?' has-marker':''}" data-session-id="${s.id}" draggable="false" style="${chipStyle}" title="${esc(titleText)}">
       ${markerBar}<span class="cal-chip-main">${warnDot}${iconHTML}<span class="cal-chip-label">${esc(label)}</span></span>${special?'':`<span class="cal-dur">${fmtMin(s.duration)}</span>`}</span>`;
   }).join('');
   // Plus-Icon für leere Zellen: Zukunft/heute → Training planen ODER Sondereintrag, Vergangenheit → nur Sondereintrag
@@ -5036,12 +5476,37 @@ function renderCalCell(cellDate,isOutside,weekMode){
   const markSymbol=mark&&mark.symbol?`<span class="cal-mark-symbol">${esc(mark.symbol)}</span>`:'';
   const img=(cfg.calImages||{})[iso];
   const imgLayer=img&&img.url?`<img class="cal-cell-img" src="${esc(img.url)}" alt="" draggable="false" style="transform:scale(${(img.scale||1)});">`:'';
+  // Paket F3: getönte Block-Hinterlegung HINTER den Zellinhalten (kein Vordergrund).
+  // Titel dezent nur in der ersten Zelle des Blocks bzw. am Wochenanfang (Montag).
+  const block=isOutside?null:resolveBlockForDate(iso);
+  let blockLayer='';
+  if(block){
+    const bc=blockColor(block);
+    const showTitle=iso===block.starts_on||cellDate.getDay()===1;
+    blockLayer=`<span class="cal-block-bg" style="--blockcolor:${esc(bc)};"></span>`
+      +(showTitle?`<span class="cal-block-title" style="color:${esc(bc)};" title="${esc(block.title)}">${esc(block.title)}</span>`:'');
+  }
   // data-cell-date auf JEDER Zelle (nicht nur leeren) — Drop-Ziel für Drag&Drop.
-  return`<div class="${cls}" data-cell-date="${iso}" ${canOpen?`data-date="${iso}"`:''}>${markFill}${imgLayer}${markSymbol}<span class="cal-daynum" style="${daynumStyle}">${dayLabel}</span><div class="cal-entries">${chips}</div>${plusBtn}</div>`;
+  return`<div class="${cls}" data-cell-date="${iso}" ${canOpen?`data-date="${iso}"`:''}>${blockLayer}${markFill}${imgLayer}${markSymbol}<span class="cal-daynum" style="${daynumStyle}">${dayLabel}</span><div class="cal-entries">${chips}</div>${plusBtn}</div>`;
+}
+function updateCalBlockBtn(){
+  // Blöcke werden nur in der Planungsebene (Quartal/Jahr) angelegt (Spec F2).
+  const btn=document.getElementById('cal-block-btn');
+  if(!btn)return;
+  const show=calMode==='quarter'||calMode==='year';
+  btn.style.display=show?'':'none';
+  if(!show&&calBlockActive){calBlockActive=false;}
+  btn.classList.toggle('active',calBlockActive);
+  btn.innerHTML=calBlockActive?'<i class="ti ti-check"></i> Fertig':'<i class="ti ti-layout-rows"></i> Block';
 }
 function renderCalendar(){
   const container=document.getElementById('cal-container');
   const labelEl=document.getElementById('cal-label');
+  updateCalBlockBtn();
+  // Paket B4: Auflösungsstufen — Quartal/Jahr sind eigene Renderer (dieselben
+  // Daten, andere Auflösung; Blöcke als Hinterlegung in Paket F).
+  if(calMode==='quarter'){renderCalQuarter(container,labelEl);return;}
+  if(calMode==='year'){renderCalYear(container,labelEl);return;}
   const grid=document.createElement('div');
   grid.className='cal-grid';
   [['M','Montag'],['D','Dienstag'],['M','Mittwoch'],['D','Donnerstag'],['F','Freitag'],['S','Samstag'],['S','Sonntag']].forEach(([wd,full])=>{
@@ -5080,8 +5545,328 @@ function renderCalendar(){
     btn.addEventListener('click',e=>{if(calDesignActive)return;e.stopPropagation();openCalPlanModal(btn.dataset.date);});
   });
   container.querySelectorAll('.cal-cell-empty[data-date]').forEach(cell=>{
-    cell.addEventListener('click',()=>{if(calDesignActive)return;openCalPlanModal(cell.dataset.date);});
+    cell.addEventListener('click',()=>{
+      if(calDesignActive)return;
+      // Nach ausgelöstem Long-Press (A2) den nachlaufenden Click schlucken.
+      if(cell._lpFired){cell._lpFired=false;return;}
+      openCalPlanModal(cell.dataset.date);
+    });
+    attachGhostLongPress(cell);
   });
+}
+
+// ── PAKET B4: Quartals-/Jahresauflösung des Kalenders ────────────────────────
+// Horizontales Swipen der Kopfzeile wechselt: Monat ← → Quartal ← → Jahr.
+// Quartal: eine Zeile pro Woche, gestapelter Balken nach Sportart. Jahr: zwölf
+// Zeilen mit Monatsvolumen. Blöcke/Anker folgen in Paket F.
+let quarterOffset=0,yearOffset=0;
+const CAL_RESOLUTIONS=['month','quarter','year'];
+function isoWeekNum(d){
+  const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const day=(t.getUTCDay()+6)%7;
+  t.setUTCDate(t.getUTCDate()-day+3);
+  const firstThu=new Date(Date.UTC(t.getUTCFullYear(),0,4));
+  const fDay=(firstThu.getUTCDay()+6)%7;
+  firstThu.setUTCDate(firstThu.getUTCDate()-fDay+3);
+  return 1+Math.round((t-firstThu)/(7*86400000));
+}
+// Zentrale Umschaltung der Kalender-Auflösung: hält die vier Tabs (Monat/4 Wochen/
+// Quartal/Jahr) und die Ansicht synchron. Wird von den Tab-Klicks UND vom Swipe genutzt.
+const CAL_TAB_IDS={month:'cal-tab-month','4weeks':'cal-tab-4weeks',quarter:'cal-tab-quarter',year:'cal-tab-year'};
+function setCalMode(mode){
+  calMode=mode;
+  Object.entries(CAL_TAB_IDS).forEach(([m,id])=>document.getElementById(id)?.classList.toggle('active',m===mode));
+  renderCalendar();
+}
+function calSwipeResolution(dir){
+  let idx=CAL_RESOLUTIONS.indexOf(calMode);
+  if(idx<0)idx=0;   // '4weeks' → Basis Monat
+  const next=Math.max(0,Math.min(CAL_RESOLUTIONS.length-1,idx+dir));
+  if(CAL_RESOLUTIONS[next]===calMode)return;
+  setCalMode(CAL_RESOLUTIONS[next]);
+}
+// ── PAKET F: Blöcke — Ableitung & Farben ─────────────────────────────────────
+// Blöcke sind Zeitspannen mit Intention. sessions.block_id wird NICHT fixiert,
+// sondern per Datum abgeleitet (Spec F1): bei überlappenden Blöcken gewinnt der
+// kürzere. Die Zuordnung dient nur Rendering (F3) und Auswertungsfilter (F5).
+const BLOCK_INTENTIONS=['LIT','MIT','HIT','Deload','Frei'];
+const BLOCK_INTENTION_COLORS={LIT:'#7E93EC',MIT:'#4F9D8C',HIT:'#7B5CD6',Deload:'#9aa39a',Frei:'#c9c6bc'};
+function blockColor(b){return b.color||BLOCK_INTENTION_COLORS[b.intention]||'#9aa39a';}
+function blockDays(b){return Math.round((new Date(b.ends_on)-new Date(b.starts_on))/86400000)+1;}
+// Gültiger Block an einem ISO-Tag; bei Mehrfachtreffer gewinnt der kürzere.
+function resolveBlockForDate(iso){
+  let best=null,bestLen=Infinity;
+  for(const b of blocks){
+    if(iso<b.starts_on||iso>b.ends_on)continue;
+    const len=blockDays(b);
+    if(len<bestLen){best=b;bestLen=len;}
+  }
+  return best;
+}
+// Alle Blöcke, die das Fenster [loIso,hiIso] schneiden (für Balken-Rendering).
+function blocksOverlapping(loIso,hiIso){
+  return blocks.filter(b=>b.starts_on<=hiIso&&b.ends_on>=loIso);
+}
+
+function renderCalQuarter(container,labelEl){
+  const now=new Date();
+  const qs=new Date(now.getFullYear(),Math.floor(now.getMonth()/3)*3+quarterOffset*3,1);
+  const qe=new Date(qs.getFullYear(),qs.getMonth()+3,0);
+  labelEl.textContent='Q'+(Math.floor(qs.getMonth()/3)+1)+' '+qs.getFullYear();
+  const weeks=[];let maxMin=1;
+  for(let d=startOfWeek(qs);d<=qe;d.setDate(d.getDate()+7)){
+    const wStart=new Date(d),wEnd=new Date(d);wEnd.setDate(wEnd.getDate()+6);
+    const loIso=toISODate(wStart),hiIso=toISODate(wEnd);
+    const bySport={};let tot=0;
+    sessions.forEach(s=>{
+      if(s.date<loIso||s.date>hiIso||isSpecialEntry(s)||isPlanned(s))return;
+      bySport[s.sport]=(bySport[s.sport]||0)+(s.duration||0);tot+=s.duration||0;
+    });
+    maxMin=Math.max(maxMin,tot);
+    weeks.push({wStart,bySport,tot});
+  }
+  const loBound=toISODate(startOfWeek(qs)),hiBound=toISODate(qe);
+  container.innerHTML='<div class="cal-quarter'+(calBlockActive?' cal-block-mode':'')+'"><div class="cal-block-layer"></div>'+weeks.map(w=>{
+    const wEnd=new Date(w.wStart);wEnd.setDate(wEnd.getDate()+6);
+    const segs=Object.entries(w.bySport).sort((a,b)=>b[1]-a[1]).map(([sp,min])=>
+      `<div class="cal-q-seg" style="width:${(min/maxMin*100).toFixed(1)}%;background:${sportCfg(sp).color};" title="${esc(sp)}: ${fmtMin(min)} h"></div>`).join('');
+    const lbl='KW '+isoWeekNum(w.wStart)+' &#183; '+w.wStart.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+    return`<div class="cal-q-row" data-row-lo="${toISODate(w.wStart)}" data-row-hi="${toISODate(wEnd)}"><span class="cal-q-label">${lbl}</span><div class="cal-q-bar">${segs}</div><span class="cal-q-total">${w.tot?fmtMin(w.tot):'&#x2013;'}</span></div>`;
+  }).join('')+'</div><p class="cal-res-hint">Wochenlast nach Sportart &#183; '+(calBlockActive?'Ziehe &#252;ber Wochenzeilen, um einen Block aufzuziehen':'Bl&#xF6;cke als Hinterlegung')+' &#183; Kopfzeile swipen: Monat &#8646; Quartal &#8646; Jahr</p>';
+  paintCalBlocks(container,loBound,hiBound);
+}
+function renderCalYear(container,labelEl){
+  const year=new Date().getFullYear()+yearOffset;
+  labelEl.textContent=String(year);
+  const months=[];let maxMin=1;
+  for(let m=0;m<12;m++){
+    const lo=toISODate(new Date(year,m,1)),hi=toISODate(new Date(year,m+1,0));
+    let tot=0,count=0;
+    sessions.forEach(s=>{
+      if(s.date<lo||s.date>hi||isSpecialEntry(s)||isPlanned(s))return;
+      tot+=s.duration||0;count++;
+    });
+    maxMin=Math.max(maxMin,tot);
+    months.push({m,tot,count,lo,hi});
+  }
+  const loBound=toISODate(new Date(year,0,1)),hiBound=toISODate(new Date(year,11,31));
+  container.innerHTML='<div class="cal-year'+(calBlockActive?' cal-block-mode':'')+'"><div class="cal-block-layer"></div>'+months.map(mo=>{
+    const name=new Date(year,mo.m,1).toLocaleDateString('de-DE',{month:'short'});
+    return`<div class="cal-q-row" data-row-lo="${mo.lo}" data-row-hi="${mo.hi}"><span class="cal-q-label">${name}</span><div class="cal-q-bar"><div class="cal-q-seg" style="width:${(mo.tot/maxMin*100).toFixed(1)}%;background:var(--met-endurance);" title="${mo.count} Einheiten"></div></div><span class="cal-q-total">${mo.tot?fmtMin(mo.tot):'&#x2013;'}</span></div>`;
+  }).join('')+'</div><p class="cal-res-hint">Jahresvolumen je Monat &#183; '+(calBlockActive?'Ziehe &#252;ber Monatszeilen, um einen Block aufzuziehen':'Bl&#xF6;cke als Hinterlegung')+'</p>';
+  paintCalBlocks(container,loBound,hiBound);
+}
+
+// ── PAKET F2/F3: Block-Balken malen + Anlegen/Kanten (Quartal/Jahr) ───────────
+// Die getönten Balken liegen als absolut positionierte Ebene HINTER den Zeilen
+// (paintCalBlocks misst die Zeilen-Offsets, damit ein Block mehrere Zeilen
+// durchgehend überspannt). Im Block-Modus (calBlockActive) wird die Ebene
+// interaktiv: Ziehen über leere Zeilen zieht einen neuen Block auf, Kanten-Handles
+// verschieben Start/Ende (Snapping = Zeilengrenze = Wochen- bzw. Monatsgrenze).
+let calBlockActive=false;
+let _blockDrag=null;
+function paintCalBlocks(container,loBound,hiBound){
+  const wrap=container.querySelector('.cal-quarter,.cal-year');
+  if(!wrap)return;
+  const layer=wrap.querySelector('.cal-block-layer');
+  if(!layer)return;
+  layer.innerHTML='';
+  const rows=[...wrap.querySelectorAll('.cal-q-row')];
+  blocksOverlapping(loBound,hiBound).forEach(b=>{
+    const covered=rows.filter(r=>r.dataset.rowLo<=b.ends_on&&r.dataset.rowHi>=b.starts_on);
+    if(!covered.length)return;
+    const first=covered[0],last=covered[covered.length-1];
+    const bar=document.createElement('div');
+    bar.className='cal-block-bar';
+    bar.dataset.blockId=b.id;
+    bar.style.setProperty('--blockcolor',blockColor(b));
+    positionBar(bar,first,last);
+    bar.innerHTML=`<span class="cal-block-bar-title">${esc(b.title)} &#183; ${esc(b.intention)}</span>`
+      +(calBlockActive?'<span class="cal-block-handle cal-block-handle-top"></span><span class="cal-block-handle cal-block-handle-bottom"></span>':'');
+    layer.appendChild(bar);
+  });
+  if(calBlockActive)wrap.addEventListener('pointerdown',onBlockPointerDown);
+}
+function positionBar(bar,firstRow,lastRow){
+  const top=firstRow.offsetTop,height=lastRow.offsetTop+lastRow.offsetHeight-top;
+  bar.style.top=top+'px';bar.style.height=height+'px';
+}
+function calRowsOf(wrap){return[...wrap.querySelectorAll('.cal-q-row')];}
+function calRowAtY(wrap,y){
+  return calRowsOf(wrap).find(r=>{const b=r.getBoundingClientRect();return y>=b.top&&y<=b.bottom;});
+}
+function onBlockPointerDown(e){
+  if(!calBlockActive||(e.button!=null&&e.button!==0))return;
+  const wrap=e.currentTarget;
+  const handle=e.target.closest('.cal-block-handle');
+  const barEl=e.target.closest('.cal-block-bar');
+  const row=calRowAtY(wrap,e.clientY);
+  if(handle&&barEl){
+    const block=blocks.find(b=>String(b.id)===String(barEl.dataset.blockId));
+    if(!block)return;
+    _blockDrag={mode:'edge',block,edge:handle.classList.contains('cal-block-handle-top')?'start':'end',wrap,startY:e.clientY,moved:false};
+  }else if(barEl){
+    const block=blocks.find(b=>String(b.id)===String(barEl.dataset.blockId));
+    if(!block)return;
+    _blockDrag={mode:'bar',block,wrap,startY:e.clientY,moved:false};
+  }else if(row){
+    _blockDrag={mode:'create',anchorRow:row,curRow:row,wrap,startY:e.clientY,moved:false};
+    showCreatePreview(wrap,row,row);
+  }else return;
+  window.addEventListener('pointermove',onBlockPointerMove);
+  window.addEventListener('pointerup',onBlockPointerUp);
+  e.preventDefault();
+}
+function onBlockPointerMove(e){
+  const d=_blockDrag;if(!d)return;
+  const row=calRowAtY(d.wrap,e.clientY);
+  if(Math.abs(e.clientY-d.startY)>6)d.moved=true;
+  if(!row)return;
+  if(d.mode==='create'){
+    d.curRow=row;showCreatePreview(d.wrap,d.anchorRow,row);
+  }else if(d.mode==='edge'){
+    let s=d.block.starts_on,en=d.block.ends_on;
+    if(d.edge==='start')s=row.dataset.rowLo;else en=row.dataset.rowHi;
+    const rows=calRowsOf(d.wrap);
+    const covered=rows.filter(r=>r.dataset.rowLo<=en&&r.dataset.rowHi>=s);
+    if(!covered.length)return; // invertiert → ignorieren
+    d.newStart=s;d.newEnd=en;
+    const bar=d.wrap.querySelector('.cal-block-bar[data-block-id="'+CSS.escape(String(d.block.id))+'"]');
+    if(bar)positionBar(bar,covered[0],covered[covered.length-1]);
+  }
+}
+function onBlockPointerUp(){
+  window.removeEventListener('pointermove',onBlockPointerMove);
+  window.removeEventListener('pointerup',onBlockPointerUp);
+  const d=_blockDrag;_blockDrag=null;
+  if(!d)return;
+  if(d.mode==='create'){
+    const [f,l]=d.anchorRow.offsetTop<=d.curRow.offsetTop?[d.anchorRow,d.curRow]:[d.curRow,d.anchorRow];
+    openBlockModal(null,{starts_on:f.dataset.rowLo,ends_on:l.dataset.rowHi});
+  }else if(d.mode==='bar'){
+    if(!d.moved)openBlockModal(d.block);
+  }else if(d.mode==='edge'&&d.moved&&d.newStart&&(d.newStart!==d.block.starts_on||d.newEnd!==d.block.ends_on)){
+    persistBlockDates(d.block,d.newStart,d.newEnd);
+  }else{
+    renderCalendar(); // Vorschau/Position zurücksetzen
+  }
+}
+function showCreatePreview(wrap,rowA,rowB){
+  const layer=wrap.querySelector('.cal-block-layer');
+  let pv=layer.querySelector('.cal-block-preview');
+  if(!pv){pv=document.createElement('div');pv.className='cal-block-bar cal-block-preview';layer.appendChild(pv);}
+  const [f,l]=rowA.offsetTop<=rowB.offsetTop?[rowA,rowB]:[rowB,rowA];
+  positionBar(pv,f,l);
+}
+async function persistBlockDates(block,starts_on,ends_on){
+  const old={starts_on:block.starts_on,ends_on:block.ends_on};
+  block.starts_on=starts_on;block.ends_on=ends_on;
+  renderCalendar();
+  setSyncState('syncing');
+  try{const upd=await DB.updateBlock(block.id,{starts_on,ends_on});Object.assign(block,upd);setSyncState('ok');}
+  catch(e){setSyncState('error');alert('Block verschieben fehlgeschlagen: '+e.message);}
+  showUndoToast('Block verschoben',async()=>{
+    block.starts_on=old.starts_on;block.ends_on=old.ends_on;
+    await DB.updateBlock(block.id,old);renderCalendar();
+  });
+}
+
+// ── PAKET F2: Block-Modal (Anlegen/Bearbeiten) ───────────────────────────────
+let _blockModalCtx=null;
+function openBlockModal(existing,preset){
+  closeBlockModal();
+  const starts_on=existing?existing.starts_on:preset.starts_on;
+  const ends_on=existing?existing.ends_on:preset.ends_on;
+  const curIntention=existing?existing.intention:'LIT';
+  const curColor=existing?blockColor(existing):BLOCK_INTENTION_COLORS[curIntention];
+  _blockModalCtx={existing,starts_on,ends_on,color:curColor};
+  const palette=[...new Set(Object.values(BLOCK_INTENTION_COLORS))];
+  const fmt=iso=>new Date(iso+'T00:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'});
+  const bd=document.createElement('div');bd.className='ghost-sheet-backdrop';bd.id='block-sheet-backdrop';
+  const sheet=document.createElement('div');sheet.className='block-sheet';sheet.id='block-sheet';
+  sheet.innerHTML=`
+    <p class="ghost-sheet-title">${existing?'Block bearbeiten':'Block anlegen'} &#183; ${fmt(starts_on)} &#8211; ${fmt(ends_on)}</p>
+    <label class="block-field-lbl">Titel</label>
+    <input type="text" id="block-title" placeholder="z.B. Grundlagenaufbau" value="${esc(existing?existing.title:'')}" style="width:100%;">
+    <label class="block-field-lbl">Intention</label>
+    <select id="block-intention" style="width:100%;">${BLOCK_INTENTIONS.map(i=>`<option value="${i}"${i===curIntention?' selected':''}>${i}</option>`).join('')}</select>
+    <label class="block-field-lbl">Farbe</label>
+    <div class="block-swatches" id="block-swatches">${palette.map(c=>`<button type="button" class="block-swatch${c===curColor?' active':''}" data-color="${c}" style="background:${c};"></button>`).join('')}</div>
+    <label class="block-field-lbl">Notiz</label>
+    <textarea id="block-note" rows="2" placeholder="optional" style="width:100%;">${esc(existing&&existing.note?existing.note:'')}</textarea>
+    <div class="block-sheet-actions">
+      ${existing?'<button type="button" id="block-delete" class="block-btn-delete"><i class="ti ti-trash"></i> L&#xF6;schen</button>':'<span></span>'}
+      <div style="display:flex;gap:.5rem;">
+        <button type="button" id="block-cancel">Abbrechen</button>
+        <button type="button" id="block-save" class="block-btn-save">Speichern</button>
+      </div>
+    </div>`;
+  document.body.appendChild(bd);document.body.appendChild(sheet);
+  requestAnimationFrame(()=>{bd.style.opacity='1';sheet.classList.add('open');});
+  bd.addEventListener('pointerdown',closeBlockModal);
+  document.getElementById('block-cancel').addEventListener('click',closeBlockModal);
+  // Intention wechselt die Default-Farbe mit, solange keine abweichende gewählt wurde.
+  const intentionEl=document.getElementById('block-intention');
+  intentionEl.addEventListener('change',()=>{
+    const def=BLOCK_INTENTION_COLORS[intentionEl.value];
+    if(palette.includes(_blockModalCtx.color)){selectBlockColor(def);}
+  });
+  document.querySelectorAll('#block-swatches .block-swatch').forEach(sw=>sw.addEventListener('click',()=>selectBlockColor(sw.dataset.color)));
+  document.getElementById('block-save').addEventListener('click',()=>saveBlockFromModal());
+  const delBtn=document.getElementById('block-delete');
+  if(delBtn)delBtn.addEventListener('click',()=>deleteBlockFromModal());
+  document.getElementById('block-title').focus();
+}
+function selectBlockColor(c){
+  _blockModalCtx.color=c;
+  document.querySelectorAll('#block-swatches .block-swatch').forEach(sw=>sw.classList.toggle('active',sw.dataset.color===c));
+}
+function closeBlockModal(){
+  document.getElementById('block-sheet')?.remove();
+  document.getElementById('block-sheet-backdrop')?.remove();
+  // Aufzieh-Vorschau (falls Anlegen abgebrochen wurde) entfernen.
+  document.querySelectorAll('.cal-block-preview').forEach(e=>e.remove());
+}
+async function saveBlockFromModal(){
+  const ctx=_blockModalCtx;if(!ctx)return;
+  const title=document.getElementById('block-title').value.trim()||'Block';
+  const intention=document.getElementById('block-intention').value;
+  const note=document.getElementById('block-note').value.trim()||null;
+  const payload={title,intention,color:ctx.color,note,starts_on:ctx.starts_on,ends_on:ctx.ends_on};
+  setSyncState('syncing');
+  try{
+    if(ctx.existing){
+      const upd=await DB.updateBlock(ctx.existing.id,{title,intention,color:ctx.color,note});
+      Object.assign(ctx.existing,upd);
+    }else{
+      const created=await DB.addBlock(payload);blocks.push(created);
+    }
+    setSyncState('ok');closeBlockModal();renderCalendar();
+  }catch(e){setSyncState('error');alert('Block speichern fehlgeschlagen: '+e.message);}
+}
+async function deleteBlockFromModal(){
+  const ctx=_blockModalCtx;if(!ctx||!ctx.existing)return;
+  const b=ctx.existing;
+  blocks=blocks.filter(x=>String(x.id)!==String(b.id));
+  closeBlockModal();renderCalendar();
+  setSyncState('syncing');
+  try{await DB.deleteBlock(b.id);setSyncState('ok');}
+  catch(e){setSyncState('error');alert('Block löschen fehlgeschlagen: '+e.message);}
+  showUndoToast('Block gelöscht',async()=>{
+    const re=await DB.addBlock({title:b.title,intention:b.intention,color:b.color,note:b.note,starts_on:b.starts_on,ends_on:b.ends_on});
+    blocks.push(re);renderCalendar();
+  });
+}
+// Block-Modus umschalten (nur Quartal/Jahr sinnvoll). Schließt den Gestalten-Modus.
+function toggleCalBlockMode(){
+  calBlockActive=!calBlockActive;
+  if(calBlockActive&&calDesignActive)toggleCalDesign();
+  const btn=document.getElementById('cal-block-btn');
+  if(btn){
+    btn.classList.toggle('active',calBlockActive);
+    btn.innerHTML=calBlockActive?'<i class="ti ti-check"></i> Fertig':'<i class="ti ti-layout-rows"></i> Block';
+  }
+  renderCalendar();
 }
 
 // ── KALENDER: DRAG & DROP + CHIP-INTERAKTIONEN ───────────────────────────────
@@ -5255,7 +6040,13 @@ function beginCalDrag(chip,s,ev){
   ghost.style.width=r.width+'px';
   document.body.appendChild(ghost);
   chip.classList.add('cal-chip-dragging');
-  _calDrag={type:'session',sessionId:s.id,session:s,ghost,offX:ev.clientX-r.left,offY:ev.clientY-r.top,targetCell:null};
+  _calDrag={type:'session',sessionId:s.id,session:s,ghost,offX:ev.clientX-r.left,offY:ev.clientY-r.top,targetCell:null,inDeleteZone:false};
+  // A4/A5: Löschzone + Live-Load-Band nur für Ghosts (geplante Einheiten)
+  if(isPlanned(s)&&!isSpecialEntry(s)){
+    showCalDeleteZone();
+    showCalLoadBand();
+    scheduleLoadBandUpdate(s.date);
+  }
   positionGhost(ev);
 }
 
@@ -5278,8 +6069,73 @@ function updateCalDrag(ev){
   if(_calDrag.targetCell&&_calDrag.targetCell!==newTarget)_calDrag.targetCell.classList.remove('cal-cell-drop-target');
   if(newTarget&&newTarget!==_calDrag.targetCell)newTarget.classList.add('cal-cell-drop-target');
   _calDrag.targetCell=newTarget;
+  // A4: linker Bildschirmrand (<40 px) = Löschzone (nur für Ghosts aktiv)
+  const delZone=document.getElementById('cal-delete-zone');
+  if(delZone){
+    _calDrag.inDeleteZone=ev.clientX<40;
+    delZone.classList.toggle('armed',_calDrag.inDeleteZone);
+  }
+  // A5: Live-Load-Band gegen den aktuellen Hover-Tag aktualisieren (rAF-gedrosselt)
+  if(newTarget&&document.getElementById('cal-load-band'))scheduleLoadBandUpdate(newTarget.dataset.cellDate);
   autoScrollNearEdges(ev);
 }
+
+// ── PAKET A5: Live-Load-Band während des Ziehens ─────────────────────────────
+// Projektion gegen eine hypothetische Serie: Ist-Sessions + Ghosts, wobei der
+// gezogene Ghost auf dem Hover-Tag liegt. Ghosts zählen NUR in dieser Projektion,
+// nicht in den regulären Kennzahlen (buildDailyLoadSeries default statusFilter='done').
+function computeDragProjection(hoverIso,dragged){
+  const asOf=new Date(hoverIso+'T00:00:00');
+  const start=new Date(asOf);start.setDate(start.getDate()-27);
+  const series=buildDailyLoadSeries({start,end:asOf,includePlanned:true});
+  const draggedWl=berechneWorkload(dragged).value||0;
+  let acuteBase=0,acuteProj=0,chronBase=0,chronProj=0;
+  series.forEach((d,i)=>{
+    // plannedLoad enthält den gezogenen Ghost an seinem alten Datum → dort herausrechnen
+    let pl=d.plannedLoad;
+    if(d.iso===dragged.date)pl=Math.max(0,pl-draggedWl);
+    const proj=d.actualLoad+pl+(d.iso===hoverIso?draggedWl:0);
+    if(i>=series.length-7){acuteBase+=d.actualLoad;acuteProj+=proj;}
+    chronBase+=d.actualLoad;chronProj+=proj;
+  });
+  const chronicBase=chronBase/series.length*7,chronicProj=chronProj/series.length*7;
+  return{acuteBase:Math.round(acuteBase),acuteProj:Math.round(acuteProj),
+    acwrBase:chronicBase>0?acuteBase/chronicBase:null,
+    acwrProj:chronicProj>0?acuteProj/chronicProj:null};
+}
+let _loadBandRaf=null,_loadBandHoverIso=null;
+function showCalLoadBand(){
+  if(document.getElementById('cal-load-band'))return;
+  const b=document.createElement('div');
+  b.id='cal-load-band';b.className='cal-load-band';b.innerHTML='&#8230;';
+  document.body.appendChild(b);
+}
+function scheduleLoadBandUpdate(iso){
+  _loadBandHoverIso=iso;
+  if(_loadBandRaf)return;
+  _loadBandRaf=requestAnimationFrame(()=>{
+    _loadBandRaf=null;
+    const band=document.getElementById('cal-load-band');
+    if(!band||!_calDrag)return;
+    const p=computeDragProjection(_loadBandHoverIso,_calDrag.session);
+    const fmtA=v=>v!=null?v.toFixed(2):'–';
+    band.textContent=`7T-Load ${p.acuteBase} → ${p.acuteProj} · ACWR ${fmtA(p.acwrBase)} → ${fmtA(p.acwrProj)}`;
+    band.classList.toggle('warn',p.acwrProj!=null&&p.acwrProj>1.3);
+    band.classList.toggle('low',p.acwrProj!=null&&p.acwrProj<0.8);
+  });
+}
+function removeCalLoadBand(){
+  document.getElementById('cal-load-band')?.remove();
+  if(_loadBandRaf){cancelAnimationFrame(_loadBandRaf);_loadBandRaf=null;}
+}
+function showCalDeleteZone(){
+  if(document.getElementById('cal-delete-zone'))return;
+  const z=document.createElement('div');
+  z.id='cal-delete-zone';z.className='cal-delete-zone';
+  z.innerHTML='<i class="ti ti-trash"></i>';
+  document.body.appendChild(z);
+}
+function removeCalDeleteZone(){document.getElementById('cal-delete-zone')?.remove();}
 
 // Auto-Scroll, wenn nahe am oberen/unteren Viewport-Rand gezogen wird.
 function autoScrollNearEdges(ev){
@@ -5291,23 +6147,58 @@ function autoScrollNearEdges(ev){
 async function finishCalDrag(ev){
   const drag=_calDrag;
   cleanupCalDrag();
-  if(!drag||!drag.targetCell)return;
-  const iso=drag.targetCell.dataset.cellDate;
-  if(!iso)return;
+  if(!drag)return;
   const s=sessions.find(x=>String(x.id)===String(drag.sessionId));
   if(!s)return;
-  if(iso===s.date)return; // gleicher Tag → nichts tun
   const planned=isPlanned(s);
-  const rect=drag.targetCell.getBoundingClientRect();
+  // A4: Drop auf den linken Bildschirmrand = Ghost löschen (mit Undo-Toast)
+  if(planned&&drag.inDeleteZone){
+    const backup={...s};
+    setSyncState('syncing');
+    try{
+      await DB.deleteSession(s.id);
+      sessions=sessions.filter(x=>String(x.id)!==String(s.id));
+      markSessionsDirty();setSyncState('ok');
+      renderCalendar();renderLog();
+      showUndoToast(`${esc(sportCfg(s.sport).label||s.sport)} gelöscht`,async()=>{
+        const{id,created_at,...rest}=backup;
+        const saved=await DB.addSession(rest);
+        sessions.unshift(saved);markSessionsDirty();
+        renderCalendar();renderLog();
+      });
+    }catch(e){setSyncState('error');alert('Löschen fehlgeschlagen: '+e.message);}
+    return;
+  }
+  if(!drag.targetCell)return;
+  const iso=drag.targetCell.dataset.cellDate;
+  if(!iso||iso===s.date)return; // gleicher Tag → nichts tun
+  if(planned){
+    // A4: Ghost-Drop verschiebt direkt — kein Menü. Drop auf belegten Tag ist
+    // erlaubt (beide Einheiten liegen dann als Doppel im Tag). Undo-Toast statt Dialog.
+    const oldIso=s.date;
+    setSyncState('syncing');
+    try{
+      const updated=await DB.movePlannedSession(s.id,iso);
+      const idx=sessions.findIndex(x=>String(x.id)===String(s.id));
+      if(idx>=0)sessions[idx]={...sessions[idx],...updated};
+      markSessionsDirty();setSyncState('ok');
+      renderCalendar();renderLog();
+      const dLabel=new Date(iso+'T00:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
+      showUndoToast(`Verschoben auf ${dLabel}`,async()=>{
+        const undone=await DB.movePlannedSession(s.id,oldIso);
+        const i2=sessions.findIndex(x=>String(x.id)===String(s.id));
+        if(i2>=0)sessions[i2]={...sessions[i2],...undone};
+        markSessionsDirty();renderCalendar();renderLog();
+      });
+    }catch(e){setSyncState('error');alert('Verschieben fehlgeschlagen: '+e.message);}
+    return;
+  }
+  // Absolvierte Einheiten: unverändert Kopier-Menü (Ist-Daten werden nicht verschoben).
   const menuX=Math.min(ev.clientX,window.innerWidth-180),menuY=Math.min(ev.clientY,window.innerHeight-160);
-  const opts=planned
-    ?[{key:'move',label:'Verschieben',icon:'ti-arrow-move-right'},{key:'copy',label:'Kopieren',icon:'ti-copy'},{key:'cancel',label:'Abbrechen',icon:'ti-x'}]
-    :[{key:'copyAdjust',label:'Kopieren (anpassen)',icon:'ti-copy'},{key:'cancel',label:'Abbrechen',icon:'ti-x'}];
+  const opts=[{key:'copyAdjust',label:'Kopieren (anpassen)',icon:'ti-copy'},{key:'cancel',label:'Abbrechen',icon:'ti-x'}];
   const choice=await showCalDropMenu(menuX,menuY,opts);
   if(!choice||choice==='cancel')return;
-  if(choice==='move')await calMoveSession(s.id,iso);
-  else if(choice==='copy')await calCreateCopy(s,iso,true);
-  else if(choice==='copyAdjust')openCalPlanModal(iso,{sport:s.sport,zone:s.zone,title:s.title,note:s.note,duration:s.duration,srpe:s.srpe,marker_color:s.marker_color,planned:false});
+  if(choice==='copyAdjust')openCalPlanModal(iso,{sport:s.sport,zone:s.zone,title:s.title,note:s.note,duration:s.duration,srpe:s.srpe,marker_color:s.marker_color,planned:false});
 }
 
 // Globale Selektions-/Cursor-Sperre während eines Drags; verhindert das
@@ -5319,6 +6210,8 @@ function startCalDndVisual(){
 }
 function cleanupCalDrag(){
   document.body.classList.remove('cal-dnd-active');
+  removeCalLoadBand();
+  removeCalDeleteZone();
   if(!_calDrag)return;
   _calDrag.ghost?.remove();
   document.querySelectorAll('.cal-cell-drop-target').forEach(c=>c.classList.remove('cal-cell-drop-target'));
@@ -5368,7 +6261,7 @@ async function calCreateCopy(s,iso,planned){
   setSyncState('syncing');
   try{
     const saved=await DB.addSession(copy);
-    sessions.unshift(saved);
+    sessions.unshift(saved);markSessionsDirty();
     setSyncState('ok');renderCalendar();renderLog();
   }catch(e){setSyncState('error');alert('Kopieren fehlgeschlagen: '+e.message);}
 }
@@ -5379,8 +6272,108 @@ async function calMarkDone(id){
     const updated=await DB.updateSession(id,{planned:false});
     const idx=sessions.findIndex(x=>String(x.id)===String(id));
     if(idx>=0)sessions[idx]={...sessions[idx],...updated};
+    markSessionsDirty();
     setSyncState('ok');renderCalendar();renderLog();
   }catch(e){setSyncState('error');alert('Fehler: '+e.message);}
+}
+
+// ── PAKET A2: Ghost-Schnellanlage per Long-Press ─────────────────────────────
+// Long-Press (≥400 ms) auf leere Kalenderzelle → Halbmodal mit vier Sport-
+// Buttons. Tap legt sofort an (keine Formularfelder), Defaults aus dem Median
+// der letzten fünf absolvierten Einheiten derselben Sportart, Undo-Toast 5 s.
+const LONG_PRESS_MS=400;
+const GHOST_QUICK_SPORTS=['Rad','Lauf','Kraft','Capacity'];
+
+function ghostDefaultsFor(sport){
+  const last=actualSessions().filter(s=>s.sport===sport)
+    .sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  if(last.length<3)return{duration:60,zone:'Z2'};
+  const median=arr=>{const v=[...arr].sort((a,b)=>a-b);const m=Math.floor(v.length/2);return v.length%2?v[m]:Math.round((v[m-1]+v[m])/2);};
+  const duration=median(last.map(s=>s.duration||60));
+  const zoneNums=last.map(s=>/^Z[1-5]$/.test(s.zone||'')?parseInt(s.zone[1]):null).filter(v=>v!=null);
+  return{duration,zone:zoneNums.length?'Z'+median(zoneNums):'Z2'};
+}
+
+// Undo-Toast (querschnittlich: alle Drag-/Schnell-Aktionen bestätigen mit Undo).
+function showUndoToast(msg,onUndo,ms=5000){
+  document.querySelectorAll('.tlog-toast').forEach(t=>t.remove());
+  const el=document.createElement('div');
+  el.className='tlog-toast';
+  el.innerHTML=`<span>${msg}</span><button type="button">R&#xFC;ckg&#xE4;ngig</button>`;
+  document.body.appendChild(el);
+  const timer=setTimeout(()=>el.remove(),ms);
+  el.querySelector('button').addEventListener('click',async()=>{
+    clearTimeout(timer);el.remove();
+    try{await onUndo();}catch(e){alert('Rückgängig fehlgeschlagen: '+e.message);}
+  });
+}
+
+function openGhostQuickAdd(iso){
+  closeGhostQuickAdd();
+  const d=new Date(iso+'T00:00:00');
+  const dateLabel=d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+  const bd=document.createElement('div');bd.className='ghost-sheet-backdrop';bd.id='ghost-sheet-backdrop';
+  const sheet=document.createElement('div');sheet.className='ghost-sheet';sheet.id='ghost-sheet';
+  sheet.innerHTML=`<p class="ghost-sheet-title">Einheit planen &#183; ${esc(dateLabel)}</p>
+    <div class="ghost-sheet-sports">${GHOST_QUICK_SPORTS.map(k=>{
+      const sc=sportCfg(k),def=ghostDefaultsFor(k);
+      return`<button type="button" class="ghost-sport-btn" data-sport="${k}" style="color:${sc.color};">
+        ${sportIconHTML(k,18)}<span>${esc(sc.label||k)}</span>
+        <span class="ghost-sport-default">${def.duration} min &#183; ${def.zone}</span></button>`;
+    }).join('')}</div>`;
+  document.body.appendChild(bd);document.body.appendChild(sheet);
+  requestAnimationFrame(()=>{bd.style.opacity='1';sheet.classList.add('open');});
+  bd.addEventListener('pointerdown',closeGhostQuickAdd);
+  sheet.querySelectorAll('.ghost-sport-btn').forEach(b=>b.addEventListener('click',()=>quickAddGhost(iso,b.dataset.sport)));
+}
+function closeGhostQuickAdd(){
+  document.getElementById('ghost-sheet')?.remove();
+  document.getElementById('ghost-sheet-backdrop')?.remove();
+}
+
+async function quickAddGhost(iso,sport){
+  closeGhostQuickAdd();
+  const def=ghostDefaultsFor(sport);
+  const session={date:iso,duration:def.duration,sport,zone:def.zone,
+    title:null,note:null,srpe:null,marker_color:null,
+    user_id:currentUser?.id,hr_avg:null,hr_max:null};
+  const est=estimatePlannedWorkload({sport,duration:def.duration,zone:def.zone});
+  if(est){session.workload=est.estimate;session.workload_method='estimated';}
+  setSyncState('syncing');
+  try{
+    const saved=await DB.addPlannedSession(session);
+    sessions.unshift(saved);markSessionsDirty();
+    setSyncState('ok');renderCalendar();renderLog();
+    const sc=sportCfg(sport);
+    showUndoToast(`${esc(sc.label||sport)} geplant · ${def.duration} min ${def.zone}`,async()=>{
+      await DB.deleteSession(saved.id);
+      sessions=sessions.filter(x=>String(x.id)!==String(saved.id));
+      markSessionsDirty();renderCalendar();renderLog();
+    });
+  }catch(e){setSyncState('error');alert('Planen fehlgeschlagen: '+e.message);}
+}
+
+// Long-Press-Erkennung auf leeren Zellen (nur heute/Zukunft — Ghosts in der
+// Vergangenheit wären sofort "ausgefallen"). Bewegung >8 px oder frühes
+// Loslassen bricht ab; nach Auslösung wird der nachlaufende Click unterdrückt.
+function attachGhostLongPress(cell){
+  const iso=cell.dataset.date;
+  if(!iso||iso<toISODate(new Date()))return;
+  cell.addEventListener('pointerdown',e=>{
+    if(calDesignActive||(e.button!=null&&e.button!==0))return;
+    const sx=e.clientX,sy=e.clientY;
+    let timer=setTimeout(()=>{
+      timer=null;cell._lpFired=true;
+      if(navigator.vibrate)try{navigator.vibrate(10);}catch(_){}
+      openGhostQuickAdd(iso);
+    },LONG_PRESS_MS);
+    const cancel=()=>{if(timer)clearTimeout(timer);cleanup();};
+    const move=ev=>{if(Math.abs(ev.clientX-sx)>8||Math.abs(ev.clientY-sy)>8)cancel();};
+    const cleanup=()=>{cell.removeEventListener('pointermove',move);cell.removeEventListener('pointerup',cancel);cell.removeEventListener('pointercancel',cancel);};
+    cell.addEventListener('pointermove',move);
+    cell.addEventListener('pointerup',cancel);
+    cell.addEventListener('pointercancel',cancel);
+  });
 }
 
 // ── FEEDBACK + KI-HINWEIS ────────────────────────────────────────────────────
@@ -5637,7 +6630,7 @@ function openCalPlanModal(iso,prefill){
         setSyncState('syncing');
         try{
           const saved=await DB.addSession(session);
-          sessions.unshift(saved);
+          sessions.unshift(saved);markSessionsDirty();
           setSyncState('ok');
           closeCalPlanModal();
           renderCalendar();renderLog();
@@ -5661,7 +6654,7 @@ function openCalPlanModal(iso,prefill){
         setSyncState('syncing');
         try{
           const saved=await DB.addSession(session);
-          sessions.unshift(saved);
+          sessions.unshift(saved);markSessionsDirty();
           setSyncState('ok');
           closeCalPlanModal();
           renderCalendar();renderLog();
@@ -5701,7 +6694,7 @@ function openSessionModal(id){
       setSyncState('syncing');
       try{
         await DB.deleteSession(s.id);
-        sessions=sessions.filter(x=>String(x.id)!==String(s.id));
+        sessions=sessions.filter(x=>String(x.id)!==String(s.id));markSessionsDirty();
         setSyncState('ok');
         renderCalendar();renderLog();
       }catch(e){setSyncState('error');alert('Fehler: '+e.message);}
@@ -5724,6 +6717,11 @@ function openSessionModal(id){
   if(s.hr_avg)rows.push(`<div class="modal-row"><span class="ml">Ø-HF</span><span class="mv">${s.hr_avg} bpm</span></div>`);
   if(s.hr_max)rows.push(`<div class="modal-row"><span class="ml">Max-HF</span><span class="mv">${s.hr_max} bpm</span></div>`);
   if(s.title)rows.push(`<div class="modal-row"><span class="ml">Name</span><span class="mv">${esc(s.title)}</span></div>`);
+  // A7: Plan-Ist-Zeile für gekoppelte Einheiten (Langform)
+  const planIstDelta=computePlanIstDelta(s);
+  if(planIstDelta){
+    rows.push(`<div class="modal-row"><span class="ml">Plan-Ist</span><span class="mv plan-ist-line${planIstDeviates(planIstDelta)?' deviates':''}">${planIstLineText(planIstDelta,true)}</span></div>`);
+  }
 
   // Intensitätsprofil (Zonenverteilung) — sofern HF-Zeitverlauf vorhanden
   const zp=zoneProfileMin(s);
@@ -5830,7 +6828,7 @@ function openSessionModal(id){
     setSyncState('syncing');
     try{
       await DB.deleteSession(s.id);
-      sessions=sessions.filter(x=>String(x.id)!==String(s.id));
+      sessions=sessions.filter(x=>String(x.id)!==String(s.id));markSessionsDirty();
       setSyncState('ok');
       renderCalendar();
     }catch(e){setSyncState('error');alert('Fehler: '+e.message);}
@@ -6107,11 +7105,39 @@ function _calPopOutside(e){const pop=document.getElementById('cal-img-popover');
 function closeCalImagePopover(){const pop=document.getElementById('cal-img-popover');if(pop)pop.remove();document.removeEventListener('pointerdown',_calPopOutside);}
 
 document.getElementById('cal-design-btn').addEventListener('click',toggleCalDesign);
+document.getElementById('cal-block-btn').addEventListener('click',toggleCalBlockMode);
 
-document.getElementById('cal-tab-month').addEventListener('click',()=>{calMode='month';document.getElementById('cal-tab-month').classList.add('active');document.getElementById('cal-tab-4weeks').classList.remove('active');renderCalendar();});
-document.getElementById('cal-tab-4weeks').addEventListener('click',()=>{calMode='4weeks';document.getElementById('cal-tab-4weeks').classList.add('active');document.getElementById('cal-tab-month').classList.remove('active');renderCalendar();});
-document.getElementById('cal-prev').addEventListener('click',()=>{if(calMode==='month'){monthOffset--;renderCalendar();}});
-document.getElementById('cal-next').addEventListener('click',()=>{if(calMode==='month'){monthOffset++;renderCalendar();}});
+document.getElementById('cal-tab-month').addEventListener('click',()=>setCalMode('month'));
+document.getElementById('cal-tab-4weeks').addEventListener('click',()=>setCalMode('4weeks'));
+document.getElementById('cal-tab-quarter').addEventListener('click',()=>setCalMode('quarter'));
+document.getElementById('cal-tab-year').addEventListener('click',()=>setCalMode('year'));
+document.getElementById('cal-prev').addEventListener('click',()=>{
+  if(calMode==='month')monthOffset--;
+  else if(calMode==='quarter')quarterOffset--;
+  else if(calMode==='year')yearOffset--;
+  else return;
+  renderCalendar();
+});
+document.getElementById('cal-next').addEventListener('click',()=>{
+  if(calMode==='month')monthOffset++;
+  else if(calMode==='quarter')quarterOffset++;
+  else if(calMode==='year')yearOffset++;
+  else return;
+  renderCalendar();
+});
+// Paket B4: horizontales Swipen der Kopfzeile wechselt die Auflösung
+(function(){
+  const hdr=document.getElementById('cal-header-row');
+  if(!hdr)return;
+  let sx=null,sy=null;
+  hdr.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY;});
+  hdr.addEventListener('pointerup',e=>{
+    if(sx==null)return;
+    const dx=e.clientX-sx,dy=e.clientY-sy;sx=null;
+    if(Math.abs(dx)>50&&Math.abs(dx)>2*Math.abs(dy))calSwipeResolution(dx<0?1:-1);
+  });
+  hdr.addEventListener('pointercancel',()=>{sx=null;});
+})();
 document.getElementById('cal-tpl-plan-btn').addEventListener('click',openCalTemplatePicker);
 document.getElementById('cal-tpl-picker-modal').addEventListener('click',e=>{if(e.target.id==='cal-tpl-picker-modal')closeCalTemplatePicker();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeCalTemplatePicker();if(_calArmedTemplate)disarmCalTemplate();}});
@@ -6315,15 +7341,48 @@ function renderAnalyticsAreaChart(labels,datasets,getColor){
       '</div>';
   }
 }
+// Paket F5: Block-Filter-Chips der Auswertung. „Alle" + je ein Chip pro Block
+// (neueste zuerst). Auswahl begrenzt das Zeitfenster der Verteilungs-Kurve.
+function renderAnalyticsBlockFilter(){
+  const el=document.getElementById('analytics-block-filter');
+  if(!el)return;
+  if(!blocks||!blocks.length){el.style.display='none';el.innerHTML='';return;}
+  el.style.display='';
+  const sorted=[...blocks].sort((a,b)=>b.starts_on.localeCompare(a.starts_on));
+  const allActive=!analyticsBlockId;
+  el.innerHTML=`<button class="${allActive?'active':''}" data-block="">Alle</button>`+
+    sorted.map(b=>{
+      const active=String(analyticsBlockId)===String(b.id);
+      const c=blockColor(b);
+      return`<button class="${active?'active':''}" style="${active?'background:'+c+';border-color:'+c+';color:#fff;':''}" data-block="${b.id}" title="${esc(b.intention)} · ${esc(b.starts_on)}–${esc(b.ends_on)}">${esc(b.title)}</button>`;
+    }).join('');
+  el.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{
+    analyticsBlockId=btn.dataset.block||null;
+    renderAnalytics();
+  }));
+}
 function renderAnalytics(){
   const CORE_SPORTS=['Lauf','Rad','Kraft'];
   const WEEKS=16;
   const now=new Date();
+  const activeBlock=analyticsBlockId?blocks.find(b=>String(b.id)===String(analyticsBlockId)):null;
+  if(analyticsBlockId&&!activeBlock)analyticsBlockId=null; // Block gelöscht → Filter zurücksetzen
   const weekBuckets=[];
-  for(let i=WEEKS-1;i>=0;i--){
-    const s=startOfWeek(new Date(now));s.setDate(s.getDate()-i*7);
-    const e=new Date(s);e.setDate(e.getDate()+6);e.setHours(23,59,59,999);
-    weekBuckets.push({start:s,end:e,label:(s.getMonth()+1)+'/'+s.getDate()});
+  if(activeBlock){
+    // Paket F5: Zeitfenster auf die Wochen des Blocks begrenzen (from/to).
+    let ws=startOfWeek(new Date(activeBlock.starts_on+'T00:00:00'));
+    const bEnd=new Date(activeBlock.ends_on+'T00:00:00');
+    while(ws<=bEnd){
+      const s=new Date(ws),e=new Date(ws);e.setDate(e.getDate()+6);e.setHours(23,59,59,999);
+      weekBuckets.push({start:s,end:e,label:(s.getMonth()+1)+'/'+s.getDate()});
+      ws.setDate(ws.getDate()+7);
+    }
+  }else{
+    for(let i=WEEKS-1;i>=0;i--){
+      const s=startOfWeek(new Date(now));s.setDate(s.getDate()-i*7);
+      const e=new Date(s);e.setDate(e.getDate()+6);e.setHours(23,59,59,999);
+      weekBuckets.push({start:s,end:e,label:(s.getMonth()+1)+'/'+s.getDate()});
+    }
   }
   const winStart=weekBuckets[0].start;
   const actualInWin=actualSessions().filter(s=>{const d=new Date(s.date+'T00:00:00');return d>=winStart;});
@@ -6346,6 +7405,9 @@ function renderAnalytics(){
   }));
   const isZoneMode=analyticsMode==='time-zone';
   filterEl.style.display=isZoneMode?'none':'';
+
+  // Paket F5: Block-Filter-Chips („Alle" + je ein Chip pro Block).
+  renderAnalyticsBlockFilter();
 
   const labels=weekBuckets.map(b=>b.label);
 
@@ -6376,7 +7438,12 @@ function renderAnalytics(){
     'time-sport-abs':'Trainingszeit pro Sportart, übereinandergelegt. Überschneidungen mehrerer Flächen = mehrere Sportarten in derselben Woche.',
     'time-zone':'Zeit pro Intensitätszone, übereinandergelegt. Zeigt, ob die 80/20-Verteilung gehalten wird.'
   };
-  document.getElementById('analytics-mode-hint').textContent=hints[analyticsMode]||'';
+  const baseHint=hints[analyticsMode]||'';
+  const hintEl=document.getElementById('analytics-mode-hint');
+  if(activeBlock){
+    const fmtB=iso=>new Date(iso+'T00:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+    hintEl.textContent=baseHint+' · Gefiltert auf Block „'+activeBlock.title+'" ('+fmtB(activeBlock.starts_on)+'–'+fmtB(activeBlock.ends_on)+').';
+  }else hintEl.textContent=baseHint;
 
   weeklyChartData=computeWeeklyTrendData(Math.max(28,acwrWeeks+4));
   renderWorkloadChart();
@@ -6398,7 +7465,7 @@ async function renderAcwrPoster(stats){
   const statusEl=document.getElementById('acwr-poster-status');
   if(!canvas||!fb)return;
   const txt=stats.currentAcwr!=null?stats.currentAcwr.toFixed(2):'–';
-  if(statusEl)statusEl.textContent=stats.currentAcwr!=null?stats.currentStatus.label:'keine Daten';
+  if(statusEl)statusEl.textContent=stats.currentAcwr!=null?stats.currentStatus.label:(stats.baseIncomplete?'Basis unvollständig':'keine Daten');
   // Signal-Blau (Metrik-Kategorie Ausdauer/Load); bei Warnstatus die ACWR-Statusfarbe.
   const blue=cssVar('--met-endurance')||'#2441FF';
   const warnLabels=['Vorsicht','Hohes Risiko','Erhöht'];
@@ -6472,9 +7539,130 @@ function bandFillDef(id){
 // EF (aggregat) als Punkte auf linker Achse + Rolling-Median-Band; Decoupling (HF-Drift)
 // als dünne Linie auf rechter, INVERTIERTER Achse (0% oben). Design vorläufig, wird später
 // verfeinert — nutzt ausschließlich bestehende CSS-Variablen und Band-Defs.
+// Paket B3: drei Slots — 1) EF über Zeit (Bestand), 2) EF gegen Load,
+// 3) Rad+Lauf indexiert. Slots 2/3 werden lazy gezeichnet (erst beim ersten
+// Sichtbarwerden), danach bei jedem Re-Render aktualisiert (_efSlotsSeen).
+const _efSlotsSeen=new Set([0]);
+function renderEfSlot(i){
+  if(i===0){
+    renderEfChartFor('Lauf','ef-chart-run-svg','ef-chart-run-box','ef-verdict-run','ef-legend-run');
+    renderEfChartFor('Rad','ef-chart-bike-svg','ef-chart-bike-box','ef-verdict-bike','ef-legend-bike');
+  }else if(i===1){
+    renderEfLoadChartFor('Lauf','ef-load-run-svg','ef-load-run-box');
+    renderEfLoadChartFor('Rad','ef-load-bike-svg','ef-load-bike-box');
+  }else if(i===2){
+    renderEfIndexChart();
+  }
+}
 function renderAerobicEfficiencyChart(){
-  renderEfChartFor('Lauf','ef-chart-run-svg','ef-chart-run-box','ef-verdict-run','ef-legend-run');
-  renderEfChartFor('Rad','ef-chart-bike-svg','ef-chart-bike-box','ef-verdict-bike','ef-legend-bike');
+  initHSwipe(document.getElementById('ef-hswipe'),{key:'ef',onSlot:i=>{_efSlotsSeen.add(i);renderEfSlot(i);}});
+  _efSlotsSeen.forEach(renderEfSlot);
+}
+// Gemeinsames Zeitfenster aller EF-Slots (identisch zur Workload-Progression).
+function efWindow(){
+  const windowDays=acwrWeeks*7;
+  const today=new Date();today.setHours(23,59,59,999);
+  const displayStart=new Date(today);displayStart.setDate(displayStart.getDate()-windowDays+1);displayStart.setHours(0,0,0,0);
+  return{windowDays,today,displayStart,startIso:toISODate(displayStart),endIso:toISODate(today)};
+}
+// B3 Slot 2: EF (y) gegen 7-Tage-Load am Tag der Einheit (x) — Ermüdung vs. Streuung.
+function renderEfLoadChartFor(sport,svgId,boxId){
+  const svg=document.getElementById(svgId);
+  if(!svg)return;
+  const box=document.getElementById(boxId);
+  const W=(box&&box.clientWidth)||svg.clientWidth||360;
+  const H=(box&&box.clientHeight)||svg.clientHeight||170;
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+  const axF=cssVar('--font-sans'),axC=cssVar('--text-muted'),dotFill=cssVar('--text');
+  const{windowDays,today,displayStart,startIso,endIso}=efWindow();
+  const pts=computeEfTrend(sport).qualified.filter(q=>q.date>=startIso&&q.date<=endIso);
+  if(pts.length===0){
+    svg.innerHTML='<text x="50%" y="50%" text-anchor="middle" fill="'+cssVar('--text-faint')+'" font-family="'+axF+'" font-size="12">Keine qualifizierten Einheiten im Zeitraum</text>';
+    return;
+  }
+  // 7-Tage-Load je Tag des Fensters (inkl. 6 Tage Vorlauf)
+  const loadStart=new Date(displayStart);loadStart.setDate(loadStart.getDate()-6);
+  const series=buildDailyLoadSeries({start:loadStart,end:today});
+  const load7=new Map();
+  for(let i=6;i<series.length;i++){
+    let sum=0;for(let j=i-6;j<=i;j++)sum+=series[j].actualLoad;
+    load7.set(series[i].iso,Math.round(sum));
+  }
+  const data=pts.map(p=>({...p,load:load7.get(p.date)||0}));
+  const padL=38,padR=10,padT=12,padB=24;
+  const innerW=W-padL-padR,innerH=H-padT-padB;
+  const xs=data.map(d=>d.load),ys=data.map(d=>d.ef);
+  let xMax=Math.max(...xs,1)*1.08,xMin=0;
+  let yMin=Math.min(...ys),yMax=Math.max(...ys);
+  const yPad=(yMax-yMin)*0.15||yMax*0.05||1;yMin-=yPad;yMax+=yPad;
+  const xAt=v=>padL+((v-xMin)/(xMax-xMin||1))*innerW;
+  const yAt=v=>padT+innerH-((v-yMin)/(yMax-yMin||1))*innerH;
+  const yLabels=Array.from({length:4},(_,i)=>{
+    const v=yMin+(yMax-yMin)*(i/3),y=yAt(v);
+    return'<text x="'+(padL-5)+'" y="'+(y+3)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="end">'+v.toFixed(2)+'</text>'+
+      '<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="rgba(44,44,42,0.06)" stroke-width="0.5"/>';
+  }).join('');
+  const xLabels=Array.from({length:4},(_,i)=>{
+    const v=Math.round(xMax*(i/3)),x=xAt(v);
+    return'<text x="'+x.toFixed(1)+'" y="'+(H-6)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="middle">'+v+'</text>';
+  }).join('');
+  const dots=data.map(p=>{
+    const tip=p.date+' · 7T-Load '+p.load+' · EF '+p.ef.toFixed(2);
+    return'<circle cx="'+xAt(p.load).toFixed(1)+'" cy="'+yAt(p.ef).toFixed(1)+'" r="'+efDotRadius(p.dur).toFixed(1)+'" fill="'+dotFill+'" opacity="0.85" style="cursor:pointer;" data-sid="'+(p.id||'')+'" onclick="wlcDotClick(this)"><title>'+tip+'</title></circle>';
+  }).join('');
+  svg.innerHTML=yLabels+xLabels+dots+
+    '<text x="'+(W-padR)+'" y="'+(H-6)+'" font-family="'+axF+'" font-size="8" fill="'+cssVar('--text-faint')+'" text-anchor="end">7T-Load &#8594;</text>';
+}
+// B3 Slot 3: Rad und Lauf übereinander, je auf den ersten Fensterwert normalisiert.
+function renderEfIndexChart(){
+  const svg=document.getElementById('ef-index-svg');
+  if(!svg)return;
+  const box=document.getElementById('ef-index-box');
+  const W=(box&&box.clientWidth)||svg.clientWidth||360;
+  const H=(box&&box.clientHeight)||svg.clientHeight||240;
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+  const axF=cssVar('--font-sans'),axC=cssVar('--text-muted');
+  const{windowDays,displayStart,startIso,endIso}=efWindow();
+  const legendEl=document.getElementById('ef-index-legend');
+  const seriesBySport=['Lauf','Rad'].map(sport=>{
+    const pts=computeEfTrend(sport).qualified.filter(q=>q.date>=startIso&&q.date<=endIso).sort((a,b)=>a.date.localeCompare(b.date));
+    if(pts.length<2)return null;
+    const base=pts[0].ef;
+    return{sport,color:sportCfg(sport).color,pts:pts.map(p=>({date:p.date,idx:p.ef/base*100}))};
+  }).filter(Boolean);
+  if(!seriesBySport.length){
+    svg.innerHTML='<text x="50%" y="50%" text-anchor="middle" fill="'+cssVar('--text-faint')+'" font-family="'+axF+'" font-size="12">Zu wenige qualifizierte Einheiten im Zeitraum</text>';
+    if(legendEl)legendEl.innerHTML='';
+    return;
+  }
+  const padL=38,padR=10,padT=12,padB=24;
+  const innerW=W-padL-padR,innerH=H-padT-padB;
+  const all=seriesBySport.flatMap(s=>s.pts.map(p=>p.idx));
+  let yMin=Math.min(...all,96),yMax=Math.max(...all,104);
+  const yPad=(yMax-yMin)*0.1;yMin-=yPad;yMax+=yPad;
+  const dayIdx=iso=>Math.round((new Date(iso+'T00:00:00')-displayStart)/86400000);
+  const xAt=di=>padL+(windowDays<=1?0.5:di/(windowDays-1))*innerW;
+  const yAt=v=>padT+innerH-((v-yMin)/(yMax-yMin||1))*innerH;
+  const yLabels=Array.from({length:4},(_,i)=>{
+    const v=yMin+(yMax-yMin)*(i/3),y=yAt(v);
+    return'<text x="'+(padL-5)+'" y="'+(y+3)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="end">'+Math.round(v)+'</text>'+
+      '<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="rgba(44,44,42,0.06)" stroke-width="0.5"/>';
+  }).join('');
+  const base=yAt(100);
+  const baseLine='<line x1="'+padL+'" y1="'+base.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+base.toFixed(1)+'" stroke="'+axC+'" stroke-width="0.7" stroke-dasharray="3 3" opacity="0.6"/>';
+  let xLabels='';const step=windowDays<=28?7:14;
+  for(let i=0;i<windowDays;i+=step){
+    const d=new Date(displayStart);d.setDate(d.getDate()+i);
+    xLabels+='<text x="'+xAt(i).toFixed(1)+'" y="'+(H-6)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="middle">'+d.getDate()+'.'+(d.getMonth()+1)+'.</text>';
+  }
+  const lines=seriesBySport.map(s=>{
+    const poly=s.pts.map(p=>xAt(dayIdx(p.date)).toFixed(1)+','+yAt(p.idx).toFixed(1)).join(' ');
+    const dots=s.pts.map(p=>'<circle cx="'+xAt(dayIdx(p.date)).toFixed(1)+'" cy="'+yAt(p.idx).toFixed(1)+'" r="2.6" fill="'+s.color+'"><title>'+p.date+' · Index '+p.idx.toFixed(1)+'</title></circle>').join('');
+    return'<polyline points="'+poly+'" fill="none" stroke="'+s.color+'" stroke-width="1.4" opacity="0.85"/>'+dots;
+  }).join('');
+  svg.innerHTML=yLabels+baseLine+xLabels+lines;
+  if(legendEl)legendEl.innerHTML=seriesBySport.map(s=>'<span style="color:'+s.color+';font-weight:600;">'+s.sport+'</span>').join('')+
+    '<span style="color:var(--text-faint);">Index 100 = erster Wert im Fenster</span>';
 }
 function renderEfChartFor(sport,svgId,boxId,verdictId,legendId){
   const svg=document.getElementById(svgId);
@@ -6677,6 +7865,7 @@ function renderWorkloadChart(){
     if(legendEl)legendEl.innerHTML=
       '<span style="color:var(--text);">Einheit (Größe = Workload)</span>'+
       '<span style="color:var(--acwr-low);">Ø ±14 Tage · ±20%</span>'+
+      '<span style="color:var(--text-faint);">Basis: Trainingseinheiten</span>'+
       (dispSpecial.length?'<span style="color:'+SPECIAL_CATEGORIES.illness.color+';">Krankheit/Verletzung/Sonstiges</span>':'');
     return;
   }
@@ -6746,6 +7935,9 @@ function wlcWeekClick(el){
 // Hohe Monotonie (>2.0) bei hoher Last gilt als Marker für Übertraining/Verletzungsrisiko,
 // weil gleichförmige Belastung ohne Erholungsvariation den Körper nicht ausreichend regenerieren lässt.
 // Strain = Wochensumme × Monotonie — gewichtet die Gesamtlast mit ihrer Gleichförmigkeit.
+// Paket N4: basiert (wie rollingMonotonyAsOf) auf buildDailyLoadSeries. Die Bucketing-
+// Differenz ist beabsichtigt: hier Kalenderwochen für den Wochen-Chart, rollingMonotonyAsOf
+// liefert die rollierende 7-Tage-Variante für den Recovery-Pressure-Pfad.
 function computeMonotonyStrain(weeksBack){
   weeksBack=weeksBack||8;
   const now=new Date();
@@ -7326,7 +8518,8 @@ function renderWeeklyTrendChart(){
     `<span style="color:var(--accent-purple);">${curLabel}</span>`+
     (prevWeekCum?`<span style="color:var(--text-muted);">Letzte Woche</span>`:'')+
     (plannedCum?`<span style="color:var(--orange-soft);">Geplant (Ist+Plan)</span>`:'')+
-    (bandLoCum?`<span style="color:var(--acwr-low);">Empfohlener Bereich</span>`:'');
+    (bandLoCum?`<span style="color:var(--acwr-low);">Empfohlener Bereich</span>`:'')+
+    `<span style="color:var(--text-faint);">Basis: Wochensummen (Trainingstage)</span>`;
 }
 
 // ── Last-Farbskala (editorial) ───────────────────────────────────────────────
@@ -8732,11 +9925,20 @@ function showGpxMultiPreview(errors){
   }
   const items=pendingGpxMulti.map(p=>{
     const sportOpts=cfg.sports.map(s=>`<option value="${s.key}"${s.key===p.sport?' selected':''}>${sportIconText(s)?sportIconText(s)+" ":""}${s.label}</option>`).join('');
+    // A6: Plan-Kandidaten (±1 Tag, gleiche Sportart) als Auswahlfeld anbieten.
+    // Genau ein Treffer → vorausgewählt; leere Option = ohne Kopplung anlegen.
+    const cands=findPlannedCandidates(p.sport,p.date);
+    if(p._coupleId===undefined)p._coupleId=cands.length===1?String(cands[0].id):'';
+    const coupleSel=cands.length?`<select class="mi-couple" data-id="${p._id}" title="Mit geplanter Einheit koppeln">
+        <option value="">ohne Plan</option>
+        ${cands.map(c=>`<option value="${c.id}"${String(c.id)===p._coupleId?' selected':''}>Plan ${c.date} &#183; ${fmtMin(c.duration)}</option>`).join('')}
+      </select>`:'';
     return`<div class="gpx-multi-item" data-id="${p._id}">
       <span class="mi-meta">${p.date}</span>
       <select class="mi-sport" data-id="${p._id}">${sportOpts}</select>
       <span class="mi-name">${esc(p.name||p.fileName)}</span>
       <span class="mi-meta">${fmtMin(p.durationMin)}${p.distKm?' &middot; '+p.distKm+'km':''}${p.hrAvg?' &middot; <i class="ti ti-heart-rate"></i>'+p.hrAvg:''}</span>
+      ${coupleSel}
       <button class="gpx-multi-remove" data-id="${p._id}" title="Entfernen"><i class="ti ti-x"></i></button>
     </div>`;
   }).join('');
@@ -8760,7 +9962,14 @@ function showGpxMultiPreview(errors){
     sel.addEventListener('change',()=>{
       const id=sel.dataset.id;
       const item=pendingGpxMulti.find(p=>p._id===id);
-      if(item)item.sport=sel.value;
+      // Sportwechsel ändert die Plan-Kandidaten → Kopplungsauswahl neu aufbauen
+      if(item){item.sport=sel.value;item._coupleId=undefined;showGpxMultiPreview([]);}
+    });
+  });
+  document.querySelectorAll('.mi-couple').forEach(sel=>{
+    sel.addEventListener('change',()=>{
+      const item=pendingGpxMulti.find(p=>p._id===sel.dataset.id);
+      if(item)item._coupleId=sel.value;
     });
   });
 }
@@ -8789,6 +9998,7 @@ document.getElementById('gpx-save').addEventListener('click',async()=>{
       const extra={workload:wl.value,workload_method:wl.method};
       if(wl.method==='tss'){extra.tss=wl.tss;extra.intensity_factor=wl.intensityFactor;}
       applyEfFields(base);
+      if(p._coupleId)extra.planned_ref=p._coupleId;  // A6: gewählte Kopplung
       return{...base,...extra};
     });
     setSyncState('syncing');
@@ -8830,12 +10040,15 @@ document.getElementById('gpx-save').addEventListener('click',async()=>{
   session.workload=wl2.value;session.workload_method=wl2.method;
   if(wl2.method==='tss'){session.tss=wl2.tss;session.intensity_factor=wl2.intensityFactor;}
   applyEfFields(session);
+  // A6: genau ein Plan-Kandidat → automatisch koppeln (Ghost bleibt erhalten)
+  const gpxPlanCand=findPlannedCandidates(session.sport,session.date);
+  if(gpxPlanCand.length===1)session.planned_ref=gpxPlanCand[0].id;
   setSyncState('syncing');
   statusEl.textContent='Speichere…';
   console.log('[GPX Single] Session-Objekt:',session);
   try{
     const saved=await DB.addSession(session);
-    sessions.unshift(saved);setSyncState('ok');
+    sessions.unshift(saved);markSessionsDirty();setSyncState('ok');
     statusEl.textContent='Gespeichert ✓';
     setTimeout(()=>{statusEl.textContent='';},2000);
     clearGpx();renderLog();
@@ -9168,9 +10381,11 @@ async function importGarminActivities(){
     try{byDate=await fetchGarminByDate();}
     catch(e){st.textContent='garmin/data.json nicht gefunden ('+e.message+').';return;}
     if(!Object.keys(byDate).length){st.textContent='Keine Aktivitäten im Sync gefunden.';return;}
-    // Bestehende Einheiten pro Tag (ohne Sondereinträge) — für Neu-Import UND Verknüpfung.
+    // Bestehende IST-Einheiten pro Tag (ohne Sondereinträge, ohne Ghosts) — für
+    // Neu-Import UND Verknüpfung. Ghosts (A6) blockieren den Import nicht mehr:
+    // sie werden über planned_ref gekoppelt statt als Tagesbelegung gezählt.
     const byDay={};
-    sessions.filter(s=>!isSpecialEntry(s)).forEach(s=>{(byDay[s.date]=byDay[s.date]||[]).push(s);});
+    sessions.filter(s=>!isSpecialEntry(s)&&!isPlanned(s)).forEach(s=>{(byDay[s.date]=byDay[s.date]||[]).push(s);});
     const rows=[];const links=[];let skipped=0;
     Object.keys(byDate).sort().forEach(date=>{
       const existingForDay=byDay[date];
@@ -9193,17 +10408,25 @@ async function importGarminActivities(){
       if(wl.value!=null){session.workload=wl.value;session.workload_method=wl.method;
         if(wl.method==='tss'){session.tss=wl.tss;session.intensity_factor=wl.intensityFactor;}}
       applyEfFields(session);
+      // A6: bei genau einem Plan-Kandidaten (gleiche Sportart, ±1 Tag) automatisch
+      // koppeln — der Ghost bleibt unangetastet erhalten. Mehrere Treffer: der
+      // Ein-Klick-Import hat keine Auswahl-UI → ohne Kopplung anlegen (Auswahlfeld
+      // gibt es in der FIT/GPX-Import-Tabelle).
+      const planCand=findPlannedCandidates(session.sport,date);
+      if(planCand.length===1)session.planned_ref=planCand[0].id;
       rows.push(session);
     });
     if(!rows.length&&!links.length){st.textContent=`Nichts Neues – alle ${Object.keys(byDate).length} Tage bereits in der App.`;return;}
     setSyncState('syncing');btn.textContent=`Importiere ${rows.length+links.length}…`;
     let saved=[];
-    if(rows.length){saved=await DB.addSessions(rows);sessions=[...sessions,...saved];}
+    if(rows.length){saved=await DB.addSessions(rows);sessions=[...sessions,...saved];markSessionsDirty();}
     // Verknüpfungen anwenden: HF-Verlauf in bestehende Einheiten schreiben.
     let linked=0;
     for(const{session:s,fields}of links){
+      // A6: Kandidaten sind nur noch Ist-Sessions (byDay ohne Ghosts) — Ghosts
+      // werden nie in-place überschrieben, sondern per planned_ref gekoppelt.
       const patch={hr_series:fields.hr_series,hr_avg:fields.hr_avg??s.hr_avg,hr_max:fields.hr_max??s.hr_max,
-        duration:fields.duration||s.duration,distance_km:s.distance_km??fields.distance_km,planned:false};
+        duration:fields.duration||s.duration,distance_km:s.distance_km??fields.distance_km};
       const merged={...s,...patch};
       const wl=berechneWorkload(merged);
       if(wl.value!=null){patch.workload=wl.value;patch.workload_method=wl.method;
@@ -9214,7 +10437,7 @@ async function importGarminActivities(){
         const z=inferZone(fields.hr_avg,s.sport);if(z)patch.zone=z;}
       try{
         const updated=await DB.updateSession(s.id,patch);
-        const idx=sessions.findIndex(x=>x.id===s.id);if(idx!==-1)sessions[idx]=updated;
+        const idx=sessions.findIndex(x=>x.id===s.id);if(idx!==-1){sessions[idx]=updated;markSessionsDirty();}
         linked++;
       }catch(e){console.warn('[Garmin-Link]',e.message||e);}
     }
@@ -9251,7 +10474,7 @@ async function backfillGarminHrSeries(){
       patch.ef=merged.ef;patch.decoupling=merged.decoupling;patch.analysis_window_sec=merged.analysis_window_sec;
       const updatedSession=await DB.updateSession(s.id,patch);
       const idx=sessions.findIndex(x=>x.id===s.id);
-      if(idx!==-1)sessions[idx]=updatedSession;
+      if(idx!==-1){sessions[idx]=updatedSession;markSessionsDirty();}
       updated++;
     }
     st.textContent=updated?`✓ ${updated} Tag(e) mit HF-Verlauf ergänzt.`:'Keine passenden Aktivitäten mit HF-Verlauf gefunden.';
@@ -9292,7 +10515,7 @@ async function backfillGarminPower(){
       patch.ef=merged.ef;patch.decoupling=merged.decoupling;patch.analysis_window_sec=merged.analysis_window_sec;
       const updatedSession=await DB.updateSession(s.id,patch);
       const idx=sessions.findIndex(x=>x.id===s.id);
-      if(idx!==-1)sessions[idx]=updatedSession;
+      if(idx!==-1){sessions[idx]=updatedSession;markSessionsDirty();}
       updated++;
     }
     st.textContent=updated?`✓ ${updated} Einheit(en) mit Power ergänzt${noPower?` · ${noPower} ohne Power in der Quelle`:''}.`
@@ -9477,11 +10700,14 @@ async function showApp(user){
   const av=document.getElementById('user-avatar');if(meta.avatar_url){av.src=meta.avatar_url;av.style.display='';}
   setSyncState('syncing');
   let remoteCfg=null;
-  [sessions,trainingProfile,templates,remoteCfg]=await Promise.all([DB.getSessions(),DB.getProfile(),DB.getTemplates().catch(()=>[]),DB.getConfig().catch(()=>null)]);
+  [sessions,trainingProfile,templates,remoteCfg,blocks]=await Promise.all([DB.getSessions(),DB.getProfile(),DB.getTemplates().catch(()=>[]),DB.getConfig().catch(()=>null),DB.getBlocks().catch(()=>[])]);
+  markSessionsDirty();
   setSyncState('ok');
   if(remoteCfg){
     Object.assign(cfg,remoteCfg);
-    if(migrateSportIcons())DB.saveConfig(cfg).catch(e=>console.warn('saveConfig migrate:',e));
+    markSessionsDirty(); // Remote-Config kann Workload-Parameter geändert haben
+    const cfgMigrated=migrateSportIcons()|migrateZoneRecoveryFactors();
+    if(cfgMigrated)DB.saveConfig(cfg).catch(e=>console.warn('saveConfig migrate:',e));
     localStorage.setItem('tlog_cfg',JSON.stringify(cfg));
   }else{
     DB.saveConfig(cfg).catch(e=>console.warn('saveConfig bootstrap:',e));
@@ -9522,7 +10748,7 @@ async function showApp(user){
   addChatMessage('ai','Hallo! Ich bin dein Trainingsassistent. Ich habe Zugriff auf deine Trainingsdaten und dein Trainingsprofil.\n\nDu kannst mich z.B. fragen:\n• "Wie war meine Trainingswoche?"\n• "Halte ich die 80/20-Regel ein?"\n• "Wann war meine letzte lange Radausfahrt?"\n• "Wie viel km bin ich diesen Monat gelaufen?"');
 }
 document.getElementById('btn-login').addEventListener('click',async()=>{await sb.auth.signInWithOAuth({provider:'github',options:{redirectTo:window.location.href}});});
-document.getElementById('btn-logout').addEventListener('click',async()=>{await sb.auth.signOut();currentUser=null;sessions=[];teardownLogoFx();document.getElementById('app').style.display='none';document.getElementById('auth-screen').style.display='';});
+document.getElementById('btn-logout').addEventListener('click',async()=>{await sb.auth.signOut();currentUser=null;sessions=[];markSessionsDirty();teardownLogoFx();document.getElementById('app').style.display='none';document.getElementById('auth-screen').style.display='';});
 
 // ── Splash-Helfer ───────────────────────────────────────────────────────────────
 function preloadImg(src){return new Promise(r=>{const i=new Image();i.onload=i.onerror=()=>r();i.src=src;});}
