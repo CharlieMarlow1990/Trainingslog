@@ -14,15 +14,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap">
 <style>
-@font-face{
-  font-family:"KrautType";
-  src:url("font/kraut-type-fuck11.ttf") format("truetype");
-  font-weight:normal;
-  font-style:normal;
-  font-display:swap; 
-}
-/* Pixel-/Bitmap-Font — AUSSCHLIESSLICH für die eine Poster-Headline/Zahl pro Screen
-   und kurze Zahlen-Akzente. Nie im Fließtext (Design-Briefing, Typografie-Regel). */
+/* Pixel-/Bitmap-Font — AUSSCHLIESSLICH für die EINE Poster-Zahl pro Screen (§6).
+   Nie im Fließtext, nie in Metrik-Kacheln/Buttons/Kalender (dort Grotesk). */
 @font-face{
   font-family:"VCR OSD Mono";
   src:url("font/VCR_OSD_MONO_1.001.ttf") format("truetype");
@@ -31,14 +24,24 @@
   font-display:swap;
 }
 :root{
-  /* === Feste Grammatik (Design-Briefing): Off-White-Papier, leicht grau === */
-  --paper:#c9cccd;            /* Seiten-Grundfläche */
-  --paper-raised:#F2F1ED;     /* Kacheln/Cards */
-  --paper-dim:#E2E1DB;        /* Sekundärflächen (Tabs, Chips) */
-  --chart-surface:#F7F6F1;    /* Chart-Panels: heller als --paper-raised, hebt sich rahmenlos ab (#6) */
+  /* === Feste Grammatik: helle, ruhige Off-White-Grundfläche (§4).
+     Warme, schwach gesättigte Papier-Leiter — Grau nur noch für Sekundärflächen.
+     Lightness-Staffelung (dim < paper < raised < chart) hält die wenigen noch
+     abgesetzten Flächen (Charts, Modale, Kalender) ohne Rahmen unterscheidbar. === */
+  --paper:#f0f0f0;            /* helle Fläche für Text auf Farbe (Poster/Log-Hero) */
+  /* Cleaner Kontrast (Nutzer-Briefing): heller Seitengrund, dezent getönte Blöcke.
+     Die Seite ist fast weiß, die vertikalen Bereiche sitzen als leicht getönte Paper-
+     Panels darauf → stärkere Abgrenzung, Gesten/Akzente fallen deutlicher auf. */
+  --page-bg:rgb(241, 241, 241);          /* Seiten-Grundfläche — nahezu weiß, ruhig */
+  --block-bg:#ededed;         /* vertikale Bereiche (Karten/Sektionen) — deutlich getöntes Paper */
+  --block-tex-veil:color-mix(in srgb,var(--block-bg) 76%,transparent); /* Deckschleier über der Block-Textur: höher = weniger Textur */
+  --paper-raised:#ebecf3;     /* leicht gehobene Flächen (selten) */
+  --paper-dim:#DFDCD3;        /* Sekundärflächen (Tabs, Chips) — bewusst grauer */
+  --chart-surface:#F7F5F0;    /* Chart-Panels: hellste Stufe, hebt sich rahmenlos ab */
   --ink:#1B1B18;              /* Poster-Schwarz */
-  /* Alt-Tokens als Aliasse — die gesamte Datei liest weiter --bg/--surface/--text */
-  --bg:var(--paper);
+  /* Alt-Tokens als Aliasse — die gesamte Datei liest weiter --bg/--surface/--text.
+     --bg = heller Seitengrund; Eingabefelder/Badges heben sich so hell von den Blöcken ab. */
+  --bg:var(--page-bg);
   --surface:var(--paper-raised);
   --surface-dark:#1B1B18;     /* invertierte Akzentfläche (Hero/Sticky) */
   --surface-ink:#1B1B18;      /* Alias, semantisch */
@@ -66,6 +69,33 @@
   --met-intensity:#7B5CD6;
   --met-intensity-deep:#4F3796;
   --met-intensity-tint:#E4DCF6;
+
+  /* ===================================================================
+     ZENTRALES FARBSYSTEM (§8) — eine Quelle der Wahrheit, klar getrennte
+     Bedeutungsebenen. Nichts referenziert Farbe an Ad-hoc-Hex vorbei:
+       · Metrik-Signale  (oben)   Blau/Lila — Ausdauer vs. Intensität
+       · Kategoriefarben (Sport)  je Sportart eine feste Farbe
+       · Stufenfarben    (Zonen)  Blau→Lila-Leiter, eigene Ebene
+       · Signalfarben    (Status) Ampel — getrennt von Kategorie/Stufe
+       · Schriftfarben   --text / --text-muted / --text-faint
+     JS liest diese über cssVar(); Diagramme leiten sich hieraus ab.
+     =================================================================== */
+
+  /* --- Kategoriefarben: je Sportart eine feste Farbe, app-weit konsistent --- */
+  --cat-rad:#7c9bb5;
+  --cat-lauf:#6f8f3e;
+  --cat-kraft:#c8603a;
+  --cat-capacity:#d79b46;
+  --cat-kampfsport:#8c6db0;
+  --cat-sonstiges:#5f5e5a;
+
+  /* --- Stufenfarben: Intensitäts-/Zonenleiter (Z1–Z3 Blau, Z4/Z5 Lila) --- */
+  --zone-1:#B9C4F5;
+  --zone-2:#7E93EC;
+  --zone-3:#2441FF;
+  --zone-4:#7B5CD6;
+  --zone-5:#4F3796;
+  --zone-none:#c9c6bc;
 
   /* === Poster-Skala — gleiche Größenverhältnisse auf jedem Screen === */
   --poster-size:clamp(4.5rem,17vw,9rem);       /* die eine große Headline/Zahl */
@@ -102,11 +132,24 @@
   /* Tiefen-Effekt für den Chat (Inset/Kanten-Schattierung statt Rahmen): oben hell, unten dunkel + Hairline */
   --chat-inset:inset 0 1px 0 rgba(255,255,255,.7), inset 0 -3px 6px rgba(0,0,0,.12), inset 0 0 0 1px rgba(0,0,0,.06);
 
-  /* === ACWR-Status === */
-  --acwr-low:#77a5ce;
-  --acwr-optimal:#50ba80;
-  --acwr-caution:#ddcb58;
-  --acwr-high:#c0453f;
+  /* --- Signalfarben (Status/Ampel) — getrennt von Kategorie- und Stufenebene.
+     Zwei Rollen je Stufe: -*  = Füllung/Marker (auf Papier),
+                           -*-deep = Textlabel (dunkler, lesbar auf Off-White).
+     --acwr-* bleiben als Aliasse erhalten (breit referenziert). === */
+  --sig-low:#77a5ce;      --sig-low-deep:#185FA5;
+  --sig-ok:#50ba80;       --sig-ok-deep:#3B6D11;
+  --sig-caution:#ddcb58;  --sig-caution-deep:#854F0B;
+  --sig-high:#c0453f;     --sig-high-deep:#A32D2D;
+  --sig-neutral:#888780;                 /* „Keine Daten" / kein Reiz */
+  --sig-warning:#c4332e;                 /* Krankheit/Verletzung (Sonderkategorien) */
+  /* Belastungscharakter (sRPE↔HF): eigene 3-Wege-Diagnostik-Skala */
+  --diag-muscular:#c4544a; --diag-mixed:#e8975c; --diag-metabolic:#5b9bd5;
+
+  /* ACWR-Status-Aliasse → zeigen auf die Signalebene (eine Quelle) */
+  --acwr-low:var(--sig-low);
+  --acwr-optimal:var(--sig-ok);
+  --acwr-caution:var(--sig-caution);
+  --acwr-high:var(--sig-high);
 
   /* === Workload-Chart Band === */
   --wlc-band:var(--met-endurance-tint);   /* Blau-Tint (Metrik-Kategorie Ausdauer/Load) */
@@ -121,8 +164,10 @@
   /* === Typografie === */
   --font-serif:Georgia,"Iowan Old Style","Palatino Linotype","Times New Roman",serif;
   --font-sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;  --font-mono:"SF Mono","Roboto Mono",Consolas,monospace;
-  --font-heading:"KrautType",var(--font-sans);
   --font-pixel:"VCR OSD Mono",var(--font-mono);
+  /* Sekundärrolle (§6): leichterer Schnitt DERSELBEN Grotesk für Metadaten/Zeit/
+     Sekundärtext — keine zweite Familie. */
+  --fw-secondary:300;
   /* Editorial-Kapitälchen für Section-Labels: uppercase + Sperrung */
   --caps:"letter-spacing:.10em;text-transform:uppercase;";
 
@@ -139,9 +184,9 @@
      Element ganz normal mit dem Content weg. --hero-compact-h bleibt nur als Alt-Referenz. */
   --hero-compact-h:120px;     /* Alt-Referenz (nicht mehr aktiv genutzt) */
   --hero-logo-gap:0px;        /* zusätzlicher #logo-stage-top-Versatz (Desktop: keiner) */
-  --hero-full-h:50vh;         /* FIXE Hero-/Bild-Höhe */
+  --hero-full-h:clamp(112px,18vw,150px); /* Logo-Leiste — Höhe so, dass das Logo vertikal mittig zwischen Bildschirmrand und erstem Themenbereichs-Block sitzt, ohne die Garmin/+-Zeile zu überlappen */
   --hero-h:var(--hero-full-h);/* konstant = full: Logo-Anker & Header-Lücke bleiben in der Vollposition */
-  --hero-logo-anchor:0.60;    /* Logo-Vertikalposition als Anteil der Hero-Höhe (~über der Feld-Kante) */
+  --hero-logo-anchor:0.58;    /* Logo etwas unterhalb der Bandmitte → optische Mitte inkl. Logo-Höhe stimmt (mehr Luft oben) */
   --hero-field-fade-start:85%;/* = gemessene Wolken-Feld-Kante (84.9%): Storm voll opak bis zum
                                  Horizont, erst das Feld darunter fadet ins Off-White */
   --hero-ink-stop:85%;        /* Blitz bleibt über dem dunklen Sturm weiß bis zur Feld-Kante;
@@ -150,20 +195,15 @@
   --hero-glow-color:hsl(42, 80%, 94%);  /* Kernfarbe des Blitz-Glows (mirrors .lh-ascii-Konvention) */
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));}
+body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom);}
 .wrap{max-width:980px;margin:0 auto;padding:0 1rem 2rem;position:relative;z-index:2;}
 
-/* ===== Hintergrund: DESIGNSYNDROME-Papercut-Textur über Off-White (--paper),
-   OHNE das feine Dither-Overlay. Die Dither-Ebene (#paper-dither) ist deaktiviert;
-   zum Zurückholen dort das `display:none;` entfernen. Papercut-Textur = #paper-tex.
-   Content-z-index-Staffel: Textur 0 → Logo 1 → .wrap 2 → Nav 50. ===== */
-/* Papier-Textur: stärker erkennbar (opacity) + Reserve oben/unten (top/bottom:-40vh),
-   damit der leichte Parallax (JS translateY, an die Fenster-Scrollposition gekoppelt)
-   nie die Kanten freilegt. will-change:transform für flüssige GPU-Bewegung. */
-#paper-tex{position:fixed;left:0;right:0;top:-40vh;bottom:-40vh;z-index:0;pointer-events:none;background:var(--paper-tex-bg) center/cover no-repeat;opacity:.38;mix-blend-mode:multiply;will-change:transform;transform:translate3d(0,0,0);}
-#paper-dither{display:none;position:fixed;inset:0;z-index:0;pointer-events:none;mix-blend-mode:multiply;opacity:.06;
-  background-image:radial-gradient(var(--ink) .5px,transparent .6px),radial-gradient(var(--ink) .5px,transparent .6px);
-  background-size:3px 3px,3px 3px;background-position:0 0,1.5px 1.5px;}
+/* ===== Hintergrund: schlichtes Off-White (--bg). Die DESIGNSYNDROME-Papercut-Textur
+   liegt NICHT mehr als ganzseitiges Overlay über der Seite, sondern nur noch IN den
+   Themenbereichen (Sektions-Blöcke: .card/.week-summary/.zone-collage/.sport-rose, siehe
+   unten) — die Textur gehört zur Fläche des Blocks, nicht zum Seitengrund. Der frühere
+   #paper-tex-/#paper-dither-Layer + zugehöriger Parallax wurden entfernt.
+   Content-z-index-Staffel: Logo 1 → .wrap 2 → Nav 80. ===== */
 
 /* ===== Flächen (Poster-Grammatik, Stripe-Dev/PlayerZero-Referenz) =====
    Keine Kästen mehr: kein Rahmen, kein Schatten, keine Extra-Fläche — die Seite
@@ -176,10 +216,36 @@ body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text
   border-radius:0;
   box-shadow:none;
 }
+/* Vertikale Bereiche als getönte Paper-Panels auf hellem Seitengrund — stärkere
+   Abgrenzung zwischen den Sektionen (Nutzer-Briefing). .metric/.glass bleiben
+   transparent, damit Kacheln/Poster über dem Panel liegen.
+   Papercut-Textur liegt jetzt IN diesen Blöcken (statt als Ganzseiten-Overlay): ein
+   Schleier aus --block-bg (via color-mix, --block-tex-veil % deckend) über der Textur
+   lässt nur einen Rest der Faserstruktur durch — Textur folgt so jeder Blockfarbe. */
+.card,.week-summary,.zone-collage,.sport-rose{
+  background-color:var(--block-bg);
+  background-image:linear-gradient(var(--block-tex-veil),var(--block-tex-veil)),var(--paper-tex-bg);
+  background-size:cover;background-position:center;background-repeat:no-repeat;
+  padding:1.15rem 1.25rem 1.3rem;
+  margin-bottom:1.5rem;
+}
+.week-summary,.zone-collage,.sport-rose{margin-top:0;}
 /* Diagramm-Tafeln: feiner FIG-Rahmen wie in der Stripe-Dev-Referenz */
 /* #6: Chart-Panels ohne harten Rahmen — sie heben sich allein durch die hellere
    Fläche (leicht angehoben ggü. --paper-raised) vom Seitengrund ab. */
 .wlc-paper,.chart-dark{position:relative;background:var(--chart-surface);border:none;border-radius:0;box-shadow:none;}
+/* Chart-Fläche: ausgefranster Weiß-Zuschnitt (Papercut-Maske, wie .tex-plate) mit
+   feinem Halbton-Punktraster statt Flat-Fill — liegt hinter Canvas/SVG (z-index:-1
+   im eigenen Stacking-Context von .wlc-paper/.chart-dark). */
+.wlc-paper::before,.chart-dark::before{
+  content:'';position:absolute;inset:0;z-index:-1;
+  background-color:#fff;
+  background-image:radial-gradient(rgba(27,27,24,.06) 1px,transparent 1.3px);
+  background-size:6px 6px;
+  -webkit-mask-image:var(--paper-tex-2);mask-image:var(--paper-tex-2);
+  -webkit-mask-size:cover;mask-size:cover;
+  -webkit-mask-position:var(--tex-shift,center);mask-position:var(--tex-shift,center);
+}
 /* Modals/Auth: schwebende Ebenen brauchen eine Kante */
 .modal,.auth-box{position:relative;background:var(--paper-raised);border:1px solid var(--ink);border-radius:0;box-shadow:none;}
 /* Section-Label: Mono, Slash-Präfix, Hairline — ersetzt den Karten-Rahmen */
@@ -199,7 +265,7 @@ body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text
    eintreten statt nacheinander aufzuploppen. Startet sofort sichtbar (kein display:none). */
 #splash{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .55s ease;}
 #splash.hidden{opacity:0;pointer-events:none;}
-#splash .sp-cursor{font-family:var(--font-pixel);font-size:1.5rem;letter-spacing:.12em;color:var(--ink);opacity:.72;animation:spBlink 1.05s steps(1) infinite;}
+#splash .sp-cursor{font-family:var(--font-mono);font-size:1.5rem;letter-spacing:.12em;color:var(--ink);opacity:.72;animation:spBlink 1.05s steps(1) infinite;}
 @keyframes spBlink{50%{opacity:0;}}
 @media(prefers-reduced-motion:reduce){#splash .sp-cursor{animation:none;}#splash{transition:none;}}
 
@@ -210,11 +276,31 @@ body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text
 .auth-box p{font-size:.88rem;color:var(--text-muted);margin:0 0 1.75rem;}
 .btn-github{display:inline-flex;align-items:center;gap:.6rem;background:#24292e;color:#fff;border:none;border-radius:var(--radius);padding:.65rem 1.4rem;font-size:.95rem;font-weight:500;cursor:pointer;font-family:var(--font-sans);}
 .btn-github:hover{background:#1a1e22;}
-#bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:var(--paper-raised);border-top:1px solid var(--ink);display:flex;height:var(--nav-h);padding-bottom:env(safe-area-inset-bottom);}
-#bottom-nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:transparent;cursor:pointer;font-size:.6rem;color:var(--text-muted);padding:.25rem 0;font-family:var(--font-sans);position:relative;}
-#bottom-nav button.active{color:var(--text);font-weight:500;}
-#bottom-nav button.active::before{content:"";position:absolute;top:0;left:25%;right:25%;height:2px;background:var(--text);border-radius:0 0 2px 2px;}
-#bottom-nav button .nav-icon{font-size:1.2rem;line-height:1;}
+/* ── Navigation: Hamburger oben, im Fluss (scrollt mit) ────────────────────
+   Ruhige Geste: drei Striche links oben. Klick klappt ein Seiten-Menü auf. */
+/* Topbar fix am Viewport (nicht im .wrap-Fluss): der Hamburger bleibt beim Scrollen sichtbar
+   — auch im unteren App-Bereich — und ist am Bildschirmrand verankert (nicht an der 980px-
+   Spaltenkante). Dadurch driftet er bei großer Breite nicht mehr asynchron zum mittigen Logo. */
+.topbar{position:fixed;top:0;left:0;display:flex;align-items:flex-start;padding:calc(.7rem + env(safe-area-inset-top)) 0 0 max(1rem,env(safe-area-inset-left));z-index:80;pointer-events:none;}
+.topbar>*{pointer-events:auto;}
+/* Dezente Paper-Unterlage, damit die drei Striche auch über gescrolltem Content/Charts
+   lesbar bleiben — kein Rahmen, kein Schatten (Grammatik). */
+.nav-toggle{display:flex;flex-direction:column;justify-content:center;gap:5px;width:42px;height:36px;padding:0 10px;background:color-mix(in srgb,var(--bg) 78%,transparent);border:none;cursor:pointer;border-radius:0;}
+.nav-toggle span{display:block;height:2px;width:22px;background:var(--ink);transition:transform .22s ease,opacity .18s ease;}
+.nav-toggle[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.nav-toggle[aria-expanded="true"] span:nth-child(2){opacity:0;}
+.nav-toggle[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+/* Dropdown ohne Rahmen und Schatten (Nutzer-Briefing): reine getönte Paper-Fläche direkt
+   unter dem fixierten Hamburger. Kante entsteht allein durch die Flächentönung + Hairlines
+   zwischen den Einträgen. */
+#nav-menu{position:absolute;top:calc(100% + .5rem);left:0;z-index:60;min-width:210px;background:color-mix(in srgb,var(--bg) 92%,var(--ink));border:none;display:flex;flex-direction:column;box-shadow:none;}
+#nav-menu[hidden]{display:none;}
+#nav-menu button{display:flex;align-items:center;gap:.7rem;border:none;background:transparent;cursor:pointer;font-size:.9rem;color:var(--text-muted);padding:.7rem 1rem;font-family:var(--font-sans);text-align:left;position:relative;}
+#nav-menu button:not(:last-child){border-bottom:1px solid var(--border);}
+#nav-menu button:hover{background:rgba(27,27,24,.05);color:var(--text);}
+#nav-menu button.active{color:var(--text);font-weight:600;}
+#nav-menu button.active::before{content:"";position:absolute;left:0;top:15%;bottom:15%;width:3px;background:var(--met-endurance);}
+#nav-menu button .nav-icon{font-size:1.15rem;line-height:1;width:1.2em;text-align:center;}
 /* Pull-to-Refresh-Indikator: folgt dem Finger beim Ziehen von oben, dreht bei Auslösung */
 #ptr-indicator{position:fixed;top:10px;left:50%;transform:translate(-50%,-160%);z-index:60;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--paper-raised);border:1px solid var(--ink);color:var(--met-endurance-deep);font-size:1.15rem;opacity:0;pointer-events:none;transition:opacity .18s ease;}
 #ptr-indicator.visible{opacity:1;}
@@ -222,6 +308,9 @@ body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text
 #ptr-indicator.spin i{animation:ptrSpin .7s linear infinite;}
 @keyframes ptrSpin{to{transform:rotate(360deg);}}
 header{display:flex;align-items:center;justify-content:flex-start;margin-bottom:.9rem;padding:.85rem 0;border-bottom:1px solid var(--ink);}
+/* Nicht-Log-Seiten: Titel unter den fix am Viewport sitzenden Hamburger schieben, damit
+   er nicht mit den drei Strichen kollidiert (Topbar ist nicht mehr im Fluss). */
+header:not(.has-logo){padding-top:calc(.85rem + 46px);}
 header h1{font-family:var(--font-sans);font-size:2rem;font-weight:600;margin:0;letter-spacing:-.01em;color:var(--ink);text-align:left;}
 /* has-logo: Header reserviert nur noch die Lücke, damit die erste Karte nicht direkt unter
    dem fixierten Logo beginnt. Das Logo selbst rendert in #logo-stage (position:fixed, siehe
@@ -249,11 +338,11 @@ header.has-logo h1{width:1px;height:1px;overflow:hidden;position:absolute;white-
    scrollt wie der übrige Content nach oben aus dem Bild — es klebt nicht mehr fixiert. */
 #logo-stage{position:absolute;left:0;right:0;top:calc(var(--hero-h) * var(--hero-logo-anchor) + var(--hero-logo-gap));z-index:1;display:flex;justify-content:center;pointer-events:none;opacity:0;transition:opacity .2s ease;transform:translateY(-50%);}
 #logo-stage.visible{opacity:1;}
-#logo-clip{overflow:hidden;width:min(66vw,350px);aspect-ratio:2.368;}
+#logo-clip{overflow:hidden;width:min(48vw,248px);aspect-ratio:2.368;}
 #logo-canvas{display:block;width:208.33%;margin-left:-54.17%;margin-top:-44.85%;image-rendering:pixelated;image-rendering:-moz-crisp-edges;image-rendering:crisp-edges;}
 @media(max-width:520px){
-  :root{--hero-compact-h:90px;--hero-logo-gap:18px;}
-  #logo-clip{width:min(54vw,250px);}
+  :root{--hero-compact-h:90px;--hero-logo-gap:6px;}
+  #logo-clip{width:min(56vw,208px);}
 }
 /* Seiten-Überschriften (alle Seiten außer Log): Inter statt Logo-Font, Großbuchstaben, luftig */
 header:not(.has-logo) h1{font-family:var(--font-sans);font-size:clamp(1.8rem,7vw,2.6rem);font-weight:600;letter-spacing:-.02em;text-indent:0;word-spacing:0;text-transform:none;}
@@ -269,7 +358,12 @@ header:not(.has-logo) h1{font-family:var(--font-sans);font-size:clamp(1.8rem,7vw
 h1,h2,h3{font-family:var(--font-sans);font-weight:600;letter-spacing:-.01em;}
 /* Überschriften auf allen Seiten außer Log: Inter, Großbuchstaben, luftig */
 .page:not(#page-log) h2,.page:not(#page-log) h3{font-family:var(--font-sans);text-transform:uppercase;letter-spacing:.08em;}
-.card{padding:1.1rem 1.25rem;margin-bottom:1.7rem;}.card h2{font-size:.92rem;font-weight:600;margin:0 0 1.05rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+.card{padding:1.35rem 1.4rem;margin-bottom:2rem;}.card h2{font-size:.92rem;font-weight:600;margin:0 0 1.2rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+/* §2 Lazy-Reveal: Bänder blenden beim Heranscrollen ruhig ein — kein Sprung, keine
+   aufdringliche Bewegung. Nur Opazität/Versatz (Layout & Chart-Messung bleiben intakt). */
+.reveal-band{opacity:0;transform:translateY(26px);transition:opacity .6s cubic-bezier(.16,.84,.44,1),transform .6s cubic-bezier(.16,.84,.44,1);}
+.reveal-band.is-in{opacity:1;transform:none;}
+@media(prefers-reduced-motion:reduce){.reveal-band{opacity:1;transform:none;transition:none;}}
 .badge{font-size:.68rem;font-weight:500;font-family:var(--font-mono);color:var(--text-muted);background:var(--bg);border:1px solid var(--border);border-radius:0;padding:.12rem .5rem;}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;}
 .grid>.field{min-width:0;}
@@ -336,7 +430,8 @@ textarea.note-paper:focus{
   box-shadow:0 0 0 3px var(--met-endurance-tint);
 }
 textarea.note-paper::placeholder{color:var(--text-faint);opacity:.85;}
-.note-history-box{margin-top:.55rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);max-height:13rem;overflow-y:auto;}
+/* §2: keine eigene vertikale Scrollachse mehr — die Historie fließt im Seitenscroll mit. */
+.note-history-box{margin-top:.55rem;border-top:1px solid var(--border-strong);}
 .note-history-box .nh-head{font-size:.68rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;padding:.5rem .7rem .25rem;}
 .note-history-box .nh-item{border-top:1px solid var(--border);}
 .note-history-box .nh-item summary{padding:.45rem .7rem;cursor:pointer;list-style:none;display:flex;align-items:center;gap:.5rem;}
@@ -371,26 +466,50 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .metrics-3{grid-template-columns:repeat(auto-fit,minmax(100px,1fr));}
 
 /* ===== Poster-Geste: die EINE große Headline/Zahl pro Screen (Briefing) ===== */
-.poster{margin:1.2rem 0 1.6rem;text-align:left;}
+/* §4 Laute Geste: vollflächiger, farbiger Bruch — ganze Fläche EINE Signalfarbe
+   (ACWR-Status als Ampel: blau neutral → grün optimal → rot Überlast), riesige
+   off-white Pixel-Zahl darauf. Full-bleed über die Seitenränder hinaus. */
+.poster{margin:0 -1rem 1.7rem;padding:1.6rem 1rem 1.05rem;text-align:left;position:relative;overflow:hidden;background:var(--poster-bg,var(--met-endurance));transition:background .3s ease;}
+.poster-slot{display:flex;flex-direction:column;}
 .poster canvas{display:block;height:var(--poster-size);width:auto;max-width:100%;image-rendering:pixelated;}
-.poster-fallback{font-family:var(--font-pixel);font-size:var(--poster-size);line-height:1;color:var(--met-endurance);}
-.poster-label{font-family:var(--font-sans);font-size:var(--poster-label);font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin:.4rem 0 0 .2rem;}
+/* Poster-Zahl: klare VCR-Pixelschrift (kein Dithering — das wirkte verzerrt) */
+.poster-fallback{font-family:var(--font-pixel);font-size:var(--poster-size);line-height:1;color:var(--paper);}
+.poster-label{font-family:var(--font-sans);font-size:var(--poster-label);font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--paper);opacity:.9;margin:.5rem 0 0 .2rem;}
+/* Dots der Poster-Geste sitzen auf der farbigen Fläche → off-white */
+.poster .hswipe-dots{margin-top:.7rem;justify-content:flex-start;padding-left:.2rem;}
+.poster .hswipe-dot{background:rgba(255,255,255,.38);}
+.poster .hswipe-dot.active{background:var(--paper);}
 
 /* ===== Log-Hero: jüngste Einheit als Poster-Kachel. Solides Signal-Blau als
    robuster Grund; darüber eine dunklere, papercut-maskierte Ebene — die Textur
    liegt IN der Farbfläche (Briefing), Text bleibt lesbar obenauf. ===== */
-.log-hero{position:relative;margin:0 0 1.1rem;padding:.35rem 1.1rem .4rem;color:#000;overflow:hidden;background:#6A6EFF;cursor:pointer;}
+/* §4 Laute Geste (Log): letzte Einheit als farbiger Bruch — dieselbe Systemfarbe
+   und off-white Typo wie die Auswertung-Poster-Geste, damit es dieselbe App bleibt. */
+/* Kein horizontales Innen-Padding: die Kachel ist bereits so breit wie die Karte (wie die
+   Listeneinträge darunter) — ohne eigenes Links/Rechts-Padding beginnt/endet ihr Inhalt an
+   denselben Kanten wie der Einheiten-Liste, statt zusätzlich eingerückt zu wirken. */
+.log-hero{position:relative;margin:0 0 1.1rem;padding:.6rem 0 .65rem;color:var(--paper);overflow:hidden;background:var(--met-endurance);cursor:pointer;}
 .log-hero>*{position:relative;z-index:1;}
-/* Tag + Einheit (schwarz): plakativ, liegt über dem ASCII-Bild und darf es überragen */
-.lh-date{font-size:1rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin:0;color:#000;position:relative;z-index:3;}
+/* Kopfzeile: Datum links, Sportart-Badge rechts — spiegelt die Positionierung der
+   Listeneinträge (entry-date / entry-badge), statt Datum+Sportart in einer Zeile zu mischen. */
+.lh-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem;padding-right:1.5rem;position:relative;z-index:3;}
+.lh-date{font-size:1rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin:0;color:var(--paper);}
+.lh-badge{font-size:.72rem;font-weight:600;padding:.2rem .55rem;display:inline-flex;align-items:center;gap:.3rem;white-space:nowrap;color:var(--paper);background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);}
 .lh-value{font-family:var(--font-pixel);font-size:var(--poster-size-sm);line-height:1;margin:0;}
-/* ASCII-Reihe rutscht unter die Tag-Zeile (negativer Rand) → Bild wird von der Angabe überragt */
-.lh-ascii{display:flex;align-items:center;gap:.4rem;margin:-.55rem 0 -.15rem;min-height:0;}
+/* ASCII-Reihe rutscht unter die Kopfzeile (negativer Rand) → Bild wird von der Angabe überragt.
+   fitLhAscii skaliert die Schriftgröße immer auf die volle Kachelbreite (nicht nur zum
+   Verkleinern bei Überlauf) — die Dauer bleibt so die eine laute Poster-Geste des Screens. */
+.lh-ascii{display:flex;align-items:center;justify-content:space-between;gap:.4rem;margin:-.3rem 0 -.1rem;min-height:0;}
 .lh-ascii pre{margin:0;color:#FFCCEA;font-family:var(--font-mono);line-height:1;letter-spacing:0;white-space:pre;font-variant-ligatures:none;text-shadow:0 0 5px #FFCCEA,0 0 11px rgba(255,204,234,.7),0 0 20px rgba(255,204,234,.35);}
-.lh-ascii{justify-content:space-between;}
 .lh-ascii-time{font-size:clamp(6px,2.2vw,9px);flex:0 0 auto;}
 .lh-ascii-icon{font-size:clamp(3px,1.3vw,5px);flex:0 0 auto;position:relative;z-index:1;}
-.lh-title{font-size:.8rem;font-style:italic;margin:.15rem 0 0;color:#000;opacity:.82;position:relative;z-index:3;}
+/* Fußzeile: Zone links (unter der Dauer), Titel + Meta rechts (unter dem Badge) — spiegelt
+   entry-zone-tag links / entry-title+entry-meta rechts. */
+.lh-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:.6rem;position:relative;z-index:3;}
+.lh-zone{font-family:var(--font-mono);font-size:.72rem;font-weight:700;letter-spacing:.05em;color:var(--paper);opacity:.72;}
+.lh-info-right{display:flex;flex-direction:column;align-items:flex-end;gap:.15rem;text-align:right;}
+.lh-title{font-size:.8rem;font-style:italic;margin:0;color:var(--paper);opacity:.88;}
+.lh-meta{font-size:.7rem;margin:0;color:var(--paper);opacity:.72;white-space:nowrap;}
 .lh-chevron{position:absolute;top:.7rem;right:.8rem;z-index:2;font-size:1rem;opacity:.7;transition:transform .18s ease;}
 .log-hero.open .lh-chevron{transform:rotate(180deg);}
 /* Hero-Detail als eigenständige Box direkt unter der Hero-Kachel (nicht in einer .entry) */
@@ -401,6 +520,9 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
    scrollt wie normaler Content mit weg, sobald es aus dem Viewport läuft.
    Höhe kommt ausschließlich aus --hero-h (JS, siehe updateHero()). ===== */
 .hero-visual{
+  /* Storm-Hero-Bild entfernt (Nutzer-Briefing): nur noch das Dither-Logo bleibt.
+     Ebene bleibt im DOM (JS-Referenzen), wird aber nicht mehr gerendert. */
+  display:none!important;
   position:absolute;left:0;right:0;top:0;
   height:var(--hero-h);
   overflow:hidden;
@@ -604,7 +726,7 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .metric::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent-gradient);opacity:0;transition:opacity .2s;}
 .metric:hover::before{opacity:1;}
 .metric .m-label{font-size:.68rem;font-family:var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin:0 0 .25rem;border-top:1px solid var(--ink);padding-top:.3rem;}
-.metric .m-value{font-size:1.45rem;font-weight:400;font-family:var(--font-pixel);letter-spacing:0;color:var(--text);}.charts{display:grid;grid-template-columns:1.4fr 1fr;gap:1.25rem;margin-bottom:1.25rem;}
+.metric .m-value{font-size:1.45rem;font-weight:600;font-family:var(--font-sans);letter-spacing:-.01em;color:var(--text);font-variant-numeric:tabular-nums;}.charts{display:grid;grid-template-columns:1.4fr 1fr;gap:1.25rem;margin-bottom:1.25rem;}
 @media(max-width:600px){.charts{grid-template-columns:1fr;}}
 .chart-box{position:relative;height:180px;}
 .workload-chart-box{position:relative;height:220px;}
@@ -618,16 +740,14 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
    lösen ihn auf → das Label „scharfstellt" sich. */
 /* height:44px = exakt die Höhe des quadratischen [+]-Buttons (.log-add-fab) → beide Buttons
    gleich hoch, damit die Kopf-Zeile gleichmäßig sitzt (gleicher Abstand oben/unten). */
-.log-sync-btn{display:inline-flex;align-items:center;gap:.4rem;height:44px;padding:0 1.7rem;border-radius:0;border:none;background:var(--signal-lav);color:var(--ink);font-family:var(--font-pixel);font-size:1rem;letter-spacing:.04em;font-weight:400;cursor:pointer;transition:background .12s,filter .2s ease;filter:blur(1.4px);}
-.log-sync-btn:hover:not(:disabled),.log-sync-btn:focus-visible,.log-sync-btn:active{background:var(--signal-lav-deep);filter:blur(0);}
+.log-sync-btn{display:inline-flex;align-items:center;gap:.4rem;height:44px;padding:0 1.7rem;border-radius:0;border:none;background:var(--signal-lav);color:var(--ink);font-family:var(--font-sans);font-size:.92rem;letter-spacing:.02em;font-weight:500;cursor:pointer;transition:background .12s;}
+.log-sync-btn:hover:not(:disabled),.log-sync-btn:focus-visible,.log-sync-btn:active{background:var(--signal-lav-deep);}
 .log-sync-btn:disabled{opacity:.4;cursor:not-allowed;}
 .log-sync-btn.syncing i{animation:spin 1s linear infinite;}
-.log-sync-btn.syncing{filter:blur(0);}
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .log-actions{position:relative;}
-.log-add-fab{width:44px;height:44px;border-radius:0;border:none;background:var(--signal-lav);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;font-family:var(--font-pixel);font-size:1.7rem;line-height:1;transition:background .12s,filter .2s ease,transform .12s;filter:blur(1.4px);}
-.log-add-fab:hover,.log-add-fab:focus-visible,.log-add-fab:active,.log-add-fab.open{filter:blur(0);}
-.log-add-fab:hover{background:var(--signal-lav-deep);}
+.log-add-fab{width:44px;height:44px;border-radius:0;border:none;background:var(--signal-lav);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;font-family:var(--font-sans);font-size:1.7rem;font-weight:400;line-height:1;transition:background .12s,transform .12s;}
+.log-add-fab:hover,.log-add-fab:focus-visible{background:var(--signal-lav-deep);}
 .log-add-fab.open{transform:rotate(45deg);}
 .log-add-menu{position:absolute;top:52px;right:0;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:0;box-shadow:0 8px 24px rgba(44,44,42,.14);padding:.4rem;z-index:60;display:flex;flex-direction:column;gap:.2rem;}
 .log-add-menu[hidden]{display:none;}
@@ -647,16 +767,23 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .wlc-paper svg{width:100%;height:100%;display:block;overflow:visible;}
 .chart-dark canvas{position:relative;z-index:1;}
 .legend{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:.5rem;font-size:.75rem;color:var(--text-muted);}
-.dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:3px;vertical-align:-1px;}.entry{border-bottom:1px solid var(--border);padding:.7rem 0;}
+.dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:3px;vertical-align:-1px;}
+/* Log-Eintrag: großzügiges Zwei-Spalten-Feld statt kompakter Zeile (Nutzer-Briefing) —
+   links Datum + große VCR-Dauer/Zone, rechts Sport-Badge + Titel + Meta, rechtsbündig. */
+.entry{border-bottom:1px solid var(--border);padding:1.25rem 0;}
 .entry:last-child{border-bottom:none;}
-.entry-top{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;cursor:pointer;user-select:none;}
-.entry-sport{font-weight:600;display:flex;align-items:center;gap:.35rem;min-width:80px;}
-.entry-date{font-family:var(--font-mono);font-size:.78rem;color:var(--text-muted);min-width:65px;}
+.entry-top{display:flex;justify-content:space-between;align-items:flex-start;gap:.9rem;cursor:pointer;user-select:none;}
+.entry-left{display:flex;flex-direction:column;gap:.35rem;min-width:0;}
+.entry-right{display:flex;flex-direction:column;align-items:flex-end;gap:.3rem;text-align:right;max-width:56%;}
+.entry-date{font-family:var(--font-mono);font-weight:var(--fw-secondary);font-size:.76rem;color:var(--text-faint);text-transform:uppercase;letter-spacing:.03em;font-variant-numeric:tabular-nums;}
 /* Rollen: .badge = neutrales Mono-Label (Meta/Status) · .pill = semantisch eingefärbtes Label (Zone/Sportart) */
 .pill{font-size:.68rem;font-weight:500;padding:.1rem .5rem;border-radius:0;display:inline-block;}
-.entry-duration{font-family:var(--font-mono);font-size:.82rem;color:var(--text-muted);}
-.entry-meta{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.28rem;}
-.entry-meta span{font-size:.75rem;color:var(--text-muted);}
+.entry-main{display:flex;align-items:baseline;gap:.55rem;flex-wrap:wrap;}
+.entry-duration{font-family:var(--font-pixel);font-size:clamp(1.9rem,8vw,2.5rem);line-height:1;color:var(--ink);}
+.entry-zone-tag{font-family:var(--font-mono);font-size:.72rem;font-weight:700;letter-spacing:.05em;padding:.12rem .1rem;}
+.entry-badge{font-size:.74rem;font-weight:600;padding:.22rem .55rem;border-radius:0;display:inline-flex;align-items:center;gap:.35rem;}
+.entry-title{font-style:italic;color:var(--text-muted);font-size:.8rem;}
+.entry-meta{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.4rem;font-size:.75rem;color:var(--text-faint);}
 .entry-detail{display:none;margin-top:.65rem;background:var(--bg);border-radius:var(--radius);padding:.85rem;border:1px solid var(--border);}
 .entry-detail.open{display:block;}
 .detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.6rem;margin-bottom:.75rem;}
@@ -680,7 +807,7 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.08rem .28rem;border-radius:0;}
 .cal-tabs{display:inline-flex;background:var(--bg);border:1px solid var(--border);border-radius:0;padding:.18rem;}
 .cal-tabs button{border:none;background:transparent;border-radius:0;padding:.3rem .85rem;font-size:.82rem;color:var(--text-muted);}
-.cal-tabs button.active{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.06);font-weight:600;}
+.cal-tabs button.active{background:var(--surface);color:var(--text);font-weight:600;}
 /* Kalender-Grid in der Poster-Grammatik: sauberes, eckiges Raster mit
    Ink-Hairlines auf Off-White. "Heute" trägt die eine laute Geste des Screens:
    blaue Papercut-Plate + große Pixel-Tageszahl, die leicht übersteht. */
@@ -693,11 +820,11 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
 .cal-cell.today::before{content:"";position:absolute;inset:0;background:var(--met-endurance);-webkit-mask-image:var(--paper-tex-3);mask-image:var(--paper-tex-3);-webkit-mask-size:cover;mask-size:cover;pointer-events:none;}
 .cal-cell.today>*{position:relative;}
 .cal-daynum{font-family:var(--font-mono);font-size:.68rem;color:var(--text-muted);}
-.cal-cell.today .cal-daynum{font-family:var(--font-pixel);font-size:2.2rem;line-height:.8;color:var(--met-endurance-deep);font-weight:400;margin:-.55rem 0 .1rem -.4rem;text-shadow:1px 1px 0 var(--paper-raised);}
+.cal-cell.today .cal-daynum{font-family:var(--font-sans);font-size:2rem;line-height:.8;color:var(--met-endurance-deep);font-weight:700;letter-spacing:-.02em;margin:-.35rem 0 .1rem -.15rem;font-variant-numeric:tabular-nums;}
 .cal-cell-drop-target{outline:2px solid var(--met-endurance);outline-offset:-2px;}
 .cal-entries{display:flex;flex-direction:column;gap:.18rem;flex:1;}
 .cal-chip{display:flex;align-items:center;gap:.25rem;font-size:.62rem;font-weight:600;border-radius:0;padding:.08rem .28rem;line-height:1.3;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;position:relative;}
-.cal-chip-warn{width:6px;height:6px;border-radius:50%;background:#d97706;flex-shrink:0;box-shadow:0 0 0 1.5px var(--surface);}
+.cal-chip-warn{width:6px;height:6px;border-radius:50%;background:var(--sig-caution-deep);flex-shrink:0;box-shadow:0 0 0 1.5px var(--surface);}
 .cal-chip .cal-dur{margin-left:auto;font-family:var(--font-mono);font-weight:500;opacity:.75;flex-shrink:0;}
 .cal-grid.week .cal-cell{min-height:130px;}
 .cal-grid.week .cal-chip{font-size:.7rem;padding:.2rem .32rem;white-space:normal;}
@@ -726,13 +853,13 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
   #cal-label{min-width:auto!important;font-size:.78rem!important;}
 }
 /* Segment-Tabs (Auswertung & Wochen-Umschalter) — einheitliches Aussehen */
-.analytics-tabs,.tab-bar{display:flex;gap:.5rem;margin-bottom:1.1rem;flex-wrap:wrap;}
+.analytics-tabs,.tab-bar{display:flex;gap:.5rem;margin-bottom:1.25rem;flex-wrap:wrap;}
 .analytics-tabs button,.tab-bar button{font-size:.8rem;padding:.32rem .75rem;}
 .analytics-tabs button.active,.tab-bar button.active{background:var(--text);border-color:var(--text);color:var(--surface);font-weight:500;}
-.sport-filter{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.85rem;}
+.sport-filter{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem;}
 .sport-filter button{font-size:.75rem;padding:.25rem .6rem;border-radius:0;}
 .sport-filter button.active{color:#fff;border-color:transparent;}
-.analytics-chart-box{position:relative;height:220px;margin:0 -.9rem 1.1rem;width:calc(100% + 1.8rem);padding:0;}
+.analytics-chart-box{position:relative;height:220px;margin:0 -.9rem 1.3rem;width:calc(100% + 1.8rem);padding:0;}
 .analytics-chart-scroll{position:relative;width:100%;height:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;padding:.6rem .35rem;box-sizing:border-box;}
 .analytics-chart-scroll svg{display:block;height:100%;}
 .analytics-chart-box::after{content:'';position:absolute;top:0;left:0;bottom:0;width:24px;pointer-events:none;background:linear-gradient(to right,var(--chart-surface),transparent);}
@@ -884,6 +1011,10 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 @keyframes hswipePeek{0%{transform:translateX(0);}35%{transform:translateX(-12px);}100%{transform:translateX(0);}}
 .hswipe-peek>*:first-child{animation:hswipePeek .7s ease .4s 1;}
 .hswipe{align-items:flex-start;}
+/* EF-Hswipe (Aerobe Effizienz): feste Caption-Höhe je Slot, damit die erste Chart-Box in
+   allen drei Perspektiven auf derselben Höhe beginnt — sonst „springt" der Chart beim
+   seitlichen Wischen, weil die Slot-Texte unterschiedlich viele Zeilen umbrechen. */
+.ef-slot-note{font-size:.72rem;color:var(--text-muted);margin:0 0 .6rem;min-height:4.4rem;}
 /* B2: Budget-Slot + Nächste-Einheiten-Slot */
 .budget-head{font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin:.4rem 0 .6rem;padding-bottom:.3rem;border-bottom:1px solid var(--border);}
 .budget-bar{display:flex;height:18px;border:1px solid var(--ink);background:repeating-linear-gradient(90deg,transparent 0 6px,var(--border) 6px 8px);overflow:hidden;}
@@ -1025,17 +1156,11 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 .weekly-compare-box{height:200px;}
 /* Zonenverteilung & Wochenvergleich: ohne hellen Panel-Hintergrund, volle Kastenbreite */
 .ws-chart-panel .wlc-paper{background:transparent;padding:0;}
+.ws-chart-panel .wlc-paper::before{display:none;}
 #weekly-compare-chart{height:200px;}
 /* Zonen-Motiv füllt die volle Breite; Höhe folgt dem Seitenverhältnis (480:202) */
 .ws-chart-panel[data-view="zones"] .weekly-compare-box{height:auto;}
 #zones-dist-chart{width:100%;height:auto;display:block;shape-rendering:crispEdges;} /* keine AA-Nähte zwischen Pixel-Rects */
-/* Chart-Umschalter (Wochenvergleich ⇄ Lastverteilung) */
-.ws-chart-switch{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin:0 0 .3rem;}
-.ws-chart-switch .ws-h{margin:0;text-align:center;flex:1;}
-.ws-arrow{flex-shrink:0;}
-.ws-chart-dots{display:flex;justify-content:center;gap:.4rem;margin:0 0 .7rem;}
-.ws-dot{width:6px;height:6px;border-radius:50%;background:var(--text-faint);opacity:.4;transition:opacity .2s ease,background .2s ease;}
-.ws-dot.active{opacity:1;background:var(--accent-purple);}
 .ld-bar{cursor:pointer;}
 /* Mobile: Kacheln unter der Wochennavigation verkleinern, damit die Tiles UND
    der Wochenvergleichschart gemeinsam ohne Scrollen auf den Bildschirm passen */
@@ -1118,8 +1243,6 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 
 <div id="splash" aria-hidden="true"><div class="sp-cursor">▮</div></div>
 
-<div id="paper-tex" aria-hidden="true"></div>
-<div id="paper-dither" aria-hidden="true"></div>
 
 <!-- Hero-Wetter (nur Log-Seite): Storm-Hintergrund + ASCII-Blitz. Muss VOR
      #logo-stage im DOM stehen: gleicher z-index (1) wie #logo-stage, aber
@@ -1154,16 +1277,23 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 <div id="app" style="display:none;">
 <!-- Pull-to-Refresh: oben ziehen zum Aktualisieren der App -->
 <div id="ptr-indicator" aria-hidden="true"><i class="ti ti-refresh"></i></div>
-<nav id="bottom-nav">
-  <button class="active" data-page="log"><span class="nav-icon"><i class="ti ti-clipboard-list"></i></span>Log</button>
-  <button data-page="calendar"><span class="nav-icon"><i class="ti ti-calendar"></i></span>Kalender</button>
-  <button data-page="analytics"><span class="nav-icon"><i class="ti ti-chart-bar"></i></span>Auswertung</button>
-  <button data-page="library"><span class="nav-icon"><i class="ti ti-books"></i></span>Bibliothek</button>
-  <button data-page="ai"><span class="nav-icon"><i class="ti ti-robot"></i></span>KI</button>
-  <button data-page="settings-page"><span class="nav-icon"><i class="ti ti-settings"></i></span>Mehr</button>
-</nav>
 
 <div class="wrap">
+<!-- Navigation: Hamburger oben im Fluss (scrollt mit). Klick öffnet das Seiten-Menü.
+     Ersetzt die alte fixierte Bottom-Nav. -->
+<div class="topbar">
+  <button type="button" id="nav-toggle" class="nav-toggle" aria-label="Menü öffnen" aria-expanded="false" aria-controls="nav-menu">
+    <span></span><span></span><span></span>
+  </button>
+  <nav id="nav-menu" hidden>
+    <button class="active" data-page="log"><span class="nav-icon"><i class="ti ti-clipboard-list"></i></span>Log</button>
+    <button data-page="calendar"><span class="nav-icon"><i class="ti ti-calendar"></i></span>Kalender</button>
+    <button data-page="analytics"><span class="nav-icon"><i class="ti ti-chart-bar"></i></span>Auswertung</button>
+    <button data-page="library"><span class="nav-icon"><i class="ti ti-books"></i></span>Bibliothek</button>
+    <button data-page="ai"><span class="nav-icon"><i class="ti ti-robot"></i></span>KI</button>
+    <button data-page="settings-page"><span class="nav-icon"><i class="ti ti-settings"></i></span>Mehr</button>
+  </nav>
+</div>
 <header id="main-header" class="has-logo">
 <h1 id="page-title">Training Log</h1>
 </header>
@@ -1328,21 +1458,22 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
       </div>
     </div>
 
+    <!-- Wochenvergleich ⇄ Zonenverteilung: horizontal wischbar (gleiche hswipe-Logik
+         wie „Aktuelle Einheiten"), statt Pfeil-Umschalter. Beide Panels liegen als
+         volle Slots nebeneinander; initHSwipe hängt die Punkt-Indikatoren an. -->
     <div class="ws-section">
-      <div class="ws-chart-switch">
-        <button class="icon ws-arrow" id="ws-chart-prev" aria-label="Vorheriger Chart"><i class="ti ti-arrow-left"></i></button>
-        <h3 class="ws-h" id="ws-chart-title"><i class="ti ti-git-compare"></i> Wochenvergleich</h3>
-        <button class="icon ws-arrow" id="ws-chart-next" aria-label="Nächster Chart"><i class="ti ti-arrow-right"></i></button>
-      </div>
-      <div class="ws-chart-dots"><span class="ws-dot" data-view="compare"></span><span class="ws-dot" data-view="zones"></span></div>
-      <div class="ws-chart-panel" data-view="compare">
-        <div id="weekly-growth-cards" class="metrics metrics-3" style="margin-bottom:.9rem;"></div>
-        <div class="workload-chart-box wlc-paper weekly-compare-box"><svg id="weekly-compare-chart" width="100%" height="100%"></svg></div>
-        <div id="weekly-compare-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
-      </div>
-      <div class="ws-chart-panel" data-view="zones" hidden>
-        <div class="workload-chart-box wlc-paper weekly-compare-box"><svg id="zones-dist-chart" width="100%" height="100%"></svg></div>
-        <div id="zones-dist-legend" style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;align-items:center;"></div>
+      <div class="hswipe" id="ws-chart-hswipe">
+        <div class="hswipe-slot ws-chart-panel" data-view="compare">
+          <h3 class="ws-h"><i class="ti ti-git-compare"></i> Wochenvergleich</h3>
+          <div id="weekly-growth-cards" class="metrics metrics-3" style="margin-bottom:.9rem;"></div>
+          <div class="workload-chart-box wlc-paper weekly-compare-box"><svg id="weekly-compare-chart" width="100%" height="100%"></svg></div>
+          <div id="weekly-compare-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
+        </div>
+        <div class="hswipe-slot ws-chart-panel" data-view="zones">
+          <h3 class="ws-h"><i class="ti ti-flame"></i> Zonenverteilung</h3>
+          <div class="workload-chart-box wlc-paper weekly-compare-box"><svg id="zones-dist-chart" width="100%" height="100%"></svg></div>
+          <div id="zones-dist-legend" style="font-family:var(--font-mono);font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;align-items:center;"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -1397,13 +1528,22 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
   <!-- Die eine laute Poster-Geste dieses Screens (Design-Briefing): ACWR als riesige,
        grob geditherte Pixel-Zahl. Alles andere auf der Seite bleibt diszipliniert. -->
   <div class="poster" id="acwr-poster">
-    <canvas id="acwr-poster-canvas" aria-hidden="true"></canvas>
-    <span class="poster-fallback" id="acwr-poster-fallback" hidden></span>
-    <p class="poster-label">ACWR &#183; <span id="acwr-poster-status"></span></p>
+    <div class="hswipe poster-hswipe" id="acwr-hswipe">
+      <div class="hswipe-slot poster-slot">
+        <canvas id="acwr-poster-canvas" aria-hidden="true"></canvas>
+        <span class="poster-fallback" id="acwr-poster-fallback" hidden></span>
+        <p class="poster-label">ACWR &#183; <span id="acwr-poster-status"></span></p>
+      </div>
+      <div class="hswipe-slot poster-slot">
+        <canvas id="load-poster-canvas" aria-hidden="true"></canvas>
+        <span class="poster-fallback" id="load-poster-fallback" hidden></span>
+        <p class="poster-label">LOAD 7 TAGE &#183; <span id="load-poster-status"></span></p>
+      </div>
+    </div>
   </div>
   <div class="card">
     <h2><i class="ti ti-chart-area"></i> Verteilung über Zeit</h2>
-    <p style="font-size:.74rem;color:var(--text-muted);margin:-.2rem 0 .7rem;">Entwicklung deiner Trainingsverteilung über 16 Wochen — scroll horizontal, um weiter zurückzugehen.</p>
+    <p style="font-size:.74rem;color:var(--text-muted);margin:0 0 1rem;">Entwicklung deiner Trainingsverteilung über 16 Wochen — scroll horizontal, um weiter zurückzugehen.</p>
     <div class="analytics-tabs" id="analytics-mode-tabs">
       <button class="active" data-mode="time-sport-abs">Zeit · Sportart</button>
       <button data-mode="time-zone">Zeit · Zonen</button>
@@ -1437,7 +1577,7 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
     </div>
   <div class="card" style="margin-top:1rem;">
       <h2><i class="ti ti-activity"></i> Workload-Progression</h2>
-      <p style="font-size:.74rem;color:var(--text-muted);margin:-.3rem 0 .7rem;">4 W / 8 W: einzelne Einheiten im Vergleich zum lokalen Ø. 3 M / 6 M: kumulierte Wochenlast im Vergleich zum 3-Wochen-Ø. Klick auf einen Wochenpunkt öffnet den Tagesverlauf.</p>
+      <p style="font-size:.74rem;color:var(--text-muted);margin:0 0 1rem;">4 W / 8 W: einzelne Einheiten im Vergleich zum lokalen Ø. 3 M / 6 M: kumulierte Wochenlast im Vergleich zum 3-Wochen-Ø. Klick auf einen Wochenpunkt öffnet den Tagesverlauf.</p>
       <div class="tile-flow" id="acwr-cards"></div>
       <div class="tab-bar" id="acwr-weeks-tabs" style="margin:.6rem 0;">
         <button class="active" data-weeks="4">4 W</button>
@@ -1457,38 +1597,40 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
     </div>
     <div class="card" style="margin-top:1rem;">
       <h2><i class="ti ti-heart-rate-monitor"></i> Aerobe Effizienz</h2>
-      <p style="font-size:.74rem;color:var(--text-muted);margin:-.3rem 0 .7rem;">EF (Leistung bzw. Tempo je Herzschlag) über die Zeit für Grundlageneinheiten &ge;30 min. Steigende EF bei stabilem Decoupling = wachsende aerobe Fitness. Decoupling (rechte Achse, invertiert) = HF-Drift 1. vs. 2. Hälfte. Zeitfenster folgt der Workload-Progression. Basis: nur Trainingseinheiten (Ruhetage ohne Einfluss).</p>
+      <p style="font-size:.74rem;color:var(--text-muted);margin:0 0 1rem;">EF (Leistung bzw. Tempo je Herzschlag) über die Zeit für Grundlageneinheiten &ge;30 min. Steigende EF bei stabilem Decoupling = wachsende aerobe Fitness. Decoupling (rechte Achse, invertiert) = HF-Drift 1. vs. 2. Hälfte. Zeitfenster folgt der Workload-Progression. Basis: nur Trainingseinheiten (Ruhetage ohne Einfluss).</p>
       <!-- Paket B3: drei horizontale Perspektiven — EF über Zeit / EF gegen Load / Rad+Lauf indexiert -->
       <div class="hswipe" id="ef-hswipe">
         <div class="hswipe-slot">
+          <p class="ef-slot-note">EF über die Zeit, je Sportart mit Median-Band (±MAD). Decoupling rechts, invertiert.</p>
           <div style="margin-bottom:.4rem;">
             <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;"><i class="ti ti-run"></i> Lauf <span id="ef-verdict-run" style="font-weight:400;"></span></div>
             <div class="workload-chart-box wlc-paper" id="ef-chart-run-box" style="height:190px;"><svg id="ef-chart-run-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
             <div id="ef-legend-run" style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
           </div>
-          <div style="margin-top:.9rem;">
+          <div style="margin-top:1.1rem;">
             <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;"><i class="ti ti-bike"></i> Rad <span id="ef-verdict-bike" style="font-weight:400;"></span></div>
             <div class="workload-chart-box wlc-paper" id="ef-chart-bike-box" style="height:190px;"><svg id="ef-chart-bike-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
             <div id="ef-legend-bike" style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
           </div>
         </div>
         <div class="hswipe-slot">
-          <p style="font-size:.72rem;color:var(--text-muted);margin:0 0 .5rem;">EF gegen 7-Tage-Load am Tag der Einheit — klärt, ob ein EF-Rückgang ermüdungsgetrieben ist oder Streuung. Gleiches Zeitfenster wie Slot 1. Basis: Trainingstage.</p>
+          <p class="ef-slot-note">EF gegen 7-Tage-Load am Tag der Einheit — klärt, ob ein EF-Rückgang ermüdungsgetrieben ist oder Streuung. Gleiches Zeitfenster wie Slot 1. Basis: Trainingstage.</p>
           <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);margin-bottom:.25rem;"><i class="ti ti-run"></i> Lauf</div>
           <div class="workload-chart-box wlc-paper" id="ef-load-run-box" style="height:170px;"><svg id="ef-load-run-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
-          <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);margin:.7rem 0 .25rem;"><i class="ti ti-bike"></i> Rad</div>
+          <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);margin:1rem 0 .25rem;"><i class="ti ti-bike"></i> Rad</div>
           <div class="workload-chart-box wlc-paper" id="ef-load-bike-box" style="height:170px;"><svg id="ef-load-bike-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
         </div>
         <div class="hswipe-slot">
-          <p style="font-size:.72rem;color:var(--text-muted);margin:0 0 .5rem;">Rad und Lauf übereinander, je auf den ersten Wert des Fensters normalisiert (Index 100). Basis: Trainingstage.</p>
-          <div class="workload-chart-box wlc-paper" id="ef-index-box" style="height:240px;"><svg id="ef-index-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
+          <p class="ef-slot-note">Rad und Lauf übereinander, je auf den ersten Wert des Fensters normalisiert (Index 100). Basis: Trainingstage.</p>
+          <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;"><i class="ti ti-chart-line"></i> Index-Vergleich</div>
+          <div class="workload-chart-box wlc-paper" id="ef-index-box" style="height:340px;"><svg id="ef-index-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
           <div id="ef-index-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
         </div>
       </div>
     </div>
     <div class="card" style="margin-top:1rem;">
       <h2><i class="ti ti-chart-line"></i> Aufschlüsselung nach Kategorie</h2>
-      <p style="font-size:.74rem;color:var(--text-muted);margin:-.3rem 0 .7rem;">Entwicklung einzelner Kategorien über die Zeit — Metrik(en) auswählen und Zeitraum wechseln.</p>
+      <p style="font-size:.74rem;color:var(--text-muted);margin:0 0 1rem;">Entwicklung einzelner Kategorien über die Zeit — Metrik(en) auswählen und Zeitraum wechseln.</p>
       <div class="sport-filter" id="breakdown-metric-filter"></div>
       <div class="tab-bar" id="breakdown-weeks-tabs" style="margin:.6rem 0;">
         <button class="active" data-weeks="4">4 W</button>
@@ -1805,6 +1947,22 @@ Aktueller Fokus: Grundlagenausdauer aufbauen"></textarea>
     </div>
   </div>
 </div>
+
+<!-- Garmin-Sync Kopplungs-Modal -->
+<div class="modal-backdrop" id="garmin-link-modal">
+  <div class="modal" style="max-width:640px;width:100%;max-height:85vh;display:flex;flex-direction:column;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <h3 style="margin:0;font-size:1.05rem;">Garmin-Sync: Einheiten koppeln</h3>
+      <button class="modal-close" onclick="closeGarminLinkModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <p style="font-size:.82rem;color:var(--text-muted);margin:0 0 .8rem;">Für diese Tage gibt es bereits eine Trainingsnotiz. Mit welcher Einheit sollen die Garmin-Daten (HF, Distanz) verknüpft werden?</p>
+    <div style="overflow-y:auto;flex:1;" id="glm-table-wrap"></div>
+    <div style="display:flex;gap:.6rem;margin-top:1rem;justify-content:flex-end;">
+      <button onclick="closeGarminLinkModal()">Abbrechen</button>
+      <button class="primary" id="glm-apply-btn" onclick="applyGarminLinkChoices()">Übernehmen</button>
+    </div>
+  </div>
+</div>
 </div><!-- /app -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -2034,24 +2192,30 @@ const DB={
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 // ── DEFAULTS ──────────────────────────────────────────────────────────────────
+// Zentraler Lesezugriff auf die CSS-Farb-Tokens (§8: eine Quelle der Wahrheit).
+// Früh definiert, damit die Defaults unten ihre Farben aus :root beziehen können.
+const cssVar=(name,fallback='')=>{
+  const v=getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v||fallback;
+};
 const DEFAULT_SPORTS=[
-  {key:'Rad',label:'Rad',color:'#7c9bb5',icon:'ti-bike',imgUrl:null,freitext:false},
-  {key:'Lauf',label:'Lauf',color:'#6f8f3e',icon:'ti-run',imgUrl:null,freitext:false},
-  {key:'Kraft',label:'Kraft',color:'#c8603a',icon:'ti-barbell',imgUrl:null,freitext:true},
-  {key:'Capacity',label:'Capacity',color:'#d79b46',icon:'ti-flame',imgUrl:null,freitext:false},
-  {key:'Kampfsport',label:'Kampfsport',color:'#8c6db0',icon:'ti-karate',imgUrl:null,freitext:true},
-  {key:'Sonstiges',label:'Sonstiges',color:'#5f5e5a',icon:'ti-bolt',imgUrl:null,freitext:true}
+  {key:'Rad',label:'Rad',color:cssVar('--cat-rad','#7c9bb5'),icon:'ti-bike',imgUrl:null,freitext:false},
+  {key:'Lauf',label:'Lauf',color:cssVar('--cat-lauf','#6f8f3e'),icon:'ti-run',imgUrl:null,freitext:false},
+  {key:'Kraft',label:'Kraft',color:cssVar('--cat-kraft','#c8603a'),icon:'ti-barbell',imgUrl:null,freitext:true},
+  {key:'Capacity',label:'Capacity',color:cssVar('--cat-capacity','#d79b46'),icon:'ti-flame',imgUrl:null,freitext:false},
+  {key:'Kampfsport',label:'Kampfsport',color:cssVar('--cat-kampfsport','#8c6db0'),icon:'ti-karate',imgUrl:null,freitext:true},
+  {key:'Sonstiges',label:'Sonstiges',color:cssVar('--cat-sonstiges','#5f5e5a'),icon:'ti-bolt',imgUrl:null,freitext:true}
 ];
 /* Zonen-Leiter im Briefing-Farbsystem: Z1–Z3 Blau-Familie (ruhig, Ausdauer),
    Z4/Z5 Lila (Intensität). Greift nur für neue Configs — gespeicherte
    Nutzerfarben (cfg.zones) bleiben unangetastet. */
 const DEFAULT_ZONES=[
-  {key:'Z1',label:'Zone 1',hrMin:null,hrMax:null,color:'#B9C4F5',recoveryFactor:1.0},
-  {key:'Z2',label:'Zone 2',hrMin:null,hrMax:null,color:'#7E93EC',recoveryFactor:1.0},
-  {key:'Z3',label:'Zone 3',hrMin:null,hrMax:null,color:'#2441FF',recoveryFactor:1.0},
-  {key:'Z4',label:'Zone 4',hrMin:null,hrMax:null,color:'#7B5CD6',recoveryFactor:1.0},
-  {key:'Z5',label:'Zone 5',hrMin:null,hrMax:null,color:'#4F3796',recoveryFactor:1.0},
-  {key:'-',label:'Keine Zone',hrMin:null,hrMax:null,color:'#c9c6bc',recoveryFactor:1.0}
+  {key:'Z1',label:'Zone 1',hrMin:null,hrMax:null,color:cssVar('--zone-1','#B9C4F5'),recoveryFactor:1.0},
+  {key:'Z2',label:'Zone 2',hrMin:null,hrMax:null,color:cssVar('--zone-2','#7E93EC'),recoveryFactor:1.0},
+  {key:'Z3',label:'Zone 3',hrMin:null,hrMax:null,color:cssVar('--zone-3','#2441FF'),recoveryFactor:1.0},
+  {key:'Z4',label:'Zone 4',hrMin:null,hrMax:null,color:cssVar('--zone-4','#7B5CD6'),recoveryFactor:1.0},
+  {key:'Z5',label:'Zone 5',hrMin:null,hrMax:null,color:cssVar('--zone-5','#4F3796'),recoveryFactor:1.0},
+  {key:'-',label:'Keine Zone',hrMin:null,hrMax:null,color:cssVar('--zone-none','#c9c6bc'),recoveryFactor:1.0}
 ];
 // Backwards-Compat: alte Configs ohne freitext-Flag pro Sport
 const FREITEXT=['Kraft','Kampfsport','Sonstiges'];
@@ -2097,10 +2261,7 @@ function ingestGarminWellness(data){
 // Liest ein CSS-Design-Token (z.B. '--met-endurance') als konkreten Farbwert aus.
 // Charts/SVG brauchen echte Farben statt var(); so bleibt die Token-Palette
 // die einzige Quelle der Wahrheit.
-const cssVar=(name,fallback='')=>{
-  const v=getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  return v||fallback;
-};
+// cssVar() ist oben (vor DEFAULTS) definiert.
 const PAPER=cssVar('--surface','#f1eee6');   // Papier-Hintergrund (für Punkt-Ränder etc.)
 
 // ── DITHER-REGISTRY (Dithering-Grammatik, datengetriebener Fall) ──────────────
@@ -2184,7 +2345,6 @@ const glowPlugin={
 Chart.register(glowPlugin);
 let weekOffset=0,calMode='month',monthOffset=0,logListCount=8;
 let weeklyCompareChart=null;
-let logChartView='compare';   // aktive Log-Chart-Ansicht: 'compare' | 'zones'
 let monotonyChart=null;
 
 // ── BIBLIOTHEK ────────────────────────────────────────────────────────────────
@@ -2485,13 +2645,13 @@ function modalityIndicator(session){
   const ratio=srpeLoad/trimpLoad;
   let label,color,desc;
   if(ratio>=1.4){
-    label='Muskulär dominiert';color='#c4544a';
+    label='Muskulär dominiert';color=cssVar('--diag-muscular','#c4544a');
     desc='Subjektive Last deutlich über HF-Last — neuromuskuläre/mechanische Belastung dominiert';
   }else if(ratio>=0.85){
-    label='Gemischte Belastung';color='#e8975c';
+    label='Gemischte Belastung';color=cssVar('--diag-mixed','#e8975c');
     desc='Muskuläre und metabolische Belastung fallen zusammen';
   }else{
-    label='Metabolisch dominiert';color='#5b9bd5';
+    label='Metabolisch dominiert';color=cssVar('--diag-metabolic','#5b9bd5');
     desc='HF-Last entspricht oder übersteigt die subjektive Einschätzung — aerob-metabolisch geprägt';
   }
   return{ratio:Math.round(ratio*100)/100,label,color,desc,srpeLoad:Math.round(srpeLoad),trimpLoad:Math.round(trimpLoad)};
@@ -2507,11 +2667,11 @@ function acwrColor(weekLoad,chronicLoad){
   return cssVar('--acwr-high','#c0453f');
 }
 function acwrStatus(acwr){
-  if(acwr<0.5)return{label:'Kaum Reiz',color:'#888780'};
-  if(acwr<0.8)return{label:'Unter Zielzone',color:'#185FA5'};
-  if(acwr<=1.3)return{label:'Optimale Zone',color:'#3B6D11'};
-  if(acwr<=1.5)return{label:'Vorsicht',color:'#854F0B'};
-  return{label:'Überlastung',color:'#A32D2D'};
+  if(acwr<0.5)return{label:'Kaum Reiz',color:cssVar('--sig-neutral','#888780')};
+  if(acwr<0.8)return{label:'Unter Zielzone',color:cssVar('--sig-low-deep','#185FA5')};
+  if(acwr<=1.3)return{label:'Optimale Zone',color:cssVar('--sig-ok-deep','#3B6D11')};
+  if(acwr<=1.5)return{label:'Vorsicht',color:cssVar('--sig-caution-deep','#854F0B')};
+  return{label:'Überlastung',color:cssVar('--sig-high-deep','#A32D2D')};
 }
 
 function fmtWorkload(v){return v!=null?String(Math.round(v)):'&#x2014;';}
@@ -2618,7 +2778,7 @@ function computeAcwrStatsRolling(asOf){
   // N2: Chronic wegen <21 Tagen Datenhistorie gegated, obwohl Sessions existieren
   const baseIncomplete=cur.chronic==null&&sessions.some(s=>!isPlanned(s)&&!isSpecialEntry(s));
   const currentStatus=cur.acwr!=null?acwrStatus(cur.acwr):
-    {label:baseIncomplete?'Basis unvollständig':'Keine Daten',color:'#888780'};
+    {label:baseIncomplete?'Basis unvollständig':'Keine Daten',color:cssVar('--sig-neutral','#888780')};
   return{currentLoad:cur.acute,currentChronic:cur.chronic,currentAcwr:cur.acwr,currentStatus,baseIncomplete};
 }
 function acwrCardsHTML(stats){
@@ -2704,7 +2864,7 @@ function computeRestDayDeficit(asOf,{windowDays=14,targetRestDays=2}={}){
   return{restDays,deficit:Math.max(0,targetRestDays-restDays)};
 }
 function restStreakStatus(streak){
-  if(streak==null)return{label:'Keine Daten',color:'#888780',severity:null};
+  if(streak==null)return{label:'Keine Daten',color:cssVar('--sig-neutral','#888780'),severity:null};
   if(streak<REST_STREAK_YELLOW)return{label:'Im Takt',color:cssVar('--acwr-optimal'),severity:0};
   if(streak<REST_STREAK_RED)return{label:'Mehr Ruhe nötig',color:cssVar('--acwr-caution'),severity:1};
   return{label:'Ruhepausen fehlen',color:cssVar('--acwr-high'),severity:2};
@@ -2761,7 +2921,7 @@ function computeRecoveryDebt(asOf){
   return{debt:debt!=null?debt:0};
 }
 function recoveryDebtStatus(debt){
-  if(debt==null)return{label:'Keine Daten',color:'#888780',severity:null};
+  if(debt==null)return{label:'Keine Daten',color:cssVar('--sig-neutral','#888780'),severity:null};
   if(debt<DEBT_YELLOW)return{label:'Im Rahmen',color:cssVar('--acwr-optimal'),severity:0};
   if(debt<DEBT_RED)return{label:'Mehr Erholung nötig',color:cssVar('--acwr-caution'),severity:1};
   return{label:'Stark erhöht',color:cssVar('--acwr-high'),severity:2};
@@ -2832,7 +2992,7 @@ function sleepStatusLabel(s){return s==null?'Keine Daten':['Ausreichend','Wenig'
 // signals-Array übergeben, combine() selbst braucht dafür keine Änderung.
 function combine(signals){
   const valid=signals.filter(s=>s.severity!=null);
-  if(valid.length===0)return{severity:null,label:'Keine Daten',color:'#888780',driver:null};
+  if(valid.length===0)return{severity:null,label:'Keine Daten',color:cssVar('--sig-neutral','#888780'),driver:null};
   const worst=valid.reduce((a,b)=>b.severity>a.severity?b:a);
   const SEV_COLOR=[cssVar('--acwr-optimal'),cssVar('--acwr-caution'),cssVar('--acwr-high')];
   const SEV_LABEL=['Im Rahmen','Achtung','Stark erhöht'];
@@ -2992,7 +3152,7 @@ function computeHrDrift(session){
 }
 
 function hrDriftStatus(pct){
-  if(pct==null)return{label:'Keine Daten',color:'#888780'};
+  if(pct==null)return{label:'Keine Daten',color:cssVar('--sig-neutral','#888780')};
   if(pct<5)return{label:'Stabil',color:cssVar('--acwr-optimal')};
   if(pct<10)return{label:'Leichter Drift',color:cssVar('--acwr-caution')};
   return{label:'Starker Drift',color:cssVar('--acwr-high')};
@@ -3384,10 +3544,11 @@ const _heroAsciiCache={time:new Map(),icon:new Map()};
 
 // Hero-ASCII-Zeile (Icon links, Dauer rechts) auf die Kachelbreite einpassen. Beide <pre>
 // haben white-space:pre + feste Schriftgröße → intrinsische Breite; auf schmalen Screens
-// überläuft die Summe die Kachel (overflow:hidden schneidet die Dauer rechts ab). Wir messen
-// die vollen Texte (unabhängig vom Intro-/Typewriter-Zustand) und skalieren beide Schrift-
-// größen exakt so weit herunter, dass sie mit Lücke nebeneinander passen. Immun gegen Font-
-// Metrik-Annahmen, passt sich jeder Breite an.
+// überläuft die Summe die Kachel (overflow:hidden schneidet die Dauer rechts ab), auf breiten
+// Kacheln bleibt sie sonst klein und lässt Leerraum stehen. Wir messen die vollen Texte
+// (unabhängig vom Intro-/Typewriter-Zustand) und skalieren beide Schriftgrößen IMMER (rauf wie
+// runter) so, dass sie die volle Kachelbreite ausfüllen — die Dauer bleibt so die eine laute
+// Poster-Geste, nicht nur bei Überlauf verkleinert. Immun gegen Font-Metrik-Annahmen.
 function fitLhAscii(row){
   if(!row)return;
   const kids=[...row.querySelectorAll('pre')];
@@ -3400,8 +3561,8 @@ function fitLhAscii(row){
   let total=gap*Math.max(0,kids.length-1);
   kids.forEach(el=>{total+=el.scrollWidth;});
   const avail=row.clientWidth;
-  if(total>avail&&avail>0){
-    const f=(avail/total)*0.97; // 3% Sicherheitsrand
+  if(total>0&&avail>0){
+    const f=Math.min(3,(avail/total)*0.97); // 3% Sicherheitsrand, nach oben gedeckelt gegen Ausreißer
     kids.forEach(el=>{const px=parseFloat(getComputedStyle(el).fontSize);el.style.fontSize=(px*f).toFixed(2)+'px';});
   }
   kids.forEach((el,i)=>{el.textContent=saved[i];}); // ursprünglichen (ggf. Blank-/Teil-)Text zurück
@@ -3892,10 +4053,40 @@ function hideHeroVisual(){
   document.getElementById('hero-visual')?.classList.remove('visible');
 }
 
+// ── LAZY-REVEAL (§2) ──────────────────────────────────────────────────────────
+// Vertikale Bänder (.card) der aktiven Seite blenden beim Heranscrollen dezent ein.
+// Kein display:none — Charts messen ihre Breite korrekt, auch bevor das Band sichtbar ist.
+let revealObserver=null;
+function reveal(el){el.classList.add('is-in');if(revealObserver)revealObserver.unobserve(el);}
+// Sicherheitsnetz: jedes bereits (nahezu) im Viewport liegende Band sofort zeigen —
+// verhindert dauerhaft leere Bänder, falls der Observer nicht feuert (z. B. bei
+// Viewport-Vergrößerung/Rotation oder Full-Page-Capture).
+function revealNear(){
+  const vh=window.innerHeight||800;
+  document.querySelectorAll('.reveal-band:not(.is-in)').forEach(c=>{
+    if(c.getBoundingClientRect().top < vh*1.15) reveal(c);
+  });
+}
+function armReveals(){
+  if(!('IntersectionObserver' in window)){document.querySelectorAll('.card').forEach(c=>c.classList.add('reveal-band','is-in'));return;}
+  if(!revealObserver){
+    revealObserver=new IntersectionObserver((entries)=>{
+      for(const e of entries)if(e.isIntersecting)reveal(e.target);
+    },{rootMargin:'0px 0px -6% 0px',threshold:0.04});
+    window.addEventListener('resize',revealNear,{passive:true});
+  }
+  const active=document.querySelector('.page.active');
+  if(!active)return;
+  active.querySelectorAll('.card:not(.reveal-band)').forEach(c=>{
+    c.classList.add('reveal-band');
+    revealObserver.observe(c);
+  });
+  revealNear(); // Above-the-fold sofort scharf, kein Einblend-Flackern beim Seitenaufruf
+}
 function showPage(key){
   activePage=key;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('#bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===key));
+  document.querySelectorAll('#nav-menu button').forEach(b=>b.classList.toggle('active',b.dataset.page===key));
   const el=document.getElementById('page-'+key);if(el)el.classList.add('active');
   const titleEl=document.getElementById('page-title');if(titleEl)titleEl.textContent=pageTitles[key]||'Training Log';
   const headerEl=document.getElementById('main-header');if(headerEl)headerEl.classList.toggle('has-logo',key==='log');
@@ -3905,8 +4096,21 @@ function showPage(key){
   if(key==='analytics')renderAnalytics();
   if(key==='settings-page')renderSettingsInline();
   if(key==='library')renderLibrary();
+  requestAnimationFrame(armReveals); // Bänder erst nach dem Render der Seite scharfstellen
 }
-document.querySelectorAll('#bottom-nav button').forEach(btn=>btn.addEventListener('click',()=>showPage(btn.dataset.page)));
+// Hamburger-Menü: öffnen/schließen; Seitenwahl schließt es und navigiert.
+const navToggleEl=document.getElementById('nav-toggle');
+const navMenuEl=document.getElementById('nav-menu');
+function setNavOpen(open){
+  if(!navMenuEl||!navToggleEl)return;
+  navMenuEl.hidden=!open;
+  navToggleEl.setAttribute('aria-expanded',String(open));
+}
+if(navToggleEl)navToggleEl.addEventListener('click',(e)=>{e.stopPropagation();setNavOpen(navMenuEl.hidden);});
+document.addEventListener('click',(e)=>{
+  if(navMenuEl&&!navMenuEl.hidden&&!navMenuEl.contains(e.target)&&e.target!==navToggleEl&&!navToggleEl.contains(e.target))setNavOpen(false);
+});
+document.querySelectorAll('#nav-menu button').forEach(btn=>btn.addEventListener('click',()=>{showPage(btn.dataset.page);setNavOpen(false);}));
 
 // ── PULL-TO-REFRESH ───────────────────────────────────────────────────────────
 // Von ganz oben nach unten ziehen lädt die App neu (holt die aktuelle Version).
@@ -4380,7 +4584,7 @@ function computePlanAusfallquote(){
 // Sondereintrag: Krankheit/Verletzung/Sonstiges statt einer Trainingseinheit.
 // Fließt nie in Workload-/ACWR-/Steigerungs-Statistiken ein.
 function isSpecialEntry(s){return!!(s&&s.category&&s.category!=='training');}
-const SPECIAL_CATEGORIES={illness:{label:'Krankheit',icon:'ti-thermometer',color:'#c4332e'},injury:{label:'Verletzung',icon:'ti-bandage',color:'#c4332e'},other:{label:'Sonstiges',icon:'ti-alert-circle',color:'#c4332e'}};
+const SPECIAL_CATEGORIES={illness:{label:'Krankheit',icon:'ti-thermometer',color:cssVar('--sig-warning','#c4332e')},injury:{label:'Verletzung',icon:'ti-bandage',color:cssVar('--sig-warning','#c4332e')},other:{label:'Sonstiges',icon:'ti-alert-circle',color:cssVar('--sig-warning','#c4332e')}};
 // Vordefinierte Farb-Swatches zum freien Markieren von Einheiten im Kalender
 // (persistiert als session.marker_color; siehe renderCalCell / buildModalEditPanel).
 const MARKER_COLORS=[
@@ -4708,15 +4912,8 @@ function goToWeek(delta){
 }
 document.getElementById('t-prev').addEventListener('click',()=>goToWeek(-1));
 document.getElementById('t-next').addEventListener('click',()=>goToWeek(1));
-// Log-Chart-Umschalter (Wochenvergleich ⇄ Zonenverteilung)
-function cycleLogChartView(dir){
-  const order=['compare','zones'];
-  let i=order.indexOf(logChartView);
-  setLogChartView(order[(i+dir+order.length)%order.length]);
-}
-document.getElementById('ws-chart-prev').addEventListener('click',()=>cycleLogChartView(-1));
-document.getElementById('ws-chart-next').addEventListener('click',()=>cycleLogChartView(1));
-document.querySelectorAll('.ws-dot').forEach(d=>d.addEventListener('click',()=>setLogChartView(d.getAttribute('data-view'))));
+// Wochenvergleich ⇄ Zonenverteilung sind jetzt horizontal wischbare hswipe-Slots
+// (siehe renderLog). Kein Pfeil-/Punkt-Umschalter mehr.
 
 function toggleDetail(id){const el=document.getElementById('detail-'+id);if(el)el.classList.toggle('open');}
 // Öffnet das Detail einer Session und springt direkt ins Notizfeld —
@@ -5253,6 +5450,15 @@ function renderLogNextSlot(){
   }).join('');
 }
 
+// Meta-Fetzen (HF/Distanz/Höhenmeter) einer Einheit — von der Listenzeile und der Hero-Kachel
+// gemeinsam genutzt, damit beide dieselben Angaben in derselben Reihenfolge zeigen.
+function sessionMetaParts(s){
+  const meta=[];
+  if(s.hr_avg||s.hr_max)meta.push('Ø '+(s.hr_avg?s.hr_avg:'')+(s.hr_avg&&s.hr_max?' / ':'')+(s.hr_max?'Max '+s.hr_max:''));
+  if(s.distance_km)meta.push(s.distance_km+' km');
+  if(s.elevation_m)meta.push('&#x2191; '+s.elevation_m+' m');
+  return meta;
+}
 function renderLog(){
   const range=getWeekRange();
   const tag=weekOffset===0?'<span class="current-tag">aktuelle Woche</span>':'';
@@ -5279,8 +5485,12 @@ function renderLog(){
   document.getElementById('log-acwr-cards').innerHTML=acwrCardsHTMLCompact(computeAcwrStatsRolling(acwrAsOf),computeAcwrStatsRolling(acwrDayBefore),acwrIsToday);
   renderRecoveryPressure();
 
-  // ── Log-Chart (Wochenvergleich ⇄ Lastverteilung, umschaltbar) ──────────────
-  setLogChartView(logChartView);
+  // ── Log-Chart (Wochenvergleich ⇄ Zonenverteilung, horizontal wischbar) ─────
+  // Beide Panels liegen als volle hswipe-Slots nebeneinander und sind daher
+  // korrekt vermessbar — deshalb rendern wir beide direkt (kein Hidden-Toggle mehr).
+  renderWeeklyTrendChart();
+  renderZonesDistribution();
+  initHSwipe(document.getElementById('ws-chart-hswipe'),{key:'ws-chart'});
 
   // Paket B2: Slots 2+3 und Swipe-Mechanik der Sektion "Aktuelle Einheiten"
   initHSwipe(document.getElementById('log-hswipe'),{key:'log-einheiten'});
@@ -5301,11 +5511,25 @@ function renderLog(){
     if(hero){
       const hd=new Date(hero.date+'T00:00:00');
       const hDate=hd.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
+      const zc=zoneCfg(hero.zone,hero.sport);
+      const heroMeta=sessionMetaParts(hero);
+      // Aufbau spiegelt die Listeneinträge (entry-date/-badge oben, -zone-tag/-title/-meta
+      // unten) statt Datum+Sportart in einer Zeile zu mischen — nur die Dauer bleibt als
+      // ASCII-Zahl die eine laute Poster-Geste, auf volle Kachelbreite skaliert (fitLhAscii).
       heroEl.innerHTML=`<i class="ti ti-chevron-down lh-chevron" aria-hidden="true"></i>`+
-        `<p class="lh-date">${hDate} &#183; ${esc(hero.sport)}</p>`+
-        `<div class="lh-ascii"><pre class="lh-ascii-icon" aria-hidden="true"></pre>`+
-        `<pre class="lh-ascii-time" aria-label="Dauer ${fmtMin(hero.duration)}"></pre></div>`+
-        (hero.title?`<p class="lh-title">${esc(hero.title)}</p>`:'');
+        `<div class="lh-top">`+
+          `<span class="lh-date">${hDate}</span>`+
+          `<span class="lh-badge">${sportIconHTML(hero.sport,13)} ${esc(hero.sport)}</span>`+
+        `</div>`+
+        `<div class="lh-ascii"><pre class="lh-ascii-time" aria-label="Dauer ${fmtMin(hero.duration)}"></pre>`+
+        `<pre class="lh-ascii-icon" aria-hidden="true"></pre></div>`+
+        `<div class="lh-bottom">`+
+          `<span class="lh-zone">${esc(zc.label.toUpperCase())}</span>`+
+          `<div class="lh-info-right">`+
+            (hero.title?`<p class="lh-title">${esc(hero.title)}</p>`:'')+
+            (heroMeta.length?`<p class="lh-meta">${heroMeta.join(' &#183; ')}</p>`:'')+
+          `</div>`+
+        `</div>`;
       heroEl.style.display='';
       const heroIconEl=heroEl.querySelector('.lh-ascii-icon');
       const heroTimeEl=heroEl.querySelector('.lh-ascii-time');
@@ -5331,27 +5555,29 @@ function renderLog(){
     const d=new Date(s.date+'T00:00:00');
     const dateStr=d.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
     const sc=sportCfg(s.sport),zc=zoneCfg(s.zone,s.sport);
-    const meta=[];
-    if(s.hr_avg||s.hr_max)meta.push('&#x2665; '+(s.hr_avg?'Ø '+s.hr_avg:'')+(s.hr_avg&&s.hr_max?' / ':'')+(s.hr_max?'Max '+s.hr_max:''));
-    if(s.distance_km)meta.push('<i class="ti ti-map-pin"></i> '+s.distance_km+' km');
-    if(s.elevation_m)meta.push('&#x2191; '+s.elevation_m+' m');
-    const titleStr=s.title?`<span style="font-style:italic;color:var(--text-muted);font-size:.78rem;">${esc(s.title)}</span>`:'';
+    const meta=sessionMetaParts(s);
+    const titleStr=s.title?`<p class="entry-title">${esc(s.title)}</p>`:'';
     const needsDetail=s.sport==='Kraft'&&(!s.note||!s.note.trim())&&!planned;
     const detailBadge=needsDetail?`<span class="pill detail-missing-badge" onclick="event.stopPropagation();openDetailFocusNote('${s.id}')" style="background:#fef3e2;color:#92680a;cursor:pointer;"><i class="ti ti-pencil"></i> Details fehlen</span>`:'';
     const plannedBadge=planned?`<span class="pill" style="background:transparent;color:#9d92be;border:1px dashed #9d92be99;"><i class="ti ti-calendar-event"></i> Geplant</span>`:'';
     const entryStyle=planned?'opacity:.85;border-left:3px dashed #9d92be99;padding-left:.55rem;':'';
     return`<div class="entry" style="${entryStyle}">
       <div class="entry-top" onclick="toggleDetail('${s.id}')">
-        <span class="entry-date">${dateStr}</span>
-        <span class="entry-sport">${sportIconHTML(s.sport,20)} ${s.sport}</span>
-        ${titleStr}
-        ${plannedBadge}
-        ${detailBadge}
-        <span class="pill" style="background:${zc.color}22;color:${zc.color};">${zc.label}</span>
-        <span class="entry-duration">${fmtMin(s.duration)}</span>
-        <span class="row-end" style="font-size:.72rem;color:var(--text-faint);"><i class="ti ti-chevron-down" style="font-size:.72rem;"></i></span>
+        <div class="entry-left">
+          <span class="entry-date">${dateStr}</span>
+          <div class="entry-main">
+            <span class="entry-duration">${fmtMin(s.duration)}</span>
+            <span class="entry-zone-tag" style="color:${zc.color};">${zc.label.toUpperCase()}</span>
+          </div>
+        </div>
+        <div class="entry-right">
+          <span class="entry-badge" style="background:${sc.color}22;color:${sc.color};">${sportIconHTML(s.sport,15)} ${s.sport}</span>
+          ${plannedBadge}
+          ${detailBadge}
+          ${titleStr}
+          ${meta.length?`<div class="entry-meta">${meta.map((m,i)=>`<span>${i>0?'&#183; ':''}${m}</span>`).join('')}</div>`:''}
+        </div>
       </div>
-      ${meta.length?`<div class="entry-meta">${meta.map(m=>`<span>${m}</span>`).join('')}</div>`:''}
       ${s.feedback?`<p class="entry-feedback"><i class="ti ti-message-circle" style="font-size:.85em;margin-right:.2rem;"></i>${esc(s.feedback.length>80?s.feedback.slice(0,80)+'…':s.feedback)}</p>`:''}
       ${s.feedback_hint?`<p class="entry-feedback-hint"><i class="ti ti-robot" style="font-size:.85em;margin-right:.2rem;"></i>${esc(s.feedback_hint.length>100?s.feedback_hint.slice(0,100)+'…':s.feedback_hint)}</p>`:''}
       <div class="entry-detail" id="detail-${s.id}">${buildDetailHTML(s)}</div>
@@ -7458,30 +7684,35 @@ function renderAnalytics(){
 // ── ACWR-POSTER (die eine laute Geste der Auswertung, Design-Briefing) ─────────
 // Riesige, grob geditherte Pixel-Zahl über dieselbe Dither-Pipeline wie das Logo
 // (dither-lib). Wartet auf den VCR-Font, sonst würde der Fallback-Font gerastert.
-let _acwrPosterKey='';
+// Poster-Zahl als KLARE Schrift (kein Dithering — das wirkte verzerrt). Off-white
+// auf der farbigen Fläche; Typo über .poster-fallback (CSS).
+function renderPosterNumber(canvasId,fbId,txt){
+  const canvas=document.getElementById(canvasId),fb=document.getElementById(fbId);
+  if(!fb)return;
+  if(canvas)canvas.style.display='none';
+  fb.textContent=txt;fb.hidden=false;
+}
+// §4 Laute Geste: farbiger Vollflächen-Bruch mit zwei Wisch-Slots zum selben Thema
+// „aktuelle Last": ACWR ⇄ Load 7 Tage. Fläche standardmäßig Signal-Blau, nur bei
+// Warn-/Überlast-Status Rot. Zahlen off-white, klare Schrift (die eine Poster-Zahl je Slot).
 async function renderAcwrPoster(stats){
-  const canvas=document.getElementById('acwr-poster-canvas');
-  const fb=document.getElementById('acwr-poster-fallback');
-  const statusEl=document.getElementById('acwr-poster-status');
-  if(!canvas||!fb)return;
-  const txt=stats.currentAcwr!=null?stats.currentAcwr.toFixed(2):'–';
-  if(statusEl)statusEl.textContent=stats.currentAcwr!=null?stats.currentStatus.label:(stats.baseIncomplete?'Basis unvollständig':'keine Daten');
-  // Signal-Blau (Metrik-Kategorie Ausdauer/Load); bei Warnstatus die ACWR-Statusfarbe.
-  const blue=cssVar('--met-endurance')||'#2441FF';
-  const warnLabels=['Vorsicht','Hohes Risiko','Erhöht'];
-  const ink=(stats.currentAcwr!=null&&warnLabels.some(w=>stats.currentStatus.label.includes(w)))?stats.currentStatus.color:blue;
-  const key=txt+'|'+ink;
-  if(key===_acwrPosterKey)return;
-  _acwrPosterKey=key;
-  try{
-    const lib=await import('./assets/dither-lib.js');
-    await document.fonts.load('200px "VCR OSD Mono"');
-    const bn=await lib.loadBlueNoise('assets/bluenoise64.png');
-    lib.renderDitherText(canvas,{text:txt,px:200,grain:3,blur:1,ink,blueNoise:bn});
-    canvas.style.display='';fb.hidden=true;
-  }catch(e){
-    canvas.style.display='none';fb.textContent=txt;fb.hidden=false;
-  }
+  const hs=document.getElementById('acwr-hswipe');
+  const posterEl=document.getElementById('acwr-poster');
+  if(!hs||!posterEl)return;
+  const warn=stats.currentAcwr!=null&&stats.currentStatus&&/Vorsicht|Überlast|Hohes Risiko|Erhöht/.test(stats.currentStatus.label||'');
+  posterEl.style.setProperty('--poster-bg',warn?(cssVar('--sig-high')||'#c0453f'):(cssVar('--met-endurance')||'#2441FF'));
+
+  const acwrTxt=stats.currentAcwr!=null?stats.currentAcwr.toFixed(2):'–';
+  const acwrStat=document.getElementById('acwr-poster-status');
+  if(acwrStat)acwrStat.textContent=stats.currentAcwr!=null?stats.currentStatus.label:(stats.baseIncomplete?'Basis unvollständig':'keine Daten');
+
+  const loadTxt=stats.currentLoad!=null?String(Math.round(stats.currentLoad)):'–';
+  const loadStat=document.getElementById('load-poster-status');
+  if(loadStat)loadStat.innerHTML=stats.currentChronic>0?('&#xD8; '+Math.round(stats.currentChronic)+' CHRONISCH'):(stats.baseIncomplete?'Basis unvollständig':'keine Daten');
+
+  initHSwipe(hs,{key:'acwr'});
+  renderPosterNumber('acwr-poster-canvas','acwr-poster-fallback',acwrTxt);
+  renderPosterNumber('load-poster-canvas','load-poster-fallback',loadTxt);
 }
 
 // Feine Film-Korn-Weichzeichnung (Vorbild docs/IMG_5838.JPG): weicher Fokus + feines
@@ -7971,7 +8202,7 @@ function computeMonotonyStrain(weeksBack){
 }
 
 function monotonyStatus(m){
-  if(m==null||m===0)return{label:'Keine Daten',color:'#888780'};
+  if(m==null||m===0)return{label:'Keine Daten',color:cssVar('--sig-neutral','#888780')};
   if(m<MONOTONY_YELLOW)return{label:'Gut variiert',color:cssVar('--acwr-optimal')};
   if(m<MONOTONY_RED)return{label:'Moderat',color:cssVar('--acwr-caution')};
   return{label:'Zu gleichförmig',color:cssVar('--acwr-high')};
@@ -8887,18 +9118,8 @@ async function renderZonesDistribution(){
   }
 }
 
-// Aktive Log-Chart-Ansicht setzen (Wochenvergleich ⇄ Zonenverteilung). Rendert das
-// nun sichtbare Panel neu, da ein verstecktes SVG clientWidth 0 hätte.
-function setLogChartView(view){
-  logChartView=view;
-  document.querySelectorAll('.ws-chart-panel').forEach(p=>{p.hidden=p.getAttribute('data-view')!==view;});
-  document.querySelectorAll('.ws-dot').forEach(d=>d.classList.toggle('active',d.getAttribute('data-view')===view));
-  const title=document.getElementById('ws-chart-title');
-  if(title)title.innerHTML=view==='compare'
-    ?'<i class="ti ti-git-compare"></i> Wochenvergleich'
-    :'<i class="ti ti-flame"></i> Zonenverteilung';
-  if(view==='zones')renderZonesDistribution();else renderWeeklyTrendChart();
-}
+// (setLogChartView entfernt: Wochenvergleich/Zonenverteilung sind jetzt beide
+//  sichtbar als horizontal wischbare hswipe-Slots — kein Umschalten mehr nötig.)
 
 // Drill-down: Tagesbalken (Mo–So) der angeklickten Woche
 function openWeeklyDetail(idx){
@@ -10372,6 +10593,82 @@ function buildGarminSessionFields(date,acts){
     distance_km:distKm,elevation_m:null,avg_pace:null,
     avg_power_w:powerAct.avgPowerW??null,peak_power_w:powerAct.maxPowerW??null,normalized_power_w:powerAct.normPowerW??null};
 }
+// Schreibt HF-Verlauf/Ø-HF/Max-HF/Dauer/Distanz einer Garmin-Aktivität in eine
+// bestehende Einheit (manuelle Trainingsnotiz). Von der Kopplungs-Bestätigung
+// (showGarminLinkModal) für jede vom Nutzer gewählte Kopplung aufgerufen.
+async function applyGarminLink(s,fields){
+  const patch={hr_series:fields.hr_series,hr_avg:fields.hr_avg??s.hr_avg,hr_max:fields.hr_max??s.hr_max,
+    duration:fields.duration||s.duration,distance_km:s.distance_km??fields.distance_km};
+  const merged={...s,...patch};
+  const wl=berechneWorkload(merged);
+  if(wl.value!=null){patch.workload=wl.value;patch.workload_method=wl.method;
+    if(wl.method==='tss'){patch.tss=wl.tss;patch.intensity_factor=wl.intensityFactor;}}
+  applyEfFields(merged);
+  patch.ef=merged.ef;patch.decoupling=merged.decoupling;patch.analysis_window_sec=merged.analysis_window_sec;
+  if(fields.hr_avg&&(!s.zone||s.zone==='-')&&!isSportFreitext(s.sport)){
+    const z=inferZone(fields.hr_avg,s.sport);if(z)patch.zone=z;}
+  const updated=await DB.updateSession(s.id,patch);
+  const idx=sessions.findIndex(x=>x.id===s.id);if(idx!==-1){sessions[idx]=updated;markSessionsDirty();}
+  return updated;
+}
+// Kopplungs-Kandidat für die Vorschau: Sportart-Icon + Notiz/Titel + Dauer.
+function garminLinkCandidateLabel(s){
+  const sc=(cfg.sports||[]).find(x=>x.key===s.sport);
+  return`${sportIconText(sc)?sportIconText(sc)+' ':''}${esc(s.title||s.note||sc?.label||s.sport)} · ${fmtMin(s.duration)}`;
+}
+function garminFieldsSummary(fields){
+  const parts=[fmtMin(fields.duration)];
+  if(fields.hr_avg)parts.push('⌀HF '+fields.hr_avg);
+  if(fields.distance_km)parts.push(fields.distance_km+' km');
+  return parts.join(' · ');
+}
+let pendingGarminConflicts=[];
+// Zeigt für jeden Tag, an dem bereits eine manuelle Trainingsnotiz existiert UND
+// eine Garmin-Aktivität gefunden wurde, eine Auswahl zur Bestätigung — es wird
+// nie mehr automatisch (und nie sportartabhängig) gekoppelt, immer nachgefragt.
+function showGarminLinkModal(conflicts){
+  pendingGarminConflicts=conflicts;
+  document.getElementById('glm-table-wrap').innerHTML=conflicts.map((c,i)=>{
+    const opts=c.candidates.map(s=>`<option value="${s.id}"${String(s.id)===c.chosenId?' selected':''}>${garminLinkCandidateLabel(s)}</option>`).join('');
+    return`<div style="display:flex;flex-direction:column;gap:.35rem;padding:.6rem 0;border-bottom:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;gap:.5rem;">
+        <strong>${c.date}</strong>
+        <span style="color:var(--text-muted);">Garmin: ${garminFieldsSummary(c.fields)}</span>
+      </div>
+      <select class="glm-target" data-idx="${i}" style="width:100%;">
+        <option value="">nicht koppeln</option>
+        ${opts}
+      </select>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.glm-target').forEach(sel=>{
+    sel.addEventListener('change',()=>{pendingGarminConflicts[+sel.dataset.idx].chosenId=sel.value;});
+  });
+  document.getElementById('garmin-link-modal').classList.add('open');
+}
+function closeGarminLinkModal(){
+  document.getElementById('garmin-link-modal').classList.remove('open');
+  pendingGarminConflicts=[];
+}
+async function applyGarminLinkChoices(){
+  const btn=document.getElementById('glm-apply-btn');
+  const orig=btn.textContent;btn.disabled=true;btn.textContent='Übernehme…';
+  setSyncState('syncing');
+  let linked=0,skipped=0;
+  for(const c of pendingGarminConflicts){
+    const s=c.chosenId?c.candidates.find(x=>String(x.id)===c.chosenId):null;
+    if(!s){skipped++;continue;}
+    try{await applyGarminLink(s,c.fields);linked++;}
+    catch(e){console.warn('[Garmin-Link]',e.message||e);skipped++;}
+  }
+  setSyncState('ok');
+  btn.disabled=false;btn.textContent=orig;
+  document.getElementById('garmin-link-modal').classList.remove('open');
+  pendingGarminConflicts=[];
+  const st=document.getElementById('garmin-import-status');
+  if(st)st.textContent=`✓ ${linked} verknüpft${skipped?`, ${skipped} übersprungen`:''}.`;
+  renderLog();
+}
 async function importGarminActivities(){
   const btn=document.getElementById('garmin-import-btn');
   const st=document.getElementById('garmin-import-status');
@@ -10386,18 +10683,17 @@ async function importGarminActivities(){
     // sie werden über planned_ref gekoppelt statt als Tagesbelegung gezählt.
     const byDay={};
     sessions.filter(s=>!isSpecialEntry(s)&&!isPlanned(s)).forEach(s=>{(byDay[s.date]=byDay[s.date]||[]).push(s);});
-    const rows=[];const links=[];let skipped=0;
+    const rows=[];const conflicts=[];let skipped=0;
     Object.keys(byDate).sort().forEach(date=>{
       const existingForDay=byDay[date];
       if(existingForDay&&existingForDay.length){
-        // Tag existiert bereits. Statt ihn pauschal zu überspringen: HF-Daten in eine
-        // verknüpfbare Einheit (Kraft/Capacity) OHNE HF-Verlauf ziehen — so wird z.B. eine
-        // manuell gespeicherte Capacity-Notiz beim Sync automatisch mit den Garmin-HF-Daten
-        // verknüpft (bisher nur per manuellem FIT/GPX-Upload möglich).
+        // Tag existiert bereits (manuelle Trainingsnotiz). Statt automatisch (und nur
+        // für Kraft/Capacity) zu koppeln oder stillschweigend zu überspringen: dem
+        // Nutzer die Kopplung zur Bestätigung vorlegen — jede Sportart ist Kandidat,
+        // solange die Notiz noch keinen HF-Verlauf trägt (sonst schon gekoppelt).
         const fields=buildGarminSessionFields(date,byDate[date]);
-        const cand=existingForDay.filter(s=>isSportLinkable(s.sport)&&
-          !(s.hr_series&&s.hr_series!=='null'&&s.hr_series!=='[]'));
-        if(fields.hr_series&&cand.length===1)links.push({session:cand[0],fields});
+        const cand=existingForDay.filter(s=>!(s.hr_series&&s.hr_series!=='null'&&s.hr_series!=='[]'));
+        if(cand.length)conflicts.push({date,fields,candidates:cand,chosenId:String(cand[0].id)});
         else skipped++;
         return;
       }
@@ -10416,34 +10712,14 @@ async function importGarminActivities(){
       if(planCand.length===1)session.planned_ref=planCand[0].id;
       rows.push(session);
     });
-    if(!rows.length&&!links.length){st.textContent=`Nichts Neues – alle ${Object.keys(byDate).length} Tage bereits in der App.`;return;}
-    setSyncState('syncing');btn.textContent=`Importiere ${rows.length+links.length}…`;
+    if(!rows.length&&!conflicts.length){st.textContent=`Nichts Neues – alle ${Object.keys(byDate).length} Tage bereits in der App.`;return;}
+    setSyncState('syncing');btn.textContent=`Importiere ${rows.length}…`;
     let saved=[];
     if(rows.length){saved=await DB.addSessions(rows);sessions=[...sessions,...saved];markSessionsDirty();}
-    // Verknüpfungen anwenden: HF-Verlauf in bestehende Einheiten schreiben.
-    let linked=0;
-    for(const{session:s,fields}of links){
-      // A6: Kandidaten sind nur noch Ist-Sessions (byDay ohne Ghosts) — Ghosts
-      // werden nie in-place überschrieben, sondern per planned_ref gekoppelt.
-      const patch={hr_series:fields.hr_series,hr_avg:fields.hr_avg??s.hr_avg,hr_max:fields.hr_max??s.hr_max,
-        duration:fields.duration||s.duration,distance_km:s.distance_km??fields.distance_km};
-      const merged={...s,...patch};
-      const wl=berechneWorkload(merged);
-      if(wl.value!=null){patch.workload=wl.value;patch.workload_method=wl.method;
-        if(wl.method==='tss'){patch.tss=wl.tss;patch.intensity_factor=wl.intensityFactor;}}
-      applyEfFields(merged);
-      patch.ef=merged.ef;patch.decoupling=merged.decoupling;patch.analysis_window_sec=merged.analysis_window_sec;
-      if(fields.hr_avg&&(!s.zone||s.zone==='-')&&!isSportFreitext(s.sport)){
-        const z=inferZone(fields.hr_avg,s.sport);if(z)patch.zone=z;}
-      try{
-        const updated=await DB.updateSession(s.id,patch);
-        const idx=sessions.findIndex(x=>x.id===s.id);if(idx!==-1){sessions[idx]=updated;markSessionsDirty();}
-        linked++;
-      }catch(e){console.warn('[Garmin-Link]',e.message||e);}
-    }
     setSyncState('ok');
-    st.textContent=`✓ ${saved.length} importiert${linked?`, ${linked} verknüpft`:''}${skipped?`, ${skipped} Tag(e) übersprungen`:''}.`;
+    st.textContent=`✓ ${saved.length} importiert${skipped?`, ${skipped} Tag(e) übersprungen`:''}${conflicts.length?`, ${conflicts.length} Tag(e) zur Kopplung bereit`:''}.`;
     renderLog();
+    if(conflicts.length)showGarminLinkModal(conflicts);
   }catch(e){setSyncState('error');st.textContent='Fehler: '+(e.message||e);}
   finally{btn.disabled=false;btn.innerHTML=orig;}
 }
@@ -10779,28 +11055,6 @@ setTimeout(hideSplash,6000);
   });
 })();
 
-// ── Leichter Parallax der Papier-Textur ────────────────────────────────────────
-// Der Hintergrund (#paper-tex) driftet beim Scrollen etwas langsamer als der Vordergrund
-// (translateY = -scrollY * factor), gedeckelt innerhalb der 40vh-Reserve, damit keine
-// Kante frei wird. Respektiert prefers-reduced-motion (dann statisch).
-(function(){
-  const tex=document.getElementById('paper-tex');
-  if(!tex)return;
-  if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-  const factor=0.12;
-  let ticking=false;
-  function update(){
-    const y=window.scrollY||document.documentElement.scrollTop||0;
-    const maxShift=window.innerHeight*0.36;   // innerhalb der 40vh-Reserve
-    let shift=-y*factor;
-    if(shift<-maxShift)shift=-maxShift;
-    tex.style.transform='translate3d(0,'+shift.toFixed(1)+'px,0)';
-    ticking=false;
-  }
-  window.addEventListener('scroll',function(){if(!ticking){ticking=true;requestAnimationFrame(update);}},{passive:true});
-  window.addEventListener('resize',update);
-  update();
-})();
 </script>
 
 </body>
