@@ -485,24 +485,28 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
    liegt IN der Farbfläche (Briefing), Text bleibt lesbar obenauf. ===== */
 /* §4 Laute Geste (Log): letzte Einheit als farbiger Bruch — dieselbe Systemfarbe
    und off-white Typo wie die Auswertung-Poster-Geste, damit es dieselbe App bleibt. */
-/* Kein horizontales Innen-Padding: die Kachel ist bereits so breit wie die Karte (wie die
-   Listeneinträge darunter) — ohne eigenes Links/Rechts-Padding beginnt/endet ihr Inhalt an
-   denselben Kanten wie der Einheiten-Liste, statt zusätzlich eingerückt zu wirken. */
-.log-hero{position:relative;margin:0 0 1.1rem;padding:.6rem 0 .65rem;color:var(--paper);overflow:hidden;background:var(--met-endurance);cursor:pointer;}
+/* Full Bleed macht der #log-hswipe-Container (negativer Rand = Karten-Padding, siehe unten),
+   NICHT die Kachel selbst — so scrollt der Hero beim seitlichen Wischen mit weg und bleibt nicht
+   oben stehen. Die Kachel füllt daher ihren (bereits randlosen) Slot komplett (margin:0), der
+   Inhalt (Datum/Zahl/Läufer) wird per horizontalem Innen-Padding (--lh-inset) nach innen gerückt,
+   damit er nicht am Rand klebt (früher schnitt overflow:hidden bei padding:0 "SO."/"km" ab). */
+.log-hero{--lh-inset:1.6rem;position:relative;margin:0 0 1.1rem;padding:.4rem var(--lh-inset) .45rem;color:var(--paper);overflow:hidden;background:var(--met-endurance);cursor:pointer;}
 .log-hero>*{position:relative;z-index:1;}
 /* Kopfzeile: Datum links, Sportart-Badge rechts — spiegelt die Positionierung der
    Listeneinträge (entry-date / entry-badge), statt Datum+Sportart in einer Zeile zu mischen. */
 .lh-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem;padding-right:1.5rem;position:relative;z-index:3;}
 .lh-date{font-size:1rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin:0;color:var(--paper);}
 .lh-badge{font-size:.72rem;font-weight:600;padding:.2rem .55rem;display:inline-flex;align-items:center;gap:.3rem;white-space:nowrap;color:var(--paper);background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);}
-.lh-value{font-family:var(--font-pixel);font-size:var(--poster-size-sm);line-height:1;margin:0;}
-/* ASCII-Reihe rutscht unter die Kopfzeile (negativer Rand) → Bild wird von der Angabe überragt.
-   fitLhAscii skaliert die Schriftgröße immer auf die volle Kachelbreite (nicht nur zum
-   Verkleinern bei Überlauf) — die Dauer bleibt so die eine laute Poster-Geste des Screens. */
-.lh-ascii{display:flex;align-items:center;justify-content:space-between;gap:.4rem;margin:-.3rem 0 -.1rem;min-height:0;}
+.lh-value{font-family:var(--font-pixel);font-size:var(--poster-size-sm);line-height:1;margin:0;flex:0 0 auto;}
+/* ASCII-Reihe: Dauer-Zahl (links, groß = laute Poster-Geste) + Sportbild (rechts). Beide als
+   ASCII, rosa glühend. fitLhAscii verkleinert nur bei Überlauf, füllt nicht auf → auf breiten
+   Kacheln bleibt die CSS-Clamp-Größe. Das horizontale Innen-Padding der Kachel rückt beide
+   „etwas nach innen" (Nutzer-Briefing). Etwas zusätzliches vertikales Padding hält die Zahl
+   von der Kopfzeile ab. */
+.lh-ascii{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin:.05rem 0 0;min-height:0;}
 .lh-ascii pre{margin:0;color:#FFCCEA;font-family:var(--font-mono);line-height:1;letter-spacing:0;white-space:pre;font-variant-ligatures:none;text-shadow:0 0 5px #FFCCEA,0 0 11px rgba(255,204,234,.7),0 0 20px rgba(255,204,234,.35);}
 .lh-ascii-time{font-size:clamp(6px,2.2vw,9px);flex:0 0 auto;}
-.lh-ascii-icon{font-size:clamp(3px,1.3vw,5px);flex:0 0 auto;position:relative;z-index:1;}
+.lh-ascii-icon{font-size:clamp(2.7px,1.0vw,3.85px);flex:0 0 auto;position:relative;z-index:1;max-width:42%;}
 /* Fußzeile: Zone links (unter der Dauer), Titel + Meta rechts (unter dem Badge) — spiegelt
    entry-zone-tag links / entry-title+entry-meta rechts. */
 .lh-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:.6rem;position:relative;z-index:3;}
@@ -512,6 +516,15 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .lh-meta{font-size:.7rem;margin:0;color:var(--paper);opacity:.72;white-space:nowrap;}
 .lh-chevron{position:absolute;top:.7rem;right:.8rem;z-index:2;font-size:1rem;opacity:.7;transition:transform .18s ease;}
 .log-hero.open .lh-chevron{transform:rotate(180deg);}
+/* Full Bleed des gesamten Wisch-Bereichs: negativer Rand = Karten-Padding (1.4rem), dadurch
+   reichen die Slots von Kartenkante zu Kartenkante — die Hero-Kachel wird randlos blau, ohne
+   selbst zu bleeden (sie scrollt so beim Wischen mit weg). Nur für #log-hswipe (nicht global
+   .hswipe), sonst würden ws-chart/ef/poster-Wischbereiche ebenfalls bluten. */
+#log-hswipe{margin-left:-1.4rem;margin-right:-1.4rem;}
+/* Slot-Inhalt wieder nach innen rücken (der Hero bleibt bewusst randlos): Liste + Budget- und
+   Next-Slot bekommen das Karten-Padding als Innen-Padding zurück. */
+#log-hswipe #t-list{padding:0 1.4rem;}
+#log-slot-budget,#log-slot-next{padding-left:1.4rem;padding-right:1.4rem;}
 /* Hero-Detail als eigenständige Box direkt unter der Hero-Kachel (nicht in einer .entry) */
 .hero-detail{margin-top:0;margin-bottom:1.1rem;}
 
@@ -1482,7 +1495,13 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
        papercut-texturierter Fläche. Danach die kompakte Liste. -->
   <div class="card">
     <h2>Aktuelle Einheiten</h2>
-    <!-- Paket B2: drei horizontale Slots — Liste / Budget / Nächste geplante Einheiten -->
+    <!-- Paket B2: drei horizontale Slots — Liste / Budget / Nächste geplante Einheiten.
+         Der Hero liegt IM ersten Slot (mit der Liste) → beim seitlichen Wischen scrollt er
+         mit weg statt oben stehen zu bleiben (Nutzer-Briefing). Full-Bleed macht hier NICHT
+         der Hero selbst (der würde vom overflow-x:auto des hswipe gekappt), sondern der
+         #log-hswipe-Container: negativer Rand = Karten-Padding, dadurch reichen die Slots von
+         Kartenkante zu Kartenkante. Der Slot-INHALT (Liste/Budget/Next) wird per Padding wieder
+         nach innen gerückt; nur die Hero-Kachel bleibt randlos blau. -->
     <div class="hswipe" id="log-hswipe">
       <div class="hswipe-slot">
         <div class="log-hero" id="log-hero" style="display:none;"></div>
@@ -3542,35 +3561,33 @@ function armHeroAsciiIntro(heroEl){
   heroIntroObserver.observe(heroEl);
 }
 
-// Hero-ASCII rendern: Zeit (datengetrieben) + Sportbild. Vor dem Intro (erstmaliges
+// Hero-ASCII rendern: Dauer-Zahl (datengetrieben) + Sportbild. Vor dem Intro (erstmaliges
 // Einscrollen des Balkens in den sichtbaren Bildschirmbereich, siehe armHeroAsciiIntro)
 // bleiben die Zeilen nur gecacht (_lines) und das <pre> leer; danach — bzw. bei jedem
-// weiteren Re-Render, wenn das Intro schon lief — sofort statisch voll gesetzt.
-// ASCII-Ergebnisse cachen: renderLog() läuft oft, die Kanvas-Pipeline (getImageData +
-// Pixel-Schleife) ist aber rein deterministisch pro Dauer-String bzw. Sportbild.
+// weiteren Re-Render, wenn das Intro schon lief — sofort statisch voll gesetzt. Ergebnisse
+// gecacht: renderLog() läuft oft, die Kanvas-Pipeline (getImageData + Pixel-Schleife) ist aber
+// rein deterministisch pro Dauer-String bzw. Sportbild.
 const _heroAsciiCache={time:new Map(),icon:new Map()};
 
-// Hero-ASCII-Zeile (Icon links, Dauer rechts) auf die Kachelbreite einpassen. Beide <pre>
-// haben white-space:pre + feste Schriftgröße → intrinsische Breite; auf schmalen Screens
-// überläuft die Summe die Kachel (overflow:hidden schneidet die Dauer rechts ab), auf breiten
-// Kacheln bleibt sie sonst klein und lässt Leerraum stehen. Wir messen die vollen Texte
-// (unabhängig vom Intro-/Typewriter-Zustand) und skalieren beide Schriftgrößen IMMER (rauf wie
-// runter) so, dass sie die volle Kachelbreite ausfüllen — die Dauer bleibt so die eine laute
-// Poster-Geste, nicht nur bei Überlauf verkleinert. Immun gegen Font-Metrik-Annahmen.
+// Dauer-ASCII (links) und Sport-Icon-ASCII (rechts) auf die Kachelbreite einpassen. Beide
+// <pre> haben white-space:pre + feste Schriftgröße → intrinsische Breite. Wir messen die
+// vollen Texte und verkleinern NUR bei Überlauf gemeinsam (ein Faktor für beide, damit ihr
+// Größenverhältnis erhalten bleibt) — auf breiten Desktop-Kacheln bleibt sonst die CSS-Clamp-
+// Größe (kein Aufblähen). So bleibt die Dauer die eine laute Poster-Geste, ohne zu riesig zu
+// werden. Immun gegen Font-Metrik-Annahmen.
 function fitLhAscii(row){
   if(!row)return;
   const kids=[...row.querySelectorAll('pre')];
   if(!kids.length)return;
   const saved=kids.map(el=>el.textContent);
-  // auf CSS-Clamp zurücksetzen + volle Texte einsetzen, um die echte Maximalbreite zu messen
   kids.forEach(el=>{el.style.fontSize='';if(el._lines&&el._lines.length)el.textContent=el._lines.join('\n');});
   const cs=getComputedStyle(row);
   const gap=parseFloat(cs.columnGap||cs.gap||'0')||0;
   let total=gap*Math.max(0,kids.length-1);
   kids.forEach(el=>{total+=el.scrollWidth;});
   const avail=row.clientWidth;
-  if(total>0&&avail>0){
-    const f=Math.min(3,(avail/total)*0.97); // 3% Sicherheitsrand, nach oben gedeckelt gegen Ausreißer
+  if(total>avail&&avail>0){
+    const f=(avail/total)*0.97; // 3% Sicherheitsrand, nur verkleinern
     kids.forEach(el=>{const px=parseFloat(getComputedStyle(el).fontSize);el.style.fontSize=(px*f).toFixed(2)+'px';});
   }
   kids.forEach((el,i)=>{el.textContent=saved[i];}); // ursprünglichen (ggf. Blank-/Teil-)Text zurück
@@ -3587,8 +3604,8 @@ function renderHeroAscii(hero,iconEl,timeEl){
     const url=SPORT_IMG[hero.sport]||SPORT_IMG._default;
     const applyIcon=iconLines=>{
       iconEl._lines=iconLines;
-      // Jetzt sind Icon- UND Dauer-Zeilen bekannt → Zeile auf die Kachelbreite einpassen,
-      // BEVOR der Typewriter läuft (Schriftgröße bleibt dann während des Aufbaus stabil).
+      // Jetzt sind Icon- UND Dauer-Zeilen bekannt → Zeile einpassen, BEVOR der Typewriter
+      // läuft (Schriftgröße bleibt dann während des Aufbaus stabil).
       fitLhAscii(iconEl.closest('.lh-ascii'));
       if(iconEl._pendingIntro){
         iconEl._pendingIntro=false;
@@ -5528,7 +5545,12 @@ function renderLog(){
   initHSwipe(document.getElementById('ws-chart-hswipe'),{key:'ws-chart'});
 
   // Paket B2: Slots 2+3 und Swipe-Mechanik der Sektion "Aktuelle Einheiten"
-  initHSwipe(document.getElementById('log-hswipe'),{key:'log-einheiten'});
+  const logHswipe=document.getElementById('log-hswipe');
+  initHSwipe(logHswipe,{key:'log-einheiten'});
+  // Beim (Neu-)Laden/Anzeigen der Log-Seite immer den ersten Slot (aktuelle Einheiten)
+  // zeigen, nicht die zuletzt gewischte Position (Budget/Geplante) — der .hswipe-Container
+  // bleibt beim Seitenwechsel im DOM und behielte sonst seinen scrollLeft.
+  if(logHswipe)logHswipe.scrollLeft=0;
   renderLogBudgetSlot();
   renderLogNextSlot();
 
@@ -5549,8 +5571,8 @@ function renderLog(){
       const zc=zoneCfg(hero.zone,hero.sport);
       const heroMeta=sessionMetaParts(hero);
       // Aufbau spiegelt die Listeneinträge (entry-date/-badge oben, -zone-tag/-title/-meta
-      // unten) statt Datum+Sportart in einer Zeile zu mischen — nur die Dauer bleibt als
-      // ASCII-Zahl die eine laute Poster-Geste, auf volle Kachelbreite skaliert (fitLhAscii).
+      // unten) — die Dauer bleibt als ASCII-Zahl die eine laute Poster-Geste, das ASCII-
+      // Sportbild sitzt rechts daneben.
       heroEl.innerHTML=`<i class="ti ti-chevron-down lh-chevron" aria-hidden="true"></i>`+
         `<div class="lh-top">`+
           `<span class="lh-date">${hDate}</span>`+
