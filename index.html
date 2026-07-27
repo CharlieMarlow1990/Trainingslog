@@ -1708,7 +1708,10 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 <!-- KI -->
 <div class="page" id="page-ai">
   <div class="card">
-    <h2><i class="ti ti-robot"></i> KI-Trainingsassistent</h2>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;">
+      <h2><i class="ti ti-robot"></i> KI-Trainingsassistent</h2>
+      <button id="chat-clear" style="background:none;border:none;color:var(--text-faint);font-size:.76rem;cursor:pointer;padding:.2rem;">Verlauf löschen</button>
+    </div>
     <div id="chat-messages" class="chat-messages"></div>
     <div class="chat-input-row">
       <textarea id="chat-input" placeholder="Frag mich über dein Training… z.B. 'Wie war meine letzte Woche?' oder 'Halte ich die 80/20-Regel ein?'" rows="2"></textarea>
@@ -2420,7 +2423,12 @@ let analyticsBlockId=null;
 let analyticsChartScrolledOnce=false;
 let analyticsMode='time-sport-abs'; // time-sport-abs | time-zone
 let cfg={sports:JSON.parse(JSON.stringify(DEFAULT_SPORTS)),zones:JSON.parse(JSON.stringify(DEFAULT_ZONES)),sportZones:{},hrMax:192,hrRest:40,ftp:200,radMethod:'tss',calMarks:{},calImages:{}};
-let chatHistory=[];
+// Chat-Verlauf wird in localStorage gehalten (Schutz vor Reload/Tab-Verlust auf Mobile).
+const CHAT_KEY='tlog_chat_history';
+function chatSaveHistory(){try{localStorage.setItem(CHAT_KEY,JSON.stringify(chatHistory.slice(-40)));}catch(e){}}
+function chatLoadHistory(){try{const d=localStorage.getItem(CHAT_KEY);return d?JSON.parse(d):[];}catch(e){return[];}}
+function chatClearHistory(){try{localStorage.removeItem(CHAT_KEY);}catch(e){}}
+let chatHistory=chatLoadHistory();
 let pendingGpxData=null;
 let pendingGpxMulti=[];
 let pendingSrpe=null;
@@ -4121,9 +4129,16 @@ document.querySelectorAll('#nav-menu button').forEach(btn=>btn.addEventListener(
   const TRIGGER=64,DAMP=0.5,MAXPULL=120;
   let startY=0,active=false,pull=0;
   const atTop=()=>(window.scrollY||document.documentElement.scrollTop||0)<=0;
+  const inNestedScroller=(el)=>{
+    while(el&&el!==document.body){
+      if(el.scrollHeight>el.clientHeight&&/(auto|scroll)/.test(getComputedStyle(el).overflowY))return true;
+      el=el.parentElement;
+    }
+    return false;
+  };
   const reset=()=>{ind.classList.remove('visible','ready','spin');ind.style.transform='';};
   window.addEventListener('touchstart',e=>{
-    if(e.touches.length===1&&atTop()){startY=e.touches[0].clientY;active=true;pull=0;}
+    if(e.touches.length===1&&atTop()&&!inNestedScroller(e.target)){startY=e.touches[0].clientY;active=true;pull=0;}
     else active=false;
   },{passive:true});
   window.addEventListener('touchmove',e=>{
@@ -4798,6 +4813,18 @@ function addChatMessage(role,text){
   return div;
 }
 
+const CHAT_WELCOME='Hallo! Ich bin dein Trainingsassistent. Ich habe Zugriff auf deine Trainingsdaten und dein Trainingsprofil.\n\nDu kannst mich z.B. fragen:\n• "Wie war meine Trainingswoche?"\n• "Halte ich die 80/20-Regel ein?"\n• "Wann war meine letzte lange Radausfahrt?"\n• "Wie viel km bin ich diesen Monat gelaufen?"';
+
+function renderChatFromHistory(){
+  const container=document.getElementById('chat-messages');
+  container.innerHTML='';
+  if(!chatHistory.length){addChatMessage('ai',CHAT_WELCOME);return;}
+  chatHistory.forEach(m=>{
+    const text=m.role==='assistant'?stripMarkdown(m.content)+validateReplyDates(m.content):m.content;
+    addChatMessage(m.role==='assistant'?'ai':'user',text);
+  });
+}
+
 function addChatLoading(){
   const container=document.getElementById('chat-messages');
   const div=document.createElement('div');
@@ -4820,6 +4847,7 @@ async function sendChat(){
   const container=document.getElementById('chat-messages');
   const context=buildTrainingContext();
   chatHistory.push({role:'user',content:`${text}\n\n[TRAININGSDATEN]\n${context}`});
+  chatSaveHistory();
   let started=false;
   try{
     const reply=await callAIStream(chatHistory,(delta)=>{
@@ -4831,14 +4859,21 @@ async function sendChat(){
     container.scrollTop=container.scrollHeight;
     chatHistory[chatHistory.length-1].content=text;
     chatHistory.push({role:'assistant',content:reply});
+    chatSaveHistory();
   }catch(e){
     bubble.textContent='Fehler: '+e.message;
     chatHistory.pop();
+    chatSaveHistory();
   }
 }
 
 document.getElementById('chat-send').addEventListener('click',sendChat);
 document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
+document.getElementById('chat-clear').addEventListener('click',()=>{
+  chatHistory=[];
+  chatClearHistory();
+  renderChatFromHistory();
+});
 
 // Wochenanalyse
 document.getElementById('btn-analyze-week').addEventListener('click',async()=>{
@@ -11020,8 +11055,8 @@ async function showApp(user){
   setTimeout(checkSrpePrompt,1500);
   // GPX Watch-Folder initialisieren (silent scan wenn schon verbunden)
   setTimeout(()=>wfInit().catch(e=>console.warn('wfInit:',e)),800);
-  // Begrüßungsnachricht im Chat
-  addChatMessage('ai','Hallo! Ich bin dein Trainingsassistent. Ich habe Zugriff auf deine Trainingsdaten und dein Trainingsprofil.\n\nDu kannst mich z.B. fragen:\n• "Wie war meine Trainingswoche?"\n• "Halte ich die 80/20-Regel ein?"\n• "Wann war meine letzte lange Radausfahrt?"\n• "Wie viel km bin ich diesen Monat gelaufen?"');
+  // Chat-Verlauf aus localStorage wiederherstellen (oder Begrüßung zeigen)
+  renderChatFromHistory();
 }
 document.getElementById('btn-login').addEventListener('click',async()=>{await sb.auth.signInWithOAuth({provider:'github',options:{redirectTo:window.location.href}});});
 document.getElementById('btn-logout').addEventListener('click',async()=>{await sb.auth.signOut();currentUser=null;sessions=[];markSessionsDirty();teardownLogoFx();document.getElementById('app').style.display='none';document.getElementById('auth-screen').style.display='';});
