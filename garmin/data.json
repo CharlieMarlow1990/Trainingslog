@@ -1240,9 +1240,9 @@
         "low": 15
       },
       "stress": {
-        "avg": 10
+        "avg": 13
       },
-      "steps": 95,
+      "steps": 513,
       "trainingReadiness": {
         "score": 57,
         "level": "MODERATE"
@@ -489601,5 +489601,5 @@
       "normPowerW": null
     }
   ],
-  "generated": "2026-07-28T04:56:14+00:00"
+  "generated": "2026-07-28T07:42:07+00:00"
 }
