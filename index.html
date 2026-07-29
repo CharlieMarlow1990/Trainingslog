@@ -36,7 +36,7 @@
   --block-bg:#ededed;         /* vertikale Bereiche (Karten/Sektionen) — deutlich getöntes Paper */
   --block-tex-veil:color-mix(in srgb,var(--block-bg) 76%,transparent); /* Deckschleier über der Block-Textur: höher = weniger Textur */
   --paper-raised:#ebecf3;     /* leicht gehobene Flächen (selten) */
-  --paper-dim:#DFDCD3;        /* Sekundärflächen (Tabs, Chips) — bewusst grauer */
+  --paper-dim:#deddda/
   --chart-surface:#F7F5F0;    /* Chart-Panels: hellste Stufe, hebt sich rahmenlos ab */
   --ink:#1B1B18;              /* Poster-Schwarz */
   /* Alt-Tokens als Aliasse — die gesamte Datei liest weiter --bg/--surface/--text.
@@ -490,32 +490,38 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
    oben stehen. Die Kachel füllt daher ihren (bereits randlosen) Slot komplett (margin:0), der
    Inhalt (Datum/Zahl/Läufer) wird per horizontalem Innen-Padding (--lh-inset) nach innen gerückt,
    damit er nicht am Rand klebt (früher schnitt overflow:hidden bei padding:0 "SO."/"km" ab). */
-.log-hero{--lh-inset:1.6rem;position:relative;margin:0 0 1.1rem;padding:.4rem var(--lh-inset) .45rem;color:var(--paper);overflow:hidden;background:var(--met-endurance);cursor:pointer;}
+/* Vertikales Padding bewusst großzügig (Nutzer-Briefing: „Balken etwas höher"), damit sich
+   der Hero klar von den Listenzeilen darunter abhebt — die Struktur ist identisch, die Höhe
+   nicht. Kein Chevron/Pfeil mehr: die Kachel ist als Ganzes klickbar (cursor:pointer). */
+.log-hero{--lh-inset:1.6rem;position:relative;margin:0 0 1.1rem;padding:1.5rem var(--lh-inset) 1.6rem;color:var(--paper);overflow:hidden;background:var(--met-endurance);cursor:pointer;}
 .log-hero>*{position:relative;z-index:1;}
-/* Kopfzeile: Datum links, Sportart-Badge rechts — spiegelt die Positionierung der
-   Listeneinträge (entry-date / entry-badge), statt Datum+Sportart in einer Zeile zu mischen. */
-.lh-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem;padding-right:1.5rem;position:relative;z-index:3;}
-.lh-date{font-size:1rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin:0;color:var(--paper);}
-.lh-badge{font-size:.72rem;font-weight:600;padding:.2rem .55rem;display:inline-flex;align-items:center;gap:.3rem;white-space:nowrap;color:var(--paper);background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);}
-.lh-value{font-family:var(--font-pixel);font-size:var(--poster-size-sm);line-height:1;margin:0;flex:0 0 auto;}
-/* ASCII-Reihe: Dauer-Zahl (links, groß = laute Poster-Geste) + Sportbild (rechts). Beide als
-   ASCII, rosa glühend. fitLhAscii verkleinert nur bei Überlauf, füllt nicht auf → auf breiten
-   Kacheln bleibt die CSS-Clamp-Größe. Das horizontale Innen-Padding der Kachel rückt beide
-   „etwas nach innen" (Nutzer-Briefing). Etwas zusätzliches vertikales Padding hält die Zahl
-   von der Kopfzeile ab. */
-.lh-ascii{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin:.05rem 0 0;min-height:0;}
-.lh-ascii pre{margin:0;color:#FFCCEA;font-family:var(--font-mono);line-height:1;letter-spacing:0;white-space:pre;font-variant-ligatures:none;text-shadow:0 0 5px #FFCCEA,0 0 11px rgba(255,204,234,.7),0 0 20px rgba(255,204,234,.35);}
-.lh-ascii-time{font-size:clamp(6px,2.2vw,9px);flex:0 0 auto;}
-.lh-ascii-icon{font-size:clamp(2.7px,1.0vw,3.85px);flex:0 0 auto;position:relative;z-index:1;max-width:42%;}
-/* Fußzeile: Zone links (unter der Dauer), Titel + Meta rechts (unter dem Badge) — spiegelt
-   entry-zone-tag links / entry-title+entry-meta rechts. */
-.lh-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:.6rem;position:relative;z-index:3;}
-.lh-zone{font-family:var(--font-mono);font-size:.72rem;font-weight:700;letter-spacing:.05em;color:var(--paper);opacity:.72;}
-.lh-info-right{display:flex;flex-direction:column;align-items:flex-end;gap:.15rem;text-align:right;}
+/* Aufbau wie die Listenzeile (.entry-top/-left/-right), aber über die volle Kachelhöhe
+   verteilt: links Datum oben angebunden, Zone am unteren Rand, die Dauer-Zahl mittig
+   dazwischen; rechts Sportart-Badge, Titel und Meta. */
+/* min-height: das Sportbild liegt absolut (trägt keine Höhe mehr bei) — die Kachel behält
+   trotzdem ihre Poster-Höhe, und Datum/Zahl/Zone haben Platz zum Verteilen. */
+.lh-top{display:flex;align-items:stretch;justify-content:space-between;gap:.9rem;min-height:8.5rem;position:relative;z-index:3;}
+.lh-left{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;gap:.35rem;min-width:0;flex:1 1 auto;}
+/* Rechte Spalte spiegelt die Verteilung der linken: Sportart oben angebunden, HF-/Meta-Zeile
+   am unteren Rand, Titel mittig dazwischen (margin:auto). */
+.lh-right{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;gap:.3rem;text-align:right;max-width:52%;min-width:0;}
+.lh-right .lh-title{margin:auto 0;}
+.lh-date{font-family:var(--font-mono);font-size:.76rem;font-weight:var(--fw-secondary);letter-spacing:.03em;text-transform:uppercase;font-variant-numeric:tabular-nums;margin:0;color:var(--paper);opacity:.8;}
+.lh-badge{font-size:.74rem;font-weight:600;padding:.22rem .55rem;display:inline-flex;align-items:center;gap:.35rem;white-space:nowrap;color:var(--paper);background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);}
+.lh-zone{white-space:nowrap;}
+/* ASCII (Dauer-Zahl links groß = laute Poster-Geste, Sportbild rechts), rosa glühend.
+   fitLhAscii verkleinert nur bei Überlauf, füllt nicht auf. */
+.lh-top pre{margin:0;color:#FFCCEA;font-family:var(--font-mono);line-height:1;letter-spacing:0;white-space:pre;font-variant-ligatures:none;text-shadow:0 0 5px #FFCCEA,0 0 11px rgba(255,204,234,.7),0 0 20px rgba(255,204,234,.35);}
+/* margin:auto → optische Mitte zwischen dem oben angebundenen Datum und der unten sitzenden Zone. */
+.lh-top .lh-ascii-time{font-size:clamp(6px,2.2vw,9px);flex:0 0 auto;margin:auto 0;}
+/* Sportbild: bündig am rechten Innenrand, aus dem Fluss genommen und hinter den Texten
+   (z-index:-1 im Stacking-Kontext von .lh-top) — Badge/Titel/Meta dürfen es überschneiden.
+   Die Größe kommt aus fitLhAscii (füllt die volle Kachelhöhe), die font-size hier ist nur
+   der Startwert vor dem Einpassen. */
+.lh-top .lh-ascii-icon{position:absolute;right:0;top:50%;transform:translateY(-50%);z-index:-1;font-size:4px;}
+.lh-zone{font-family:var(--font-mono);font-size:.72rem;font-weight:700;letter-spacing:.05em;padding:.12rem .1rem;color:var(--paper);opacity:.72;}
 .lh-title{font-size:.8rem;font-style:italic;margin:0;color:var(--paper);opacity:.88;}
-.lh-meta{font-size:.7rem;margin:0;color:var(--paper);opacity:.72;white-space:nowrap;}
-.lh-chevron{position:absolute;top:.7rem;right:.8rem;z-index:2;font-size:1rem;opacity:.7;transition:transform .18s ease;}
-.log-hero.open .lh-chevron{transform:rotate(180deg);}
+.lh-meta{font-size:.75rem;margin:0;color:var(--paper);opacity:.72;}
 /* Full Bleed des gesamten Wisch-Bereichs: negativer Rand = Karten-Padding (1.4rem), dadurch
    reichen die Slots von Kartenkante zu Kartenkante — die Hero-Kachel wird randlos blau, ohne
    selbst zu bleeden (sie scrollt so beim Wischen mit weg). Nur für #log-hswipe (nicht global
@@ -714,14 +720,7 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .metrics-5 .metric{padding:.4rem .35rem;}
 .metrics-5 .m-label{font-size:.58rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .metrics-5 .m-value{font-size:.95rem;}
-.acwr-group-label{font-size:.7rem;font-weight:600;color:var(--text-muted);margin:0 0 .4rem;}
-.acwr-group-label:not(:first-child){margin-top:.2rem;}
-.weekly-detail-box{margin-top:.9rem;padding-top:.8rem;border-top:1px solid var(--border);animation:wdFadeIn .2s ease;}
 @keyframes wdFadeIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
-.weekly-detail-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;}
-.weekly-detail-head span{font-size:.82rem;font-weight:600;color:var(--text);}
-.weekly-detail-close{background:var(--bg);border:1px solid var(--border);border-radius:50%;width:24px;height:24px;font-size:.7rem;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.weekly-detail-close:hover{background:var(--surface);color:var(--text);}
 .link-cand-single{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:.6rem .7rem;display:flex;flex-direction:column;gap:.2rem;}
 .link-cand-single strong{font-size:.85rem;color:var(--text);}
 .link-cand-single span{font-size:.74rem;color:var(--text-muted);}
@@ -744,6 +743,24 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .chart-box{position:relative;height:180px;}
 .workload-chart-box{position:relative;height:220px;}
 @media(min-width:720px){#workload-chart-svg-box{height:340px;}}
+
+/* Wochen-Zoom-Drilldown (Tages-ACWR): FLIP-Zoom IN der bestehenden Chart-Box — kein
+   Vollbild/neues Fenster. Das Overlay liegt absolut in #workload-chart-svg-box und wächst
+   aus der getappten Wochenbubble heraus; transform/border-radius/background werden
+   dynamisch (JS) gesetzt, hier nur Ruhezustand + Layout. Das Wochen-SVG darunter blendet
+   parallel per .wlc-zoom-hidden ab. */
+.wlc-zoom-hidden{transition:transform .45s cubic-bezier(.16,.84,.44,1),opacity .45s cubic-bezier(.16,.84,.44,1);transform:scale(1.03);opacity:0;}
+.day-zoom-overlay{position:absolute;inset:0;z-index:3;overflow:hidden;background:var(--surface);}
+.day-zoom-inner{position:absolute;inset:0;display:flex;flex-direction:column;}
+.day-zoom-head{display:flex;flex-direction:column;gap:.05rem;padding:0 2rem .35rem 0;font-size:.76rem;font-weight:600;color:var(--text);flex-shrink:0;line-height:1.25;}
+.day-zoom-close{position:absolute;top:0;right:0;z-index:1;background:var(--bg);border:1px solid var(--border);border-radius:50%;width:24px;height:24px;font-size:.7rem;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;}
+.day-zoom-close:hover{background:var(--surface);color:var(--text);}
+.day-zoom-scroll{flex:1;min-height:0;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.day-zoom-scroll::-webkit-scrollbar{display:none;}
+/* width/height kommen als Attribute aus renderDayZoomView (echte Pixelmaße) — die
+   .wlc-paper svg{width:100%}-Regel muss hier geschlagen werden, sonst gibt es keinen
+   horizontalen Overflow und damit kein Scrollen über die Tagesspalten. */
+.wlc-paper .day-zoom-scroll svg,.day-zoom-scroll svg{display:block;width:auto;height:auto;overflow:visible;}
 
 /* Log-Header: Garmin-Sync links, schwebender [+]-Button rechts oben */
 /* margin-top: Abstand zwischen der Hero-Unterkante und der Button-Zeile (Nutzer-Briefing). */
@@ -791,7 +808,8 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .entry-date{font-family:var(--font-mono);font-weight:var(--fw-secondary);font-size:.76rem;color:var(--text-faint);text-transform:uppercase;letter-spacing:.03em;font-variant-numeric:tabular-nums;}
 /* Rollen: .badge = neutrales Mono-Label (Meta/Status) · .pill = semantisch eingefärbtes Label (Zone/Sportart) */
 .pill{font-size:.68rem;font-weight:500;padding:.1rem .5rem;border-radius:0;display:inline-block;}
-.entry-main{display:flex;align-items:baseline;gap:.55rem;flex-wrap:wrap;}
+/* Zone unter der Dauer (nicht daneben) — gleiche Anordnung wie im Log-Hero (.lh-main). */
+.entry-main{display:flex;flex-direction:column;align-items:flex-start;gap:.2rem;}
 .entry-duration{font-family:var(--font-pixel);font-size:clamp(1.9rem,8vw,2.5rem);line-height:1;color:var(--ink);}
 .entry-zone-tag{font-family:var(--font-mono);font-size:.72rem;font-weight:700;letter-spacing:.05em;padding:.12rem .1rem;}
 .entry-badge{font-size:.74rem;font-weight:600;padding:.22rem .55rem;border-radius:0;display:inline-flex;align-items:center;gap:.35rem;}
@@ -1006,7 +1024,7 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 .cal-delete-zone.armed{opacity:1;background:linear-gradient(90deg,rgba(196,51,46,.5),rgba(196,51,46,0));}
 /* A5: Live-Load-Band am oberen Rand während des Ziehens */
 .cal-load-band{position:fixed;top:0;left:0;right:0;z-index:1060;background:var(--ink,#2c2c2a);color:var(--paper,#f4f2ec);font-family:var(--font-mono);font-size:.72rem;letter-spacing:.03em;text-align:center;padding:.4rem .6rem calc(.4rem + env(safe-area-inset-top));pointer-events:none;}
-.cal-load-band.warn{background:#7a2f2b;}
+/* Warnfläche wird inline aus ACWR_BANDS gesetzt (scheduleLoadBandUpdate) — keine eigene Farbleiter hier. */
 .cal-load-band.low{opacity:.75;}
 /* A3/A7: Plan-Ist-Zeile über dem gekoppelten Block */
 .cal-plan-ist{display:block;font-size:.56rem;line-height:1.25;color:var(--text-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:.05rem;}
@@ -1029,13 +1047,55 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
    seitlichen Wischen, weil die Slot-Texte unterschiedlich viele Zeilen umbrechen. */
 .ef-slot-note{font-size:.72rem;color:var(--text-muted);margin:0 0 .6rem;min-height:4.4rem;}
 /* B2: Budget-Slot + Nächste-Einheiten-Slot */
-.budget-head{font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin:.4rem 0 .6rem;padding-bottom:.3rem;border-bottom:1px solid var(--border);}
-.budget-bar{display:flex;height:18px;border:1px solid var(--ink);background:repeating-linear-gradient(90deg,transparent 0 6px,var(--border) 6px 8px);overflow:hidden;}
-.budget-seg{height:100%;flex-shrink:0;}
-.budget-rest{flex:1;}
+.budget-head{display:flex;align-items:baseline;gap:.4rem;font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin:.4rem 0 .6rem;padding-bottom:.3rem;border-bottom:1px solid var(--border);}
+.budget-head-sub{font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-faint);}
+/* Stift/Regler öffnet das Ziel-Sheet — beim Block das Block-Sheet, sonst das
+   globale Budget-Ziel (gleiche Felder). */
+.budget-edit{margin-left:auto;align-self:center;background:none;border:none;padding:.15rem .1rem;color:var(--text-faint);font-size:.95rem;line-height:1;cursor:pointer;flex-shrink:0;}
+.budget-edit:hover{color:var(--text);background:transparent;}
+/* Zeile 1 — Gesamtvolumen. Der Container ist 140% des Solls breit, die Ziellinie
+   sitzt deshalb ortsfest bei 100/1.4 = 71.43%. Alles rechts davon ist Überschuss
+   und wird schraffiert statt farblich alarmiert. */
+.budget-bar{position:relative;display:flex;height:18px;border:1px solid var(--ink);background:repeating-linear-gradient(90deg,transparent 0 6px,var(--border) 6px 8px);overflow:hidden;}
+.budget-fill{height:100%;flex-shrink:0;background:var(--ink);}
+.budget-over{height:100%;flex-shrink:0;background:var(--met-endurance-tint);background-image:repeating-linear-gradient(45deg,var(--met-endurance) 0 2px,transparent 2px 5px);}
+/* Zeile 2 — Intensitätsverteilung: Ist über Soll, identische 0–100%-Skala,
+   Guide-Lines an den Soll-Segmentgrenzen quer durch beide Balken. */
+.budget-sub-label{font-size:.72rem;color:var(--text-faint);text-transform:uppercase;letter-spacing:.04em;margin:.9rem 0 .35rem;}
+/* Der Klammerzusatz bleibt gemischt gesetzt — Zeitangaben wie "4:52 h" sollen
+   nicht zu "4:52 H" verkapitälchen. */
+.budget-sub-label .budget-sub-scope{text-transform:none;letter-spacing:0;}
+.budget-dist{position:relative;display:flex;flex-direction:column;gap:2px;}
+.budget-dist-bar{display:flex;height:12px;border:1px solid var(--ink);overflow:hidden;}
+.budget-dist-soll{opacity:.45;}
+.budget-dist-seg{height:100%;flex-shrink:0;}
+.budget-guide{position:absolute;top:0;bottom:0;width:1px;background:var(--ink);pointer-events:none;}
+.budget-legend{display:flex;flex-wrap:wrap;gap:.2rem .8rem;font-size:.74rem;color:var(--text);margin-top:.35rem;}
+.budget-legend-item{display:inline-flex;align-items:center;gap:.3rem;}
+.budget-legend-item i{width:8px;height:8px;flex-shrink:0;}
+/* Zeile 3 — HIT nach Sportart, standardmäßig eingeklappt. */
+.budget-row-toggle{display:flex;align-items:center;gap:.35rem;width:100%;margin:.9rem 0 0;padding:.25rem 0;background:none;border:none;font:inherit;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text-faint);cursor:pointer;text-align:left;}
+.budget-row-toggle:hover{color:var(--text);background:transparent;}
+.budget-row-toggle i{transition:transform .12s ease;}
+.budget-row-toggle.open i{transform:rotate(90deg);}
+/* display:flex würde das UA-[hidden] überstimmen — explizit zurücknehmen. */
+.budget-row-body{display:flex;flex-direction:column;gap:.3rem;padding-top:.2rem;font-size:.78rem;}
+.budget-row-body[hidden]{display:none;}
+.budget-hit-row{display:flex;align-items:center;gap:.5rem;}
+.budget-hit-label{flex:0 0 5.5rem;}
+.budget-hit-track{flex:1;height:8px;background:var(--border);}
+.budget-hit-fill{display:block;height:100%;background:var(--met-intensity);}
+.budget-hit-val{font-family:var(--font-mono);font-size:.72rem;color:var(--text-muted);white-space:nowrap;}
+/* Zeile 4 — Einheiten je Sportart. Genau zwei Zustände: absolviert / offen. */
+.budget-dot-row{display:flex;align-items:center;gap:.5rem;font-size:.78rem;margin-bottom:.28rem;}
+.budget-dot-label{flex:0 0 5.5rem;}
+.budget-dots{display:flex;flex-wrap:wrap;gap:.3rem;}
+.budget-dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0;}
+.budget-dot.done{background:var(--ink);}
+/* Ziellinie — ortsfest bei 71.43% (= 100% Soll auf der 140%-Skala). */
+.budget-mark{position:absolute;top:0;bottom:0;width:2px;background:var(--ink);transform:translateX(-1px);}
 .budget-vol{font-family:var(--font-mono);font-size:.74rem;color:var(--text);margin:.45rem 0 .6rem;}
-.budget-lines{display:flex;flex-direction:column;gap:.3rem;font-size:.8rem;color:var(--text);}
-.budget-lines .budget-target{color:var(--text-faint);font-size:.72rem;}
+.budget-target{color:var(--text-faint);font-size:.72rem;}
 .next-ghost-row{display:flex;align-items:center;gap:.5rem;padding:.55rem .2rem;border-bottom:1px solid var(--border);cursor:pointer;font-size:.8rem;}
 .next-ghost-row .ngr-main{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .next-ghost-row .ngr-when{font-family:var(--font-mono);font-size:.7rem;color:var(--text-muted);flex-shrink:0;}
@@ -1051,23 +1111,36 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
    über der Tönung liegen. */
 .cal-cell>.cal-daynum,.cal-cell>.cal-entries{position:relative;z-index:1;}
 .cal-block-bg{position:absolute;inset:0;z-index:0;pointer-events:none;background:color-mix(in srgb,var(--blockcolor) 15%,transparent);border-top:2px solid color-mix(in srgb,var(--blockcolor) 50%,transparent);}
-.cal-block-title{position:absolute;top:1px;left:2px;z-index:1;font-family:var(--font-mono);font-size:.5rem;font-weight:600;letter-spacing:.02em;pointer-events:none;max-width:calc(100% - 4px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.85;}
-/* Quartal/Jahr: durchgehender Balken als Ebene hinter den Zeilen. */
-.cal-quarter,.cal-year{position:relative;}
+.cal-block-title{position:absolute;top:1px;left:2px;z-index:2;font-family:var(--font-mono);font-size:.5rem;font-weight:600;letter-spacing:.02em;pointer-events:auto;cursor:pointer;max-width:calc(100% - 4px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.85;}
+/* Quartal/Jahr: Blöcke liegen als vertikale Rails in einer eigenen Rinne LINKS
+   neben den Zeilen (--block-gutter wird von paintCalBlocks nach Spurenzahl
+   gesetzt). Nur die schwache Tönung liegt hinter den Zeilen — Titel stehen im
+   Rail und können sich damit weder mit dem KW-Label noch untereinander
+   überlagern. */
+.cal-quarter,.cal-year{position:relative;padding-left:var(--block-gutter,0px);}
 .cal-block-layer{position:absolute;inset:0;z-index:0;pointer-events:none;}
 .cal-q-row{position:relative;z-index:1;}
-.cal-block-bar{position:absolute;left:0;right:0;background:color-mix(in srgb,var(--blockcolor) 16%,transparent);border-left:3px solid var(--blockcolor);}
-.cal-block-bar-title{position:absolute;top:2px;left:8px;font-family:var(--font-mono);font-size:.6rem;font-weight:600;color:color-mix(in srgb,var(--blockcolor) 72%,var(--ink));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 12px);}
-/* Block-Modus: Ebene interaktiv, Kanten-Handles (Touch-Ziel ≥40 px). */
+.cal-block-bar{position:absolute;left:0;right:0;background:color-mix(in srgb,var(--blockcolor) 9%,transparent);}
+.cal-block-rail{position:absolute;top:0;bottom:1px;width:16px;z-index:2;background:color-mix(in srgb,var(--blockcolor) 22%,var(--paper,#f4f2ec));border-left:3px solid var(--blockcolor);display:flex;align-items:center;justify-content:center;pointer-events:auto;cursor:pointer;}
+/* Kein overflow:hidden am Rail — sonst würden die über die Kante hinausragenden
+   Resize-Handles weggeschnitten (auch für die Trefferfläche). Der Titel clippt
+   sich selbst. */
+.cal-block-rail.is-tight .cal-block-rail-title{display:none;}
+.cal-block-rail-title{writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--font-mono);font-size:.55rem;font-weight:600;letter-spacing:.02em;color:color-mix(in srgb,var(--blockcolor) 45%,var(--ink));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-height:calc(100% - 6px);}
+/* Block-Modus: Ebene interaktiv, Kanten-Handles (Touch-Ziel ≥40 px hoch,
+   32 px breit über die Rail-Rinne hinaus). */
 .cal-block-mode .cal-block-layer{pointer-events:auto;}
 .cal-block-mode .cal-q-row{cursor:crosshair;}
-.cal-block-handle{position:absolute;left:0;right:0;height:40px;cursor:ns-resize;background:transparent;pointer-events:auto;}
+.cal-block-mode .cal-block-rail{cursor:ns-resize;}
+.cal-block-handle{position:absolute;left:-8px;right:-8px;height:40px;cursor:ns-resize;background:transparent;pointer-events:auto;}
 .cal-block-handle-top{top:-20px;}
 .cal-block-handle-bottom{bottom:-20px;}
-.cal-block-handle::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:28px;height:4px;background:var(--blockcolor);border-radius:2px;opacity:.75;}
-.cal-block-preview{--blockcolor:var(--met-endurance);border-left:3px dashed var(--met-endurance);}
+.cal-block-handle::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:24px;height:4px;background:var(--blockcolor);border-radius:2px;opacity:.9;}
+.cal-block-preview{--blockcolor:var(--met-endurance);background:color-mix(in srgb,var(--met-endurance) 14%,transparent);outline:2px dashed var(--met-endurance);outline-offset:-2px;}
 /* Block-Modal (Bottom-Sheet, gleiche Grammatik wie .ghost-sheet). */
-.block-sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:520px;background:var(--surface);border-top:2px solid var(--ink,#2c2c2a);padding:.9rem 1rem calc(1.1rem + env(safe-area-inset-bottom));z-index:1101;transform:translateY(100%);transition:transform .22s ease;}
+/* max-height/overflow: mit vielen Sportarten wird die Ziel-Sektion länger als der
+   Viewport — ohne Scroll wäre der Kopf abgeschnitten und unerreichbar. */
+.block-sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:520px;max-height:88vh;overflow-y:auto;background:var(--surface);border-top:2px solid var(--ink,#2c2c2a);padding:.9rem 1rem calc(1.1rem + env(safe-area-inset-bottom));z-index:1101;transform:translateY(100%);transition:transform .22s ease;}
 .block-sheet.open{transform:translateY(0);}
 .block-field-lbl{display:block;font-size:.7rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin:.6rem 0 .25rem;}
 .block-swatches{display:flex;gap:.5rem;flex-wrap:wrap;}
@@ -1076,6 +1149,26 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 .block-sheet-actions{display:flex;justify-content:space-between;align-items:center;margin-top:1rem;gap:.5rem;}
 .block-btn-save{background:var(--ink,#2c2c2a);color:var(--paper,#f4f2ec);font-weight:600;}
 .block-btn-delete{background:#fef2f2;border:1px solid #fca5a5;color:#c4544a;}
+/* Paket F2: Block-Ziele (Wochenzeit + Verteilung) — einklappbare Sektion im Block-Sheet. */
+.block-goal-toggle{display:flex;align-items:center;gap:.3rem;background:none;border:none;padding:.6rem 0 .25rem;cursor:pointer;width:100%;text-align:left;color:var(--text-muted);font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+.block-goal-toggle i{transition:transform .15s;}
+.block-goal-toggle.open i{transform:rotate(180deg);}
+.block-goal-body{display:none;}
+.block-goal-body.open{display:block;}
+.block-goal-row{display:flex;align-items:center;gap:.5rem;padding:.3rem 0;}
+.block-goal-row .bg-swatch{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.block-goal-row .bg-label{flex:1;font-size:.8rem;color:var(--text);}
+.block-goal-row input{width:56px;padding:.3rem;font-size:.78rem;}
+.block-goal-hint{font-size:.66rem;color:var(--text-faint);margin:.1rem 0 .5rem;}
+.block-goal-warn{font-size:.7rem;color:#b3701e;margin:.2rem 0;min-height:1em;}
+/* Info-Popover: leichtgewichtiges Read-only-Fenster bei Tap auf einen Block (außerhalb Block-Modus). */
+.block-info-backdrop{position:fixed;inset:0;background:rgba(30,30,28,.35);z-index:1099;}
+.block-info-pop{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:260px;max-width:90vw;max-height:80vh;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--blockcolor,var(--ink));border-radius:var(--radius);padding:.75rem .85rem;z-index:1100;box-shadow:0 8px 22px rgba(30,30,28,.22);font-size:.8rem;}
+.block-info-pop h4{margin:0 0 .2rem;font-size:.85rem;}
+.block-info-pop .block-info-range{font-family:var(--font-mono);font-size:.7rem;color:var(--text-muted);margin:0 0 .5rem;}
+.block-info-pop .block-info-line{font-size:.75rem;color:var(--text);margin:.15rem 0;}
+.block-info-pop .block-info-actions{display:flex;justify-content:flex-end;margin-top:.6rem;}
+.budget-count-line{font-size:.72rem;color:var(--text-faint);margin-top:.2rem;}
 
 /* Bibliothek: Vorlagen-Karten und Filter-Pills */
 .lib-filter-pill{padding:.3rem .6rem;border:1px solid var(--border);border-radius:0;background:var(--surface);color:var(--text-muted);font-size:.72rem;cursor:pointer;white-space:nowrap;transition:all .12s;}
@@ -1127,7 +1220,7 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 .hr-param-row .field{flex:1;}
 
 .sport-row .sport-label-inline{flex:1;min-width:100px;font-size:.85rem;}
-.sport-row .sport-freitext-inline{width:auto;cursor:pointer;}
+.sport-row .sport-freitext-inline,.sport-row .sport-zonebased-inline{width:auto;cursor:pointer;}
 .sport-row .freitext-lbl{display:flex;align-items:center;gap:.25rem;font-size:.7rem;color:var(--text-muted);cursor:pointer;white-space:nowrap;}
 .sport-row .sport-delete-inline{padding:.28rem .45rem;background:#fef2f2;border-color:#fca5a5;color:#c4544a;}
 .add-sport-btn{margin-top:.6rem;font-size:.82rem;}
@@ -1604,15 +1697,11 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
         <button data-weeks="13">3 M</button>
         <button data-weeks="26">6 M</button>
       </div>
+      <div class="tab-bar" id="acwr-overlay-tabs" style="margin:0 0 .6rem;">
+        <button type="button" id="acwr-overlay-btn"><i class="ti ti-chart-line"></i> ACWR-Linie</button>
+      </div>
       <div class="workload-chart-box wlc-paper" id="workload-chart-svg-box"><svg id="workload-chart-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
       <div id="workload-chart-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.6rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
-      <div id="weekly-detail-box" class="weekly-detail-box" style="display:none;margin-top:1rem;">
-        <div class="weekly-detail-head">
-          <span id="weekly-detail-title"></span>
-          <button id="weekly-detail-close" class="weekly-detail-close" aria-label="Schließen"><i class="ti ti-x"></i></button>
-        </div>
-        <div class="workload-chart-box chart-dark" style="height:180px;"><canvas id="weekly-detail-chart"></canvas></div>
-      </div>
     </div>
     <div class="card" style="margin-top:1rem;">
       <h2><i class="ti ti-heart-rate-monitor"></i> Aerobe Effizienz</h2>
@@ -1796,6 +1885,10 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
       <button class="ghost" id="garmin-power-backfill-btn"><i class="ti ti-bolt"></i> Power f&#xFC;r bestehende Garmin-Einheiten nachziehen</button>
       <span class="status" id="garmin-power-backfill-status"></span>
     </div>
+    <div class="row" style="margin-top:.6rem;">
+      <button class="ghost" id="garmin-link-reset-btn"><i class="ti ti-rotate"></i> Als &#x201E;nicht koppeln&#x201C; markierte Tage zur&#xFC;cksetzen</button>
+      <span class="status" id="garmin-link-reset-status"></span>
+    </div>
   </div>
 
   <!-- Trainingsprofil -->
@@ -1977,7 +2070,7 @@ Aktueller Fokus: Grundlagenausdauer aufbauen"></textarea>
       <h3 style="margin:0;font-size:1.05rem;">Garmin-Sync: Einheiten koppeln</h3>
       <button class="modal-close" onclick="closeGarminLinkModal()"><i class="ti ti-x"></i></button>
     </div>
-    <p style="font-size:.82rem;color:var(--text-muted);margin:0 0 .8rem;">Für diese Tage gibt es bereits eine Trainingsnotiz. Mit welcher Einheit sollen die Garmin-Daten (HF, Distanz) verknüpft werden?</p>
+    <p style="font-size:.82rem;color:var(--text-muted);margin:0 0 .8rem;">Für diese Tage gibt es bereits eine Trainingsnotiz. Mit welcher Einheit sollen die Garmin-Daten (HF, Distanz) verknüpft werden?<br><span style="opacity:.8;">„nicht koppeln“ wird gemerkt – dieser Tag wird beim nächsten Import nicht erneut vorgelegt (zurücksetzbar in den Einstellungen).</span></p>
     <div style="overflow-y:auto;flex:1;" id="glm-table-wrap"></div>
     <div style="display:flex;gap:.6rem;margin-top:1rem;justify-content:flex-end;">
       <button onclick="closeGarminLinkModal()">Abbrechen</button>
@@ -2220,13 +2313,17 @@ const cssVar=(name,fallback='')=>{
   const v=getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   return v||fallback;
 };
+// zoneBased: zählt die Sportart in der Intensitätsverteilung (LIT/MIT/HIT) mit?
+// Unabhängig von freitext — eine Sportart kann Freitext-Notizen führen und trotzdem
+// HF-gesteuert trainiert werden (und umgekehrt). Kraft/Kampfsport fallen raus, damit
+// ihre Minuten nicht als LIT durchgehen und die Polarisierungsquote schönen.
 const DEFAULT_SPORTS=[
-  {key:'Rad',label:'Rad',color:cssVar('--cat-rad','#7c9bb5'),icon:'ti-bike',imgUrl:null,freitext:false},
-  {key:'Lauf',label:'Lauf',color:cssVar('--cat-lauf','#6f8f3e'),icon:'ti-run',imgUrl:null,freitext:false},
-  {key:'Kraft',label:'Kraft',color:cssVar('--cat-kraft','#c8603a'),icon:'ti-barbell',imgUrl:null,freitext:true},
-  {key:'Capacity',label:'Capacity',color:cssVar('--cat-capacity','#d79b46'),icon:'ti-flame',imgUrl:null,freitext:false},
-  {key:'Kampfsport',label:'Kampfsport',color:cssVar('--cat-kampfsport','#8c6db0'),icon:'ti-karate',imgUrl:null,freitext:true},
-  {key:'Sonstiges',label:'Sonstiges',color:cssVar('--cat-sonstiges','#5f5e5a'),icon:'ti-bolt',imgUrl:null,freitext:true}
+  {key:'Rad',label:'Rad',color:cssVar('--cat-rad','#7c9bb5'),icon:'ti-bike',imgUrl:null,freitext:false,zoneBased:true},
+  {key:'Lauf',label:'Lauf',color:cssVar('--cat-lauf','#6f8f3e'),icon:'ti-run',imgUrl:null,freitext:false,zoneBased:true},
+  {key:'Kraft',label:'Kraft',color:cssVar('--cat-kraft','#c8603a'),icon:'ti-barbell',imgUrl:null,freitext:true,zoneBased:false},
+  {key:'Capacity',label:'Capacity',color:cssVar('--cat-capacity','#d79b46'),icon:'ti-flame',imgUrl:null,freitext:false,zoneBased:true},
+  {key:'Kampfsport',label:'Kampfsport',color:cssVar('--cat-kampfsport','#8c6db0'),icon:'ti-karate',imgUrl:null,freitext:true,zoneBased:false},
+  {key:'Sonstiges',label:'Sonstiges',color:cssVar('--cat-sonstiges','#5f5e5a'),icon:'ti-bolt',imgUrl:null,freitext:true,zoneBased:false}
 ];
 /* Zonen-Leiter im Briefing-Farbsystem: Z1–Z3 Blau-Familie (ruhig, Ausdauer),
    Z4/Z5 Lila (Intensität). Greift nur für neue Configs — gespeicherte
@@ -2243,7 +2340,7 @@ const DEFAULT_ZONES=[
 const FREITEXT=['Kraft','Kampfsport','Sonstiges'];
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
-let sessions=[],chart1=null,chart2=null,analyticsChart=null,workloadChart=null,logWeekChart=null,weeklyTrendChart=null,weeklyDetailChart=null,weeklyChartData=[];
+let sessions=[],chart1=null,chart2=null,analyticsChart=null,workloadChart=null,logWeekChart=null,weeklyTrendChart=null,weeklyChartData=[];
 // Paket F: Trainingsblöcke (Zeitspannen mit Intention), geladen via DB.getBlocks().
 let blocks=[];
 // Paket N1: Memo für buildDailyLoadSeries. _sessionsRev muss bei JEDER Mutation von
@@ -2452,6 +2549,7 @@ let pendingGpxData=null;
 let pendingGpxMulti=[];
 let pendingSrpe=null;
 let acwrWeeks=4;
+let acwrOverlayOn=false;
 let breakdownWeeks=4;
 let breakdownActiveMetrics=new Set(['kmLauf']);
 let categoryBreakdownChart=null;
@@ -2490,7 +2588,8 @@ function loadCfg(){
       });
       const iconMigrated=migrateSportIcons();
       const rfMigrated=migrateZoneRecoveryFactors();
-      if(iconMigrated||rfMigrated)saveCfg();
+      const zbMigrated=migrateSportZoneBased();
+      if(iconMigrated||rfMigrated||zbMigrated)saveCfg();
     }
   }catch(e){}
 }
@@ -2503,6 +2602,16 @@ function isSportFreitext(key){
   const s=cfg.sports.find(x=>x.key===key);
   if(s&&typeof s.freitext==='boolean')return s.freitext;
   return FREITEXT.includes(key);
+}
+// Zählt die Sportart in der Zonenverteilung mit? Gesetztes Flag gewinnt, sonst der
+// Default aus DEFAULT_SPORTS, sonst die Umkehrung von freitext — damit auch selbst
+// angelegte Sportarten ohne gelaufene Migration einen sinnvollen Wert haben.
+function isSportZoneBased(key){
+  const s=cfg.sports.find(x=>x.key===key);
+  if(s&&typeof s.zoneBased==='boolean')return s.zoneBased;
+  const ds=DEFAULT_SPORTS.find(d=>d.key===key);
+  if(ds)return ds.zoneBased;
+  return!isSportFreitext(key);
 }
 function sportCfg(key){
   const found=cfg.sports.find(s=>s.key===key);
@@ -2519,6 +2628,18 @@ function migrateSportIcons(){
     if(s.imgUrl)return;
     const ds=DEFAULT_SPORTS.find(d=>d.key===s.key);
     s.icon=ds?ds.icon:(s.key==='Sonstiges'?'ti-bolt':'ti-medal');
+    migrated=true;
+  });
+  return migrated;
+}
+// zoneBased einmalig auf gespeicherte Configs schreiben (Altbestand kennt das Feld
+// nicht). Gibt true zurück, wenn etwas geändert wurde.
+function migrateSportZoneBased(){
+  let migrated=false;
+  (cfg.sports||[]).forEach(s=>{
+    if(typeof s.zoneBased==='boolean')return;
+    const ds=DEFAULT_SPORTS.find(d=>d.key===s.key);
+    s.zoneBased=ds?ds.zoneBased:!isSportFreitext(s.key);
     migrated=true;
   });
   return migrated;
@@ -2685,35 +2806,28 @@ function modalityIndicator(session){
 }
 
 // ── ACWR ──────────────────────────────────────────────────────────────────────
-function acwrColor(weekLoad,chronicLoad){
-  if(!chronicLoad||chronicLoad<=0)return cssVar('--text-faint','#8a8881');
-  const r=weekLoad/chronicLoad;
-  if(r<0.8)return cssVar('--acwr-low','#85a7c4');
-  if(r<=1.3)return cssVar('--acwr-optimal','#6f8f3e');
-  if(r<=1.5)return cssVar('--acwr-caution','#d99a2b');
-  return cssVar('--acwr-high','#c0453f');
-}
+// EINE Quelle für Schwellen, Labels und Farben — Log-Kacheln, Auswertungs-Poster,
+// Workload-Karten und das Kalender-Drag-Band lesen ausschließlich hier. Vorher hatte
+// jede der vier Stellen ihre eigene Leiter (2, 4 bzw. 5 Zustände, teils Hardcode-Farben).
+const ACWR_SWEET_LOW=0.8, ACWR_SWEET_HIGH=1.3;
+// color = Textfarbe (-deep-Rolle, lesbar auf Off-White), posterBg = Vollflächen-Farbe der
+// lauten Geste (Design-Briefing §1: Signalblau als Normalfall, Stufenfarbe nur bei Abweichung).
+const ACWR_BANDS=[
+  {max:0.5,             label:'Kaum Reiz',      color:'--sig-neutral',      colorFb:'#888780', posterBg:'--sig-neutral',    posterFb:'#888780'},
+  {max:ACWR_SWEET_LOW,  label:'Unter Zielzone', color:'--sig-low-deep',     colorFb:'#185FA5', posterBg:'--met-endurance',  posterFb:'#2441FF'},
+  {max:ACWR_SWEET_HIGH, label:'Optimale Zone',  color:'--sig-ok-deep',      colorFb:'#3B6D11', posterBg:'--met-endurance',  posterFb:'#2441FF'},
+  {max:1.5,             label:'Vorsicht',       color:'--sig-caution-deep', colorFb:'#854F0B', posterBg:'--sig-caution',    posterFb:'#ddcb58'},
+  {max:Infinity,        label:'Überlastung',    color:'--sig-high-deep',    colorFb:'#A32D2D', posterBg:'--sig-high',       posterFb:'#c0453f'},
+];
+// Die 0.5/0.8-Grenzen sind exklusiv, 1.3/1.5 inklusiv (wie in der Literatur) — deshalb
+// "<" für die ersten beiden Bänder und "<=" ab dem Sweet Spot.
 function acwrStatus(acwr){
-  if(acwr<0.5)return{label:'Kaum Reiz',color:cssVar('--sig-neutral','#888780')};
-  if(acwr<0.8)return{label:'Unter Zielzone',color:cssVar('--sig-low-deep','#185FA5')};
-  if(acwr<=1.3)return{label:'Optimale Zone',color:cssVar('--sig-ok-deep','#3B6D11')};
-  if(acwr<=1.5)return{label:'Vorsicht',color:cssVar('--sig-caution-deep','#854F0B')};
-  return{label:'Überlastung',color:cssVar('--sig-high-deep','#A32D2D')};
+  const b=ACWR_BANDS.find((band,i)=>i<2?acwr<band.max:acwr<=band.max)||ACWR_BANDS[ACWR_BANDS.length-1];
+  return{label:b.label,color:cssVar(b.color,b.colorFb),posterBg:cssVar(b.posterBg,b.posterFb)};
 }
-
-function fmtWorkload(v){return v!=null?String(Math.round(v)):'&#x2014;';}
-
-// Läuft von asOf rückwärts, bis ein Tag mit tatsächlich absolvierter (nicht geplanter/
-// Sonder-)Einheit gefunden wird — asOf selbst zählt, falls dort schon trainiert wurde.
-// Verhindert, dass die ACWR-Karten am aktuellen Tag vor dem ersten Eintrag "leer" wirken.
-function lastCompletedTrainingDate(asOf){
-  const d=new Date(asOf);d.setHours(0,0,0,0);
-  for(let i=0;i<400;i++){
-    const iso=toISODate(d);
-    if(sessions.some(s=>s.date===iso&&!isPlanned(s)&&!isSpecialEntry(s)))return new Date(d);
-    d.setDate(d.getDate()-1);
-  }
-  return new Date(asOf); // Fallback: keine Trainingshistorie vorhanden
+// Ersatz-Status, wenn kein ACWR ausweisbar ist (Chronic-Basis < 28 Tage oder keine Daten).
+function acwrEmptyStatus(baseIncomplete){
+  return{label:baseIncomplete?'Basis unvollständig':'Keine Daten',color:cssVar('--sig-neutral','#888780'),posterBg:cssVar('--sig-neutral','#888780')};
 }
 
 // Baut eine tagesgenaue Lastserie zwischen start/end (inklusive), egal ob Ruhetag oder
@@ -2767,17 +2881,23 @@ function trainingDaysOnly(series){return series.filter(d=>d.actualLoad>0);}
 // skaliert), für JEDEN Tag neu berechnet — nicht mehr an Kalenderwochen-Grenzen gebunden
 // (löst das "bucketed ACWR"-Problem: eine Wochenend-Lastspitze wurde vorher an der
 // Mo/So-Grenze durchgeschnitten und dadurch verdünnt statt korrekt erfasst).
-// Paket N2: Chronic erst ab ≥21 Tagen REALER Datenhistorie ausweisen (gemessen ab der
+// Paket N2: Chronic erst ab ≥28 Tagen REALER Datenhistorie ausweisen (gemessen ab der
 // ersten absolvierten Session) — vorher ist die 28-Tage-Basis strukturell unvollständig
 // und ACWR nicht belastbar. Das frühere Gate (Slice-Länge ≥7) griff wegen des 27-Tage-
-// Vorlaufs praktisch nie.
-const CHRONIC_MIN_HISTORY_DAYS=21;
-function computeAcwrRollingSeries(days,asOf){
+// Vorlaufs praktisch nie. Schwelle = volle Chronic-Fensterlänge (28 Tage), harte
+// Voraussetzung auch für die Tages-ACWR-Linie im Wochen-Zoom-Drilldown.
+const CHRONIC_MIN_HISTORY_DAYS=28;
+// opts (nur für die Kalender-Drag-Projektion, A5): includePlanned zählt Ghosts mit,
+// loadDelta ist eine {iso:delta}-Map, die auf die Tageslast addiert wird (z.B. der
+// gezogene Ghost: −Last am alten Datum, +Last am Hover-Tag). Damit läuft auch die
+// Projektion durch DIESE Fensterlogik inkl. 28-Tage-Gate — kein zweiter Rechenweg.
+function computeAcwrRollingSeries(days,asOf,opts){
+  const{includePlanned=false,loadDelta=null}=opts||{};
   days=days||90;
   const today=asOf?new Date(asOf):new Date();today.setHours(0,0,0,0);
   const start=new Date(today);start.setDate(start.getDate()-(days-1)-27); // 27 Tage Vorlauf für Chronic
-  const series=buildDailyLoadSeries({start,end:today});
-  const loads=series.map(d=>d.actualLoad);
+  const series=buildDailyLoadSeries({start,end:today,includePlanned});
+  const loads=series.map(d=>Math.max(0,d.actualLoad+(includePlanned?d.plannedLoad:0)+((loadDelta&&loadDelta[d.iso])||0)));
   let firstIso=null;
   sessions.forEach(s=>{
     if(isPlanned(s)||isSpecialEntry(s))return;
@@ -2794,46 +2914,80 @@ function computeAcwrRollingSeries(days,asOf){
     const chronic=(historyDays>=CHRONIC_MIN_HISTORY_DAYS&&n>0)?Math.round((chronicSlice.reduce((a,b)=>a+b,0)/n)*7):null;
     out.push({iso:series[i].iso,acute:Math.round(acute),chronic,acwr:(chronic&&chronic>0)?acute/chronic:null});
   }
-  const cutoffIso=toISODate(new Date(today.getTime()-(days-1)*86400000));
+  // Kalender-Arithmetik statt ms-Subtraktion: über eine Sommerzeit-Umstellung hinweg ist
+  // ein „Tag" nicht 86400000 ms — das lieferte sonst einen Tag zu früh als Cutoff und
+  // damit einen Eintrag mehr als angefordert (z.B. Woche 23.–29.03. um die DST-Grenze).
+  const cutoffDate=new Date(today);cutoffDate.setDate(cutoffDate.getDate()-(days-1));
+  const cutoffIso=toISODate(cutoffDate);
   return out.filter(d=>d.iso>=cutoffIso);
 }
+
+// ── EINHEITLICHE ACWR-SICHT (Log, Poster, Workload-Karten, Kalender-Band) ─────
 // asOf: Stichtag, auf den sich "letzte 7 Tage"/"chronische Last" beziehen — Standard: heute.
 // Wird von der Log-Seite mit dem Ende der jeweils per Wochennavigation ausgewählten Woche
 // aufgerufen, damit die Karten die angezeigte Woche widerspiegeln statt immer "heute".
-function computeAcwrStatsRolling(asOf){
-  const cur=computeAcwrRollingSeries(1,asOf).slice(-1)[0]||{acute:null,chronic:null,acwr:null};
-  // N2: Chronic wegen <21 Tagen Datenhistorie gegated, obwohl Sessions existieren
-  const baseIncomplete=cur.chronic==null&&sessions.some(s=>!isPlanned(s)&&!isSpecialEntry(s));
-  const currentStatus=cur.acwr!=null?acwrStatus(cur.acwr):
-    {label:baseIncomplete?'Basis unvollständig':'Keine Daten',color:cssVar('--sig-neutral','#888780')};
-  return{currentLoad:cur.acute,currentChronic:cur.chronic,currentAcwr:cur.acwr,currentStatus,baseIncomplete};
+// Liefert Bezugstag + Kalendervortag aus EINEM Serien-Aufruf. Der Bezugstag ist immer
+// ein realer Kalendertag — es wird NICHT mehr auf den letzten Trainingstag zurückgelaufen:
+// Ein noch trainingsfreier Tag soll den ACWR sichtbar drücken (die 0 zählt im 7-Tage-
+// Fenster mit), das ist gerade die Aussage "möglicher Ruhetag".
+// Anzeigeregel für alle Konsumenten: an einem Tag MIT absolvierter Einheit genügt ein
+// Wert (day); ohne Einheit werden zwei Werte gezeigt (day + prev als Vergleichsanker).
+function computeAcwrView(asOf){
+  const ref=asOf?new Date(asOf):new Date();ref.setHours(0,0,0,0);
+  const rows=computeAcwrRollingSeries(2,ref);
+  const cur=rows[rows.length-1]||{iso:toISODate(ref),acute:null,chronic:null,acwr:null};
+  const prv=rows.length>1?rows[rows.length-2]:null;
+  const hasHistory=sessions.some(s=>!isPlanned(s)&&!isSpecialEntry(s));
+  const wrap=r=>r?{iso:r.iso,acute:r.acute,chronic:r.chronic,acwr:r.acwr,
+    status:r.acwr!=null?acwrStatus(r.acwr):acwrEmptyStatus(r.chronic==null&&hasHistory),
+    trained:sessions.some(s=>s.date===r.iso&&!isPlanned(s)&&!isSpecialEntry(s))}:null;
+  const day=wrap(cur),prev=wrap(prv);
+  return{
+    day,prev,
+    baseIncomplete:cur.chronic==null&&hasHistory,
+    isToday:cur.iso===toISODate(new Date()),
+    // showPrev = die "zwei Werte"-Variante: nur an einem Tag ohne absolvierte Einheit,
+    // und nur wenn der Vortag überhaupt einen belastbaren Wert hat.
+    showPrev:!day.trained&&!!prev&&prev.acwr!=null
+  };
 }
-function acwrCardsHTML(stats){
+const fmtAcwr=v=>v!=null?v.toFixed(2):'&#x2014;';
+// Kurzes Datumslabel für Bezugstage, die nicht heute sind (Wochennavigation im Log).
+function acwrDayLabel(iso){
+  const d=new Date(iso+'T00:00:00');
+  return['So','Mo','Di','Mi','Do','Fr','Sa'][d.getDay()]+', '+String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.';
+}
+// DER ACWR-Baustein — überall dieselbe Kachel (Log wie Auswertung), genau eine
+// <div class="metric">. Genau EIN Wert, sobald am Bezugstag trainiert wurde; ohne Einheit
+// kommt der Vortagswert als Vergleichsanker in der Fußzeile dazu (view.showPrev).
+// Ist der Bezugstag nicht heute (Wochennavigation), trägt das Label das Datum — dann
+// bleibt die Fußzeile kurz genug, um in der schmalen Log-Kachel nicht umzubrechen.
+function acwrMetricHTML(view){
+  const d=view.day;
+  const label='ACWR'+(view.isToday?'':' &#183; '+acwrDayLabel(d.iso).toUpperCase());
+  const parts=[];
+  if(!d.trained)parts.push(view.isToday?'noch kein Training':'kein Training');
+  if(view.showPrev)parts.push(`${view.isToday?'gestern':acwrDayLabel(view.prev.iso)} <span style="color:${view.prev.status.color};font-weight:600;">${fmtAcwr(view.prev.acwr)}</span>`);
+  // Je Information eine eigene Zeile — in der schmalen Log-Kachel (max. 150px) bricht
+  // eine zusammengezogene Fußzeile sonst mitten im Vortagswert um.
+  const foot=parts.map(t=>`<p style="font-size:.62rem;color:var(--text-faint);margin:.12rem 0 0;white-space:nowrap;">${t}</p>`).join('');
+  return`<div class="metric"><p class="m-label">${label}</p><p class="m-value" style="color:${d.status.color};">${fmtAcwr(d.acwr)}</p><p style="font-size:.62rem;color:${d.status.color};margin:.1rem 0 0;font-weight:600;">${d.status.label}</p>${foot}</div>`;
+}
+function acwrCardsHTML(view){
+  const d=view.day;
   return`
-    <div class="metric"><p class="m-label">Letzte 7 Tage</p><p class="m-value">${stats.currentLoad!=null?stats.currentLoad:'&#x2014;'}</p><p style="font-size:.66rem;color:var(--text-faint);margin:.1rem 0 0;">Punkte</p></div>
-    <div class="metric"><p class="m-label">Chronische Last</p><p class="m-value">${stats.currentChronic>0?stats.currentChronic:'&#x2014;'}</p><p style="font-size:.66rem;color:var(--text-faint);margin:.1rem 0 0;">${stats.baseIncomplete?'Basis unvollst&#xE4;ndig':'&#xD8; letzte 28 Tage'}</p></div>
-    <div class="metric"><p class="m-label">ACWR</p><p class="m-value" style="color:${stats.currentStatus.color};">${stats.currentAcwr!=null?stats.currentAcwr.toFixed(2):'&#x2014;'}</p><p style="font-size:.66rem;color:${stats.currentStatus.color};margin:.1rem 0 0;font-weight:600;">${stats.currentStatus.label}</p></div>`;
+    <div class="metric"><p class="m-label">Letzte 7 Tage</p><p class="m-value">${d.acute!=null?d.acute:'&#x2014;'}</p><p style="font-size:.66rem;color:var(--text-faint);margin:.1rem 0 0;">Punkte</p></div>
+    <div class="metric"><p class="m-label">Chronische Last</p><p class="m-value">${d.chronic>0?d.chronic:'&#x2014;'}</p><p style="font-size:.66rem;color:var(--text-faint);margin:.1rem 0 0;">${view.baseIncomplete?'Basis unvollst&#xE4;ndig':'&#xD8; letzte 28 Tage'}</p></div>
+    ${acwrMetricHTML(view)}`;
 }
-// Kompakte 2-Karten-Variante für die Log-Seite: Last (7T/Ø28T) zusammengelegt + ACWR.
-// Zeigt nur EINEN ACWR-Wert: "heute", falls heute bereits trainiert wurde, sonst den
-// letzten abgeschlossenen Trainingstag (Label "Vortag") — ein leerer "heute"-Tag soll
-// den Wert nicht künstlich verwässern. dayStats/dayBeforeStats teilen sich denselben
-// Bezugstag (dayStats) bzw. den Vortag davon (für den Trendpfeil), isToday markiert,
-// ob der Bezugstag der reale heutige Tag ist.
-function acwrCardsHTMLCompact(dayStats,dayBeforeStats,isToday){
-  const load7=dayStats.currentLoad!=null?dayStats.currentLoad:'&#x2014;';
-  const chronic=dayStats.currentChronic>0?dayStats.currentChronic:'&#x2014;';
-  const dayLabel=isToday?'heute':'Vortag';
-  let arrow='';
-  if(dayStats.currentAcwr!=null&&dayBeforeStats&&dayBeforeStats.currentAcwr!=null){
-    const delta=dayStats.currentAcwr-dayBeforeStats.currentAcwr;
-    // 0.3 ACWR-Differenz ≈ voller Ausschlag (±75°); negativ = Pfeil dreht nach oben.
-    const angle=Math.max(-75,Math.min(75,-(delta/0.3)*75));
-    arrow=`<i class="ti ti-arrow-right" style="display:inline-block;transform:rotate(${angle.toFixed(0)}deg);color:${dayStats.currentStatus.color};font-size:.72rem;margin-left:.25rem;vertical-align:.05em;"></i>`;
-  }
+// Kompakte 2-Karten-Variante für die Log-Seite: Last (7T/Ø28T) zusammengelegt +
+// dieselbe ACWR-Kachel wie auf der Auswertungsseite (acwrMetricHTML).
+function acwrCardsHTMLCompact(view){
+  const load7=view.day.acute!=null?view.day.acute:'&#x2014;';
+  const chronic=view.day.chronic>0?view.day.chronic:'&#x2014;';
   return`
     <div class="metric"><p class="m-label">Load 7T</p><p class="m-value">${load7}<span style="font-size:.7rem;color:var(--text-faint);"> / &#xD8;${chronic}</span></p></div>
-    <div class="metric"><p class="m-label">ACWR</p><p class="m-value" style="color:${dayStats.currentStatus.color};">${dayStats.currentAcwr!=null?dayStats.currentAcwr.toFixed(2):'&#x2014;'}${arrow}</p><p style="font-size:.62rem;color:${dayStats.currentStatus.color};margin:.1rem 0 0;font-weight:600;">${dayStats.currentStatus.label}<span style="color:var(--text-faint);font-weight:500;"> &#183; ${dayLabel}</span></p></div>`;
+    ${acwrMetricHTML(view)}`;
 }
 
 // ── RECOVERY PRESSURE ──────────────────────────────────────────────────────────
@@ -3032,8 +3186,8 @@ function computeRecoveryPressure(){
   // "heute"-Tag — sonst wirkt ein noch nicht abgeschlossener Tag wie ein bewusster Ruhetag
   // und senkt den Regenerationsbedarf künstlich (analog trainedToday-Muster bei der
   // Wochenwachstums-Vergleichskarte, siehe dortiger Kommentar). Bewusst NUR einen Tag
-  // zurück (nicht lastCompletedTrainingDate) — echte, bereits abgeschlossene Ruhetage aus
-  // der Vergangenheit sollen die Streak weiterhin korrekt brechen.
+  // zurück, nicht bis zum letzten Trainingstag — echte, bereits abgeschlossene Ruhetage
+  // aus der Vergangenheit sollen die Streak weiterhin korrekt brechen.
   const today=new Date();today.setHours(0,0,0,0);
   const todayIso=toISODate(today);
   const trainedToday=sessions.some(s=>s.date===todayIso&&!isPlanned(s)&&!isSpecialEntry(s));
@@ -3575,28 +3729,70 @@ const _heroAsciiCache={time:new Map(),icon:new Map()};
 // Größenverhältnis erhalten bleibt) — auf breiten Desktop-Kacheln bleibt sonst die CSS-Clamp-
 // Größe (kein Aufblähen). So bleibt die Dauer die eine laute Poster-Geste, ohne zu riesig zu
 // werden. Immun gegen Font-Metrik-Annahmen.
-function fitLhAscii(row){
-  if(!row)return;
-  const kids=[...row.querySelectorAll('pre')];
+// Passt jedes ASCII-<pre> im Hero in SEINE Spalte ein (Dauer links, Sportbild rechts sitzen
+// seit dem Listen-Layout in getrennten Flex-Spalten). Nur verkleinern, nie auffüllen.
+function fitLhAscii(root){
+  if(!root)return;
+  const scope=root.closest('.log-hero')||root;
+  const kids=[...scope.querySelectorAll('.lh-ascii-time,.lh-ascii-icon')];
   if(!kids.length)return;
   const saved=kids.map(el=>el.textContent);
   kids.forEach(el=>{el.style.fontSize='';if(el._lines&&el._lines.length)el.textContent=el._lines.join('\n');});
-  const cs=getComputedStyle(row);
-  const gap=parseFloat(cs.columnGap||cs.gap||'0')||0;
-  let total=gap*Math.max(0,kids.length-1);
-  kids.forEach(el=>{total+=el.scrollWidth;});
-  const avail=row.clientWidth;
-  if(total>avail&&avail>0){
-    const f=(avail/total)*0.97; // 3% Sicherheitsrand, nur verkleinern
-    kids.forEach(el=>{const px=parseFloat(getComputedStyle(el).fontSize);el.style.fontSize=(px*f).toFixed(2)+'px';});
-  }
+  kids.forEach(el=>{
+    const col=el.parentElement;
+    if(!col)return;
+    const es0=getComputedStyle(el);
+    // Sportbild (absolut positioniert): füllt den GANZEN Rahmen — auf die Kachelhöhe skaliert
+    // (und nur von der Kachelbreite gedeckelt). Es liegt hinter den Texten und darf von ihnen
+    // überschnitten werden, deshalb zählen die Geschwisterbreiten hier nicht.
+    if(es0.position==='absolute'){
+      const h=el.scrollHeight,w=el.scrollWidth;
+      if(h>0&&w>0&&col.clientHeight>0){
+        // Breite auf 55% der Kachel gedeckelt, damit das Bild der Dauer-Zahl links nicht
+        // in die Quere kommt (Höhe bleibt der führende Maßstab).
+        const f=Math.min(col.clientHeight/h,(col.clientWidth*0.55)/w);
+        el.style.fontSize=(parseFloat(es0.fontSize)*f).toFixed(2)+'px';
+      }
+      return;
+    }
+    // Geschwister in derselben Zeile (z. B. der Zone-Tag neben der Dauer) belegen Platz →
+    // von der verfügbaren Breite abziehen, sonst würden sie umbrechen statt die Zahl kleiner.
+    const cs=getComputedStyle(col);
+    const inline=cs.display.includes('flex')&&!cs.flexDirection.startsWith('column');
+    const gap=parseFloat(cs.columnGap||cs.gap||'0')||0;
+    let taken=0;
+    if(inline)[...col.children].forEach(sib=>{if(sib!==el)taken+=sib.getBoundingClientRect().width+gap;});
+    // Eigene Ränder mitrechnen (Sportbild rückt per margin-right vom Innenrand ab) — sonst
+    // schrumpft es exakt auf die Spaltenbreite und der Rand hat keinen Platz mehr zu wirken.
+    const es=getComputedStyle(el);
+    taken+=(parseFloat(es.marginLeft)||0)+(parseFloat(es.marginRight)||0);
+    const avail=col.clientWidth-taken;
+    const need=el.scrollWidth;
+    if(avail>0&&need>avail){
+      const f=(avail/need)*0.97; // 3% Sicherheitsrand
+      el.style.fontSize=(parseFloat(getComputedStyle(el).fontSize)*f).toFixed(2)+'px';
+    }
+  });
   kids.forEach((el,i)=>{el.textContent=saved[i];}); // ursprünglichen (ggf. Blank-/Teil-)Text zurück
+}
+// Leere Spalten links/rechts wegschneiden: textToAscii rendert mit Rand (pad), dadurch stünde
+// die Dauer-Zahl eingerückt statt bündig unter dem Datum — in der Liste sitzt sie bündig links
+// und der Zone-Tag direkt daneben.
+function trimAsciiCols(lines){
+  if(!lines||!lines.length)return lines;
+  const w=Math.max(...lines.map(l=>l.length));
+  const blank=i=>lines.every(l=>(l[i]||' ')===' ');
+  let a=0,b=w-1;
+  while(a<w&&blank(a))a++;
+  while(b>=a&&blank(b))b--;
+  if(a===0&&b===w-1)return lines;
+  return lines.map(l=>l.slice(a,b+1));
 }
 function renderHeroAscii(hero,iconEl,timeEl){
   if(timeEl){
     const key=fmtMin(hero.duration);
     let timeLines=_heroAsciiCache.time.get(key);
-    if(!timeLines){timeLines=textToAscii(key,{cols:34,threshold:0.05});_heroAsciiCache.time.set(key,timeLines);}
+    if(!timeLines){timeLines=trimAsciiCols(textToAscii(key,{cols:34,threshold:0.05}));_heroAsciiCache.time.set(key,timeLines);}
     timeEl._lines=timeLines;
     timeEl.textContent=heroIntroPlayed?timeLines.join("\n"):blankLines(timeLines);
   }
@@ -3606,7 +3802,7 @@ function renderHeroAscii(hero,iconEl,timeEl){
       iconEl._lines=iconLines;
       // Jetzt sind Icon- UND Dauer-Zeilen bekannt → Zeile einpassen, BEVOR der Typewriter
       // läuft (Schriftgröße bleibt dann während des Aufbaus stabil).
-      fitLhAscii(iconEl.closest('.lh-ascii'));
+      fitLhAscii(iconEl);
       if(iconEl._pendingIntro){
         iconEl._pendingIntro=false;
         typewriteLines(iconEl,iconLines,16);
@@ -3618,7 +3814,7 @@ function renderHeroAscii(hero,iconEl,timeEl){
     if(cached){applyIcon(cached);return;}
     const img=new Image();
     img.onload=()=>{
-      const iconLines=sourceToAscii(img,ASCII_IMG_OPT);
+      const iconLines=trimAsciiCols(sourceToAscii(img,ASCII_IMG_OPT));
       _heroAsciiCache.icon.set(url,iconLines);
       applyIcon(iconLines);
     };
@@ -4109,6 +4305,7 @@ function armReveals(){
   revealNear(); // Above-the-fold sofort scharf, kein Einblend-Flackern beim Seitenaufruf
 }
 function showPage(key){
+  closeDayZoom(true); // Seitenwechsel während offenem Wochen-Zoom-Drilldown → sofort schließen
   activePage=key;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('#nav-menu button').forEach(b=>b.classList.toggle('active',b.dataset.page===key));
@@ -5428,53 +5625,227 @@ function initHSwipe(el,{key,onSlot}={}){
   }
 }
 
-// ── PAKET B2: Log-Sektion "Aktuelle Einheiten", Slot 2+3 ─────────────────────
-// Slot 2 — Budget. Berechnungsbasis: rollierende 28 Tage (nicht die laufende
-// Woche, sonst montags immer 0 %), als Wochenäquivalent gegen das Ziel gestellt.
-// Zonenzuordnung: Z1+Z2 → LIT, Z3 separat (Grauzone), Z4+Z5 → HIT.
+// ── PAKET B2/F2: Log-Sektion "Aktuelle Einheiten", Slot 2+3 ──────────────────
+// Slot 2 — Budget. Ist heute ein Block mit Zielen aktiv (Paket F2:
+// weekly_target_min/sport_targets/zone_targets), zeigt der Slot Soll/Ist gegen
+// die Ziele DIESES Blocks (Ist = seit Blockstart, wochenäquivalent). Ohne
+// aktiven Ziel-Block gilt das globale Budget-Ziel aus cfg — nach exakt
+// demselben Muster gepflegt (Trainingszeit gesamt + Sport-/Intensitäts-
+// Verteilung, siehe openBudgetGoalModal), Ist rollierend über 28 Tage (nicht
+// die laufende Woche, sonst montags immer 0 %).
 function renderLogBudgetSlot(){
   const el=document.getElementById('log-slot-budget');
   if(!el)return;
+  const activeBlock=resolveBlockForDate(toISODate(new Date()));
+  if(activeBlock&&hasAnyBlockTargets(activeBlock))renderLogBudgetSlotForBlock(el,activeBlock);
+  else renderLogBudgetSlotDefault(el);
+}
+function hasAnyBlockTargets(b){
+  return!!(b.weekly_target_min||(b.sport_targets&&Object.keys(b.sport_targets).length)||(b.zone_targets&&Object.keys(b.zone_targets).length));
+}
+// Globales Budget-Ziel — gleiche Form wie die Block-Ziele, damit Renderer und
+// Editor geteilt werden. Ein leeres (nicht: fehlendes) sport_targets/zone_targets
+// bedeutet "bewusst ohne Verteilungsziel": nur wenn der Schlüssel gar nicht
+// gesetzt ist, greift der 80/20-Default bzw. das alte cfg.litTargetPct.
+const DEFAULT_WEEKLY_TARGET_MIN=480;  // 8 h/Woche
+function budgetTargetsFromCfg(){
+  const lit=cfg.litTargetPct!=null?cfg.litTargetPct:80;
+  return{
+    weekly_target_min:cfg.weeklyTargetMin!=null?cfg.weeklyTargetMin:DEFAULT_WEEKLY_TARGET_MIN,
+    sport_targets:cfg.sportTargets||null,
+    zone_targets:cfg.zoneTargets||{LIT:{pct:lit},HIT:{pct:100-lit}},
+  };
+}
+// Ist-Werte eines Zeitfensters als Wochenäquivalent (Wochen auf min. 1 geklemmt,
+// damit der erste Blocktag nicht durch 0 teilt).
+//
+// Zonenzuordnung EINHEITENWEISE, nicht nach tatsächlich absolvierter Zeit je Zone:
+// die volle Dauer landet im Topf der Session-Zone (Z1+Z2 → LIT, Z3 → MIT,
+// Z4+Z5 → HIT). Eine als Z1 geführte 40-min-Einheit zählt also 40 min LIT, auch
+// wenn darin 5 min in Z3 lagen. Bewusst NICHT über zoneProfileMin(): das
+// Edwards-Profil rechnet gegen feste %HFmax-Bänder (Z3 = 70–80 %), die den
+// konfigurierten cfg.zones-Bändern widersprechen, und verwirft Zeit unter 50 %
+// HFmax stillschweigend. Der Profilbalken in Detailansicht/Session-Modal zeigt
+// weiterhin den echten HF-Verlauf und darf hier abweichen (Detail vs. Aggregat).
+//
+// Zwei Filter: nur zoneBased-Sportarten (isSportZoneBased) — sonst würde eine
+// Krafteinheit als LIT durchgehen — und nur Einheiten mit gepflegter Zone Z1–Z5.
+// '-' (u.a. alle Garmin-Sync-Einheiten) wird weder abgeleitet noch nach LIT
+// gekippt, sondern gar nicht gezählt; die Lücke macht das "x von y h"-Label
+// in Zeile 2 sichtbar. Volumen und Einheiten-Counts (sportMin/sportCount/
+// totalMin) zählen unabhängig davon weiter alle Sportarten.
+function computeBudgetActuals(startD,endD){
+  const weeks=Math.max(1,(Math.round((endD-startD)/86400000)+1)/7);
+  const series=buildDailyLoadSeries({start:startD,end:endD});
+  const sess=[];series.forEach(d=>d.sessions.forEach(s=>{if(!isPlanned(s)&&!isSpecialEntry(s))sess.push(s);}));
+  const sportMin={},sportCount={};let totalMin=0;
+  sess.forEach(s=>{
+    const m=s.duration||0;
+    sportMin[s.sport]=(sportMin[s.sport]||0)+m/weeks;
+    sportCount[s.sport]=(sportCount[s.sport]||0)+1/weeks;
+    totalMin+=m/weeks;
+  });
+  const zoneMin={LIT:0,MIT:0,HIT:0},zoneCount={LIT:0,MIT:0,HIT:0},sportZoneMin={};
+  let zoneTotalMin=0;
+  sess.forEach(s=>{
+    if(!isSportZoneBased(s.sport))return;
+    if(!/^Z[1-5]$/.test(s.zone||''))return;  // ohne gepflegte Zone: nicht zuordenbar
+    const z=parseInt(s.zone[1]),d=s.duration||0;
+    const zk=z<=2?'LIT':z===3?'MIT':'HIT';
+    zoneMin[zk]+=d/weeks;zoneCount[zk]+=1/weeks;zoneTotalMin+=d/weeks;
+    const sz=sportZoneMin[s.sport]||(sportZoneMin[s.sport]={LIT:0,MIT:0,HIT:0});
+    sz[zk]+=d/weeks;
+  });
+  return{weeks,totalMin,sportMin,sportCount,zoneTotalMin,sportZoneMin,zoneMin,zoneCount};
+}
+function computeBlockBudget(block){
+  const today=new Date();today.setHours(0,0,0,0);
+  const a=computeBudgetActuals(new Date(block.starts_on+'T00:00:00'),today);
+  return{...a,weeksElapsed:a.weeks};
+}
+// Skala von Zeile 1: der Balken reicht bis 140 % des Solls, damit eine
+// Überschreitung Platz hat und die Ziellinie ortsfest bleibt (früher wurde auf das
+// Ist reskaliert — dann stand der Balken immer voll und die Ziellinie wanderte).
+const BUDGET_BAR_SCALE=1.4;
+const ZONE_KEYS=['LIT','MIT','HIT'];
+const ZONE_VARS={LIT:'--zone-2',MIT:'--zone-3',HIT:'--zone-4'};
+const HIT_ROW_OPEN_KEY='tlog_budget_hit_open';
+
+// Gemeinsame Darstellung für Block- und globales Budget, vier Zeilen:
+//   1 Gesamtvolumen (alle Sportarten) gegen das Wochenzeit-Ziel
+//   2 Intensitätsverteilung Ist/Soll — nur zonenbasierte Sportarten
+//   3 HIT nach Sportart (eingeklappt) — Anteil am gesamten HIT-Volumen
+//   4 Einheiten je Sportart als Punktmuster (Ø/Woche gerundet gegen Ziel-Anzahl)
+// editFn hängt den Stift in die Kopfzeile — beim Block führt er ins Block-Sheet,
+// sonst ins Budget-Ziel-Sheet.
+function renderBudgetPanel(el,a,targets,headSuffix,editFn){
+  const targetMin=targets.weekly_target_min||Math.max(1,Math.round(a.totalMin));
+  const sportTarget=targets.sport_targets||{};
+  const zoneTarget=targets.zone_targets||{};
+
+  // ── Zeile 1: Gesamtvolumen ────────────────────────────────────────────────
+  const span=targetMin*BUDGET_BAR_SCALE;
+  const fillPct=Math.min(a.totalMin,targetMin)/span*100;
+  const overPct=Math.max(0,Math.min(a.totalMin,span)-targetMin)/span*100;
+  const volPct=Math.round(a.totalMin/targetMin*100);
+  const volRow=`
+    <div class="budget-bar" title="${fmtMin(Math.round(a.totalMin))} h von ${fmtMin(targetMin)} h">
+      <div class="budget-fill" style="width:${fillPct.toFixed(1)}%;"></div>
+      ${overPct>0?`<div class="budget-over" style="width:${overPct.toFixed(1)}%;"></div>`:''}
+      <div class="budget-mark" style="left:${(100/BUDGET_BAR_SCALE).toFixed(2)}%;" title="Ziel ${fmtMin(targetMin)} h"></div>
+    </div>
+    <div class="budget-vol">${fmtMin(Math.round(a.totalMin))} h / Ziel ${fmtMin(targetMin)} h (${volPct}%)</div>`;
+
+  // ── Zeile 2: Intensitätsverteilung (nur zonenbasierte Sportarten) ─────────
+  const totZone=a.zoneTotalMin||0;
+  const zoneSollSum=ZONE_KEYS.reduce((s,zk)=>s+((zoneTarget[zk]&&zoneTarget[zk].pct)||0),0);
+  const zonePct=zk=>totZone>0?a.zoneMin[zk]/totZone*100:0;
+  const distSegs=pctOf=>ZONE_KEYS.map(zk=>{
+    const p=pctOf(zk);
+    if(p<=0)return'';
+    return`<div class="budget-dist-seg" style="width:${p.toFixed(1)}%;background:var(${ZONE_VARS[zk]});" title="${zk} ${Math.round(p)}%"></div>`;
+  }).join('');
+  let distRow='';
+  if(totZone>0){
+    // Guide-Lines an den kumulierten Soll-Grenzen — sie laufen über beide Balken,
+    // damit sichtbar wird, wo Ist und Soll auseinanderdriften.
+    // Grenzen von Null-Segmenten fallen mit der Nachbargrenze zusammen — sonst
+    // stapeln sich zwei Linien an derselben Position (z.B. Ziel 80/0/20).
+    let cum=0;const guides=[];
+    if(zoneSollSum>0){
+      ZONE_KEYS.forEach((zk,i)=>{
+        const p=((zoneTarget[zk]&&zoneTarget[zk].pct)||0)/zoneSollSum*100;
+        cum+=p;
+        if(p<=0||i>=ZONE_KEYS.length-1||cum<=0||cum>=100)return;
+        if(!guides.some(g=>Math.abs(g-cum)<0.05))guides.push(cum);
+      });
+    }
+    const legend=ZONE_KEYS.filter(zk=>zonePct(zk)>0||(zoneTarget[zk]&&zoneTarget[zk].pct!=null))
+      .map(zk=>`<span class="budget-legend-item"><i style="background:var(${ZONE_VARS[zk]});"></i>${zk} ${Math.round(zonePct(zk))}%${zoneTarget[zk]&&zoneTarget[zk].pct!=null?` <span class="budget-target">/ ${zoneTarget[zk].pct}%</span>`:''}</span>`).join('');
+    distRow=`
+      <div class="budget-sub-label">Intensit&#xE4;tsverteilung <span class="budget-sub-scope">&#8212; Ausdauer (${fmtMin(Math.round(totZone))} von ${fmtMin(Math.round(a.totalMin))} h)</span></div>
+      <div class="budget-dist">
+        <div class="budget-dist-bar" title="Ist">${distSegs(zonePct)}</div>
+        ${zoneSollSum>0?`<div class="budget-dist-bar budget-dist-soll" title="Soll">${distSegs(zk=>((zoneTarget[zk]&&zoneTarget[zk].pct)||0)/zoneSollSum*100)}</div>`:''}
+        ${guides.map(g=>`<div class="budget-guide" style="left:${g.toFixed(1)}%;"></div>`).join('')}
+      </div>
+      <div class="budget-legend">${legend}</div>`;
+  }
+
+  // ── Zeile 3: HIT nach Sportart (eingeklappt) ──────────────────────────────
+  const hitOpen=localStorage.getItem(HIT_ROW_OPEN_KEY)==='1';
+  const hitTotal=a.zoneMin.HIT||0;
+  const hitRows=Object.entries(a.sportZoneMin||{})
+    .filter(([k,z])=>isSportZoneBased(k)&&z.HIT>0)
+    .sort((x,y)=>y[1].HIT-x[1].HIT)
+    .map(([k,z])=>{
+      const share=hitTotal>0?z.HIT/hitTotal*100:0;
+      return`<div class="budget-hit-row">
+        <span class="budget-hit-label">${esc(sportCfg(k).label||k)}</span>
+        <span class="budget-hit-track"><span class="budget-hit-fill" style="width:${share.toFixed(1)}%;"></span></span>
+        <span class="budget-hit-val">${fmtMin(Math.round(z.HIT))} h &#183; ${Math.round(share)}%</span>
+      </div>`;
+    }).join('');
+  const hitRow=`
+    <button type="button" class="budget-row-toggle${hitOpen?' open':''}" id="budget-hit-toggle" aria-expanded="${hitOpen}">
+      <i class="ti ti-chevron-right"></i>HIT nach Sportart${hitTotal>0?` <span class="budget-target">${fmtMin(Math.round(hitTotal))} h</span>`:''}
+    </button>
+    <div class="budget-row-body" id="budget-hit-body" ${hitOpen?'':'hidden'}>
+      ${hitRows||'<div class="budget-target">Kein HIT im Zeitraum.</div>'}
+    </div>`;
+
+  // ── Zeile 4: Einheiten je Sportart als Punktmuster ────────────────────────
+  const dotKeys=cfg.sports.map(s=>s.key)
+    .filter(k=>(sportTarget[k]&&sportTarget[k].count!=null)||Math.round(a.sportCount[k]||0)>0)
+    .sort((x,y)=>{
+      const tx=sportTarget[x]&&sportTarget[x].count!=null?0:1;
+      const ty=sportTarget[y]&&sportTarget[y].count!=null?0:1;
+      return tx-ty||(a.sportCount[y]||0)-(a.sportCount[x]||0);
+    });
+  const dotRows=dotKeys.map(k=>{
+    const ist=Math.round(a.sportCount[k]||0);
+    const ziel=sportTarget[k]&&sportTarget[k].count!=null?sportTarget[k].count:null;
+    const total=Math.max(ziel||0,ist);
+    const dots=Array.from({length:total},(_,i)=>`<span class="budget-dot${i<ist?' done':''}"></span>`).join('');
+    return`<div class="budget-dot-row" title="${esc(sportCfg(k).label||k)}: &#216; ${ist}${ziel!=null?' von '+ziel:''} Einheiten/Woche">
+      <span class="budget-dot-label">${esc(sportCfg(k).label||k)}</span>
+      <span class="budget-dots">${dots}</span>
+    </div>`;
+  }).join('');
+  const dotRow=dotRows?`<div class="budget-sub-label">Einheiten je Sportart (&#216;/Woche)</div>${dotRows}`:'';
+
+  // Zonen-Counts aus dem Ziel-Editor bleiben als kompakte Textzeile erhalten.
+  const zoneCountParts=ZONE_KEYS.filter(zk=>zoneTarget[zk]&&zoneTarget[zk].count!=null)
+    .map(zk=>`${zk}: ${Math.round(a.zoneCount[zk]||0)}/${zoneTarget[zk].count}`);
+  const countLine=zoneCountParts.length?`<div class="budget-count-line">${zoneCountParts.join(' &#183; ')}</div>`:'';
+
+  el.innerHTML=`
+    <div class="budget-head">Budget <span class="budget-head-sub">${headSuffix}</span>
+      <button type="button" class="budget-edit" id="budget-edit" title="Ziel bearbeiten" aria-label="Ziel bearbeiten"><i class="ti ti-adjustments-horizontal"></i></button></div>
+    ${volRow}${distRow}${hitRow}${dotRow}${countLine}`;
+  document.getElementById('budget-edit').addEventListener('click',editFn);
+  const toggle=document.getElementById('budget-hit-toggle');
+  toggle.addEventListener('click',()=>{
+    const body=document.getElementById('budget-hit-body');
+    const open=body.hasAttribute('hidden');
+    if(open)body.removeAttribute('hidden');else body.setAttribute('hidden','');
+    toggle.classList.toggle('open',open);
+    toggle.setAttribute('aria-expanded',String(open));
+    localStorage.setItem(HIT_ROW_OPEN_KEY,open?'1':'0');
+  });
+}
+function renderLogBudgetSlotDefault(el){
   const today=new Date();today.setHours(0,0,0,0);
   const start=new Date(today);start.setDate(start.getDate()-27);
-  const series=buildDailyLoadSeries({start,end:today});
-  const sess=[];series.forEach(d=>d.sessions.forEach(s=>{if(!isPlanned(s)&&!isSpecialEntry(s))sess.push(s);}));
-  const targetMin=cfg.weeklyTargetMin||480;   // Wochenvolumen-Ziel (min) — Default 8 h
-  const litTarget=cfg.litTargetPct||80,hitTarget=100-litTarget;
-  const bySport={};let totalWeekMin=0;
-  sess.forEach(s=>{const m=(s.duration||0)/4;bySport[s.sport]=(bySport[s.sport]||0)+m;totalWeekMin+=m;});
-  // Balkensegmente in Sportfarben, gestrichelter Rest = offen
-  const segs=Object.entries(bySport).sort((a,b)=>b[1]-a[1]).map(([sport,min])=>{
-    const pct=Math.min(100,min/targetMin*100);
-    return`<div class="budget-seg" style="width:${pct.toFixed(1)}%;background:${sportCfg(sport).color};" title="${esc(sport)}: ${Math.round(min)} min/Woche"></div>`;
-  }).join('');
-  // Intensitätsverteilung: HF-Verlauf (Edwards-Zonen) bevorzugt, sonst Session-Zone
-  let lit=0,gz=0,hit=0;const hitBySport={};
-  sess.forEach(s=>{
-    const prof=zoneProfileMin(s);
-    let l=0,g=0,h=0;
-    if(prof){l=prof[0]+prof[1];g=prof[2];h=prof[3]+prof[4];}
-    else if(/^Z[1-5]$/.test(s.zone||'')){
-      const z=parseInt(s.zone[1]),d=s.duration||0;
-      if(z<=2)l=d;else if(z===3)g=d;else h=d;
-    }else l=s.duration||0;   // ohne Zonen-Info: konservativ LIT
-    lit+=l;gz+=g;hit+=h;
-    if(h>0)hitBySport[s.sport]=(hitBySport[s.sport]||0)+h;
-  });
-  const tot=lit+gz+hit;
-  const pct=v=>tot>0?Math.round(v/tot*100):0;
-  const hitSplit=Object.entries(hitBySport).sort((a,b)=>b[1]-a[1])
-    .map(([sp,m])=>`${esc(sp)} ${Math.round(m/hit*100)}%`).join(', ');
-  const volPct=Math.round(totalWeekMin/targetMin*100);
-  el.innerHTML=`
-    <div class="budget-head">Budget <span style="font-weight:400;color:var(--text-faint);">&#216; Woche, rollierend 28 Tage</span></div>
-    <div class="budget-bar">${segs}<div class="budget-rest"></div></div>
-    <div class="budget-vol">${fmtMin(Math.round(totalWeekMin))} h / Ziel ${fmtMin(targetMin)} h (${volPct}%)</div>
-    <div class="budget-lines">
-      <div>LIT ${pct(lit)}% <span class="budget-target">/ Ziel ${litTarget}%</span></div>
-      <div>HIT ${pct(hit)}% <span class="budget-target">/ Ziel ${hitTarget}%</span>${hitSplit?` <span class="budget-target">&#8212; davon ${hitSplit}</span>`:''}</div>
-      ${gz>0?`<div>Z3 (Grauzone) ${pct(gz)}%</div>`:''}
-    </div>`;
+  renderBudgetPanel(el,computeBudgetActuals(start,today),budgetTargetsFromCfg(),
+    '&#216; Woche, rollierend 28 Tage',openBudgetGoalModal);
+}
+function renderLogBudgetSlotForBlock(el,block){
+  const b=computeBlockBudget(block);
+  const fmtB=iso=>new Date(iso+'T00:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+  renderBudgetPanel(el,b,block,
+    `&#216; Woche &#183; seit ${fmtB(block.starts_on)} (Woche ${Math.ceil(b.weeksElapsed)})`,
+    ()=>openBlockModal(block));
 }
 // Slot 3 — die drei nächsten geplanten Einheiten (Ghosts) mit Countdown.
 function renderLogNextSlot(){
@@ -5531,10 +5902,7 @@ function renderLog(){
   // zukünftige/geplante Wochen noch keine Ist-Last existiert) — sonst würden die Karten
   // beim Zurückblättern immer die heutige statt die angezeigte Woche widerspiegeln.
   const acwrCapped=range.end<new Date()?range.end:new Date();
-  const acwrAsOf=lastCompletedTrainingDate(acwrCapped);
-  const acwrDayBefore=new Date(acwrAsOf);acwrDayBefore.setDate(acwrDayBefore.getDate()-1);
-  const acwrIsToday=toISODate(acwrAsOf)===toISODate(new Date());
-  document.getElementById('log-acwr-cards').innerHTML=acwrCardsHTMLCompact(computeAcwrStatsRolling(acwrAsOf),computeAcwrStatsRolling(acwrDayBefore),acwrIsToday);
+  document.getElementById('log-acwr-cards').innerHTML=acwrCardsHTMLCompact(computeAcwrView(acwrCapped));
   renderRecoveryPressure();
 
   // ── Log-Chart (Wochenvergleich ⇄ Zonenverteilung, horizontal wischbar) ─────
@@ -5570,22 +5938,21 @@ function renderLog(){
       const hDate=hd.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
       const zc=zoneCfg(hero.zone,hero.sport);
       const heroMeta=sessionMetaParts(hero);
-      // Aufbau spiegelt die Listeneinträge (entry-date/-badge oben, -zone-tag/-title/-meta
-      // unten) — die Dauer bleibt als ASCII-Zahl die eine laute Poster-Geste, das ASCII-
-      // Sportbild sitzt rechts daneben.
-      heroEl.innerHTML=`<i class="ti ti-chevron-down lh-chevron" aria-hidden="true"></i>`+
-        `<div class="lh-top">`+
-          `<span class="lh-date">${hDate}</span>`+
-          `<span class="lh-badge">${sportIconHTML(hero.sport,13)} ${esc(hero.sport)}</span>`+
-        `</div>`+
-        `<div class="lh-ascii"><pre class="lh-ascii-time" aria-label="Dauer ${fmtMin(hero.duration)}"></pre>`+
-        `<pre class="lh-ascii-icon" aria-hidden="true"></pre></div>`+
-        `<div class="lh-bottom">`+
-          `<span class="lh-zone">${esc(zc.label.toUpperCase())}</span>`+
-          `<div class="lh-info-right">`+
+      // Aufbau spiegelt die Listeneinträge 1:1 (entry-left: Datum über Dauer + Zone daneben,
+      // entry-right: Badge, Titel, Meta) — die Dauer bleibt als ASCII-Zahl die eine laute
+      // Poster-Geste, das ASCII-Sportbild sitzt rechts unter dem Badge.
+      heroEl.innerHTML=`<div class="lh-top">`+
+          `<div class="lh-left">`+
+            `<span class="lh-date">${hDate}</span>`+
+            `<pre class="lh-ascii-time" aria-label="Dauer ${fmtMin(hero.duration)}"></pre>`+
+            `<span class="lh-zone">${esc(zc.label.toUpperCase())}</span>`+
+          `</div>`+
+          `<div class="lh-right">`+
+            `<span class="lh-badge">${sportIconHTML(hero.sport,15)} ${esc(hero.sport)}</span>`+
             (hero.title?`<p class="lh-title">${esc(hero.title)}</p>`:'')+
             (heroMeta.length?`<p class="lh-meta">${heroMeta.join(' &#183; ')}</p>`:'')+
           `</div>`+
+          `<pre class="lh-ascii-icon" aria-hidden="true"></pre>`+
         `</div>`;
       heroEl.style.display='';
       const heroIconEl=heroEl.querySelector('.lh-ascii-icon');
@@ -5767,10 +6134,28 @@ function renderCalCell(cellDate,isOutside,weekMode){
     const bc=blockColor(block);
     const showTitle=iso===block.starts_on||cellDate.getDay()===1;
     blockLayer=`<span class="cal-block-bg" style="--blockcolor:${esc(bc)};"></span>`
-      +(showTitle?`<span class="cal-block-title" style="color:${esc(bc)};" title="${esc(block.title)}">${esc(block.title)}</span>`:'');
+      +(showTitle?`<span class="cal-block-title" data-block-id="${esc(block.id)}" style="color:${esc(bc)};" title="${esc(block.title)}">${esc(block.title)}</span>`:'');
   }
   // data-cell-date auf JEDER Zelle (nicht nur leeren) — Drop-Ziel für Drag&Drop.
   return`<div class="${cls}" data-cell-date="${iso}" ${canOpen?`data-date="${iso}"`:''}>${blockLayer}${markFill}${imgLayer}${markSymbol}<span class="cal-daynum" style="${daynumStyle}">${dayLabel}</span><div class="cal-entries">${chips}</div>${plusBtn}</div>`;
+}
+// Paket F3: Tap auf den Block-Titel in der Monatsansicht öffnet das Info-Popover
+// (nicht die Vollflächen-Tönung — die bleibt pointer-events:none, sonst würden
+// Chips/Plus-Button der Zelle blockiert). Delegiert am Container, einmalig
+// gebunden, damit ein Re-Render (innerHTML-Austausch der Kinder) den Handler
+// nicht verliert bzw. dupliziert.
+function attachCalBlockInfoClick(container){
+  if(container._blockInfoBound)return;
+  container._blockInfoBound=true;
+  // Capture-Phase: muss VOR dem bubble-phasigen Klick-Handler der leeren Zelle
+  // (öffnet sonst zusätzlich den Schnell-Planer) greifen und die Propagation stoppen.
+  container.addEventListener('click',e=>{
+    const t=e.target.closest('.cal-block-title[data-block-id]');
+    if(!t)return;
+    e.stopPropagation();
+    const block=blocks.find(b=>String(b.id)===String(t.dataset.blockId));
+    if(block)openBlockInfoPopover(block);
+  },true);
 }
 function updateCalBlockBtn(){
   // Blöcke werden nur in der Planungsebene (Quartal/Jahr) angelegt (Spec F2).
@@ -5819,6 +6204,7 @@ function renderCalendar(){
     }
   }
   container.innerHTML='';container.appendChild(grid);
+  attachCalBlockInfoClick(container);
   // Chip-Interaktionen: Einfachklick öffnet Detail, Doppelklick hakt eine
   // geplante Einheit ab (→ absolviert), Ziehen verschiebt/kopiert (Teil 2/4b).
   attachCalChipInteractions(container);
@@ -5948,14 +6334,37 @@ function renderCalYear(container,labelEl){
 // verschieben Start/Ende (Snapping = Zeilengrenze = Wochen- bzw. Monatsgrenze).
 let calBlockActive=false;
 let _blockDrag=null;
+// Breite einer Block-Rail + Abstand zur nächsten Spur (siehe .cal-block-rail).
+const CAL_RAIL_W=16,CAL_RAIL_GAP=4,CAL_RAIL_STEP=CAL_RAIL_W+CAL_RAIL_GAP;
+// Greedy Intervallfärbung: überlappende Blöcke (z.B. zwei sich zeitlich
+// überschneidende Deload-Blöcke) bekommen unterschiedliche "Spuren" — die Spur
+// verschiebt die Rail horizontal in der Rinne, die Höhe bleibt immer der volle
+// Datumsbereich. Nicht-überlappende Blöcke landen alle in Spur 0.
+function computeBlockLanes(list){
+  const sorted=[...list].sort((a,b)=>a.starts_on.localeCompare(b.starts_on));
+  const laneEnds=[];
+  const laneOf=new Map();
+  sorted.forEach(b=>{
+    let lane=laneEnds.findIndex(end=>end<b.starts_on);
+    if(lane===-1){lane=laneEnds.length;laneEnds.push(b.ends_on);}
+    else laneEnds[lane]=b.ends_on;
+    laneOf.set(String(b.id),lane);
+  });
+  return{laneOf,laneCount:Math.max(1,laneEnds.length)};
+}
 function paintCalBlocks(container,loBound,hiBound){
   const wrap=container.querySelector('.cal-quarter,.cal-year');
   if(!wrap)return;
   const layer=wrap.querySelector('.cal-block-layer');
   if(!layer)return;
   layer.innerHTML='';
+  const overlapping=blocksOverlapping(loBound,hiBound);
+  const{laneOf,laneCount}=computeBlockLanes(overlapping);
+  // Rinne VOR dem Messen setzen — die Zeilen rücken dadurch nach rechts und die
+  // gemessenen Offsets stimmen sonst nicht mit dem finalen Layout überein.
+  wrap.style.setProperty('--block-gutter',(overlapping.length?laneCount*CAL_RAIL_STEP:0)+'px');
   const rows=[...wrap.querySelectorAll('.cal-q-row')];
-  blocksOverlapping(loBound,hiBound).forEach(b=>{
+  overlapping.forEach(b=>{
     const covered=rows.filter(r=>r.dataset.rowLo<=b.ends_on&&r.dataset.rowHi>=b.starts_on);
     if(!covered.length)return;
     const first=covered[0],last=covered[covered.length-1];
@@ -5963,16 +6372,56 @@ function paintCalBlocks(container,loBound,hiBound){
     bar.className='cal-block-bar';
     bar.dataset.blockId=b.id;
     bar.style.setProperty('--blockcolor',blockColor(b));
-    positionBar(bar,first,last);
-    bar.innerHTML=`<span class="cal-block-bar-title">${esc(b.title)} &#183; ${esc(b.intention)}</span>`
-      +(calBlockActive?'<span class="cal-block-handle cal-block-handle-top"></span><span class="cal-block-handle cal-block-handle-bottom"></span>':'');
+    const lbl=b.title===b.intention?b.title:b.title+' · '+b.intention;
+    bar.innerHTML=`<span class="cal-block-rail" title="${esc(lbl)}"><span class="cal-block-rail-title">${esc(lbl)}</span>`
+      +(calBlockActive?'<span class="cal-block-handle cal-block-handle-top"></span><span class="cal-block-handle cal-block-handle-bottom"></span>':'')
+      +'</span>';
+    positionBar(bar,first,last,laneOf.get(String(b.id)),laneCount);
     layer.appendChild(bar);
   });
   if(calBlockActive)wrap.addEventListener('pointerdown',onBlockPointerDown);
+  attachCalBlockRowInfoClick(wrap);
 }
-function positionBar(bar,firstRow,lastRow){
+// Paket F3: Tap auf eine block-hinterlegte Zeile außerhalb des Block-Bearbeiten-
+// Modus öffnet das Info-Popover. Läuft über die Zeile (nicht die Balken-Ebene
+// dahinter) — die Zeile liegt stacking-mäßig vorn (z-index 1 vs. Layer 0) und
+// erhält Klicks ohnehin zuerst; im Block-Modus übernimmt onBlockPointerDown/-Up
+// die Tap-/Drag-Logik unverändert.
+function attachCalBlockRowInfoClick(wrap){
+  if(wrap._blockInfoBound)return;
+  wrap._blockInfoBound=true;
+  wrap.addEventListener('click',e=>{
+    if(calBlockActive)return;
+    // Tap auf eine Rail meint genau diesen Block (bei überlappenden Blöcken die
+    // einzige eindeutige Geste) — sonst gilt der erste Block der Zeile.
+    const railBar=e.target.closest('.cal-block-bar');
+    if(railBar){
+      const b=blocks.find(x=>String(x.id)===String(railBar.dataset.blockId));
+      if(b){openBlockInfoPopover(b);return;}
+    }
+    const row=e.target.closest('.cal-q-row');
+    if(!row)return;
+    const hit=blocksOverlapping(row.dataset.rowLo,row.dataset.rowHi)[0];
+    if(hit)openBlockInfoPopover(hit);
+  });
+}
+// lane/laneCount optional — bei Drag/Resize (positionBar ohne diese Argumente
+// aufgerufen) wird die zuletzt gemalte Spur aus dem Dataset übernommen, damit
+// ein Block seine Spur beim Ziehen behält statt kurzzeitig auf volle Höhe zu springen.
+function positionBar(bar,firstRow,lastRow,lane,laneCount){
+  if(lane==null)lane=parseInt(bar.dataset.lane||'0',10);
+  if(laneCount==null)laneCount=parseInt(bar.dataset.laneCount||'1',10);
+  bar.dataset.lane=lane;bar.dataset.laneCount=laneCount;
   const top=firstRow.offsetTop,height=lastRow.offsetTop+lastRow.offsetHeight-top;
   bar.style.top=top+'px';bar.style.height=height+'px';
+  const rail=bar.querySelector('.cal-block-rail');
+  if(rail){
+    rail.style.left=(lane*CAL_RAIL_STEP)+'px';
+    // Zu kurz für den vertikalen Titel (v.a. Jahresansicht: ein Monat ≈ 28 px)?
+    // Dann nur die farbige Spur zeigen statt eines abgeschnittenen Wortstummels —
+    // Titel bleibt als Tooltip und über das Info-Popover erreichbar.
+    rail.classList.toggle('is-tight',height<52);
+  }
 }
 function calRowsOf(wrap){return[...wrap.querySelectorAll('.cal-q-row')];}
 function calRowAtY(wrap,y){
@@ -6056,6 +6505,16 @@ async function persistBlockDates(block,starts_on,ends_on){
 
 // ── PAKET F2: Block-Modal (Anlegen/Bearbeiten) ───────────────────────────────
 let _blockModalCtx=null;
+// Paket F2: Wochenzeit- und Verteilungsziele eines Blocks — Datumsformat auch
+// vom Info-Popover genutzt.
+function fmtBlockDate(iso){return new Date(iso+'T00:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'});}
+function blockGoalRowHTML(attr,key,label,color,target){
+  const t=target||{};
+  return`<div class="block-goal-row"><span class="bg-swatch" style="background:${esc(color)};"></span><span class="bg-label">${esc(label)}</span>
+    <input type="number" min="0" max="100" class="block-goal-pct" data-${attr}="${esc(key)}" placeholder="%" value="${t.pct!=null?t.pct:''}">
+    <input type="number" min="0" class="block-goal-count" data-${attr}="${esc(key)}" placeholder="#/Wo" value="${t.count!=null?t.count:''}">
+  </div>`;
+}
 function openBlockModal(existing,preset){
   closeBlockModal();
   const starts_on=existing?existing.starts_on:preset.starts_on;
@@ -6064,7 +6523,12 @@ function openBlockModal(existing,preset){
   const curColor=existing?blockColor(existing):BLOCK_INTENTION_COLORS[curIntention];
   _blockModalCtx={existing,starts_on,ends_on,color:curColor};
   const palette=[...new Set(Object.values(BLOCK_INTENTION_COLORS))];
-  const fmt=iso=>new Date(iso+'T00:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'});
+  const fmt=fmtBlockDate;
+  const sportT=(existing&&existing.sport_targets)||{};
+  const zoneT=(existing&&existing.zone_targets)||{};
+  const hasGoals=!!(existing&&(existing.weekly_target_min||Object.keys(sportT).length||Object.keys(zoneT).length));
+  const sportGoalRows=(cfg.sports||[]).map(s=>blockGoalRowHTML('sport',s.key,s.label||s.key,s.color,sportT[s.key])).join('');
+  const zoneGoalRows=['LIT','MIT','HIT'].map(zk=>blockGoalRowHTML('zone',zk,zk,BLOCK_INTENTION_COLORS[zk],zoneT[zk])).join('');
   const bd=document.createElement('div');bd.className='ghost-sheet-backdrop';bd.id='block-sheet-backdrop';
   const sheet=document.createElement('div');sheet.className='block-sheet';sheet.id='block-sheet';
   sheet.innerHTML=`
@@ -6077,6 +6541,18 @@ function openBlockModal(existing,preset){
     <div class="block-swatches" id="block-swatches">${palette.map(c=>`<button type="button" class="block-swatch${c===curColor?' active':''}" data-color="${c}" style="background:${c};"></button>`).join('')}</div>
     <label class="block-field-lbl">Notiz</label>
     <textarea id="block-note" rows="2" placeholder="optional" style="width:100%;">${esc(existing&&existing.note?existing.note:'')}</textarea>
+    <button type="button" id="block-goal-toggle" class="block-goal-toggle${hasGoals?' open':''}">Ziel <i class="ti ti-chevron-down"></i></button>
+    <div id="block-goal-body" class="block-goal-body${hasGoals?' open':''}">
+      <label class="block-field-lbl">Wochenzeit-Ziel (Min/Woche)</label>
+      <input type="number" min="0" id="block-weekly-min" placeholder="z.B. 480" value="${existing&&existing.weekly_target_min!=null?existing.weekly_target_min:''}" style="width:100%;">
+      <label class="block-field-lbl">Sport-Verteilung</label>
+      <p class="block-goal-hint">Muss nicht 100% ergeben.</p>
+      ${sportGoalRows}
+      <p class="block-goal-warn" id="block-goal-warn-sport"></p>
+      <label class="block-field-lbl">Intensitäts-Verteilung</label>
+      ${zoneGoalRows}
+      <p class="block-goal-warn" id="block-goal-warn-zone"></p>
+    </div>
     <div class="block-sheet-actions">
       ${existing?'<button type="button" id="block-delete" class="block-btn-delete"><i class="ti ti-trash"></i> L&#xF6;schen</button>':'<span></span>'}
       <div style="display:flex;gap:.5rem;">
@@ -6095,10 +6571,103 @@ function openBlockModal(existing,preset){
     if(palette.includes(_blockModalCtx.color)){selectBlockColor(def);}
   });
   document.querySelectorAll('#block-swatches .block-swatch').forEach(sw=>sw.addEventListener('click',()=>selectBlockColor(sw.dataset.color)));
+  document.getElementById('block-goal-toggle').addEventListener('click',toggleBlockGoalSection);
+  document.querySelectorAll('.block-goal-pct').forEach(inp=>inp.addEventListener('input',updateBlockGoalWarnings));
+  updateBlockGoalWarnings();
   document.getElementById('block-save').addEventListener('click',()=>saveBlockFromModal());
   const delBtn=document.getElementById('block-delete');
   if(delBtn)delBtn.addEventListener('click',()=>deleteBlockFromModal());
   document.getElementById('block-title').focus();
+}
+// Globales Budget-Ziel bearbeiten (Log → Budget → Stift). Bewusst dieselben
+// Felder, Klassen und IDs wie die Ziel-Sektion im Block-Sheet, damit
+// blockGoalRowHTML/collectGoalMap/updateBlockGoalWarnings/closeBlockModal
+// unverändert mitgenutzt werden — nur ohne Zeitraum, Titel und Farbe.
+function openBudgetGoalModal(){
+  closeBlockModal();
+  const t=budgetTargetsFromCfg();
+  const sportT=t.sport_targets||{},zoneT=t.zone_targets||{};
+  const sportGoalRows=(cfg.sports||[]).map(s=>blockGoalRowHTML('sport',s.key,s.label||s.key,s.color,sportT[s.key])).join('');
+  const zoneGoalRows=['LIT','MIT','HIT'].map(zk=>blockGoalRowHTML('zone',zk,zk,BLOCK_INTENTION_COLORS[zk],zoneT[zk])).join('');
+  const bd=document.createElement('div');bd.className='ghost-sheet-backdrop';bd.id='block-sheet-backdrop';
+  const sheet=document.createElement('div');sheet.className='block-sheet';sheet.id='block-sheet';
+  sheet.innerHTML=`
+    <p class="ghost-sheet-title">Budget-Ziel</p>
+    <p class="block-goal-hint">Gilt, solange kein Trainingsblock mit eigenen Zielen l&#xE4;uft. Ist-Werte rollierend &#xFC;ber 28 Tage.</p>
+    <label class="block-field-lbl">Trainingszeit gesamt (Min/Woche)</label>
+    <input type="number" min="0" id="block-weekly-min" placeholder="z.B. ${DEFAULT_WEEKLY_TARGET_MIN}" value="${cfg.weeklyTargetMin!=null?cfg.weeklyTargetMin:''}" style="width:100%;">
+    <label class="block-field-lbl">Sport-Verteilung</label>
+    <p class="block-goal-hint">Muss nicht 100% ergeben.</p>
+    ${sportGoalRows}
+    <p class="block-goal-warn" id="block-goal-warn-sport"></p>
+    <label class="block-field-lbl">Intensit&#xE4;ts-Verteilung</label>
+    ${zoneGoalRows}
+    <p class="block-goal-warn" id="block-goal-warn-zone"></p>
+    <div class="block-sheet-actions">
+      <button type="button" id="budget-goal-reset" class="ghost">Zur&#xFC;cksetzen</button>
+      <div style="display:flex;gap:.5rem;">
+        <button type="button" id="block-cancel">Abbrechen</button>
+        <button type="button" id="budget-goal-save" class="block-btn-save">Speichern</button>
+      </div>
+    </div>`;
+  document.body.appendChild(bd);document.body.appendChild(sheet);
+  requestAnimationFrame(()=>{bd.style.opacity='1';sheet.classList.add('open');});
+  bd.addEventListener('pointerdown',closeBlockModal);
+  document.getElementById('block-cancel').addEventListener('click',closeBlockModal);
+  document.querySelectorAll('.block-goal-pct').forEach(inp=>inp.addEventListener('input',updateBlockGoalWarnings));
+  updateBlockGoalWarnings();
+  document.getElementById('budget-goal-save').addEventListener('click',saveBudgetGoalFromModal);
+  document.getElementById('budget-goal-reset').addEventListener('click',resetBudgetGoal);
+}
+function saveBudgetGoalFromModal(){
+  cfg.weeklyTargetMin=parseIntOrNull('#block-weekly-min');
+  // ||{} statt ||null: geleerte Felder sollen "kein Ziel" heißen und nicht auf
+  // den 80/20-Default zurückfallen (siehe budgetTargetsFromCfg).
+  cfg.sportTargets=collectGoalMap('sport')||{};
+  cfg.zoneTargets=collectGoalMap('zone')||{};
+  delete cfg.litTargetPct;   // durch zoneTargets abgelöst
+  saveCfg();closeBlockModal();renderLogBudgetSlot();
+}
+function resetBudgetGoal(){
+  delete cfg.weeklyTargetMin;delete cfg.sportTargets;delete cfg.zoneTargets;delete cfg.litTargetPct;
+  saveCfg();closeBlockModal();renderLogBudgetSlot();
+}
+function toggleBlockGoalSection(){
+  document.getElementById('block-goal-toggle').classList.toggle('open');
+  document.getElementById('block-goal-body').classList.toggle('open');
+}
+// Weiche Warnung, falls die Prozentsummen (Sport bzw. Zone getrennt) spürbar von
+// 100% abweichen — blockiert das Speichern nicht, ist nur ein Hinweis.
+function updateBlockGoalWarnings(){
+  const sumOf=sel=>[...document.querySelectorAll(sel)].reduce((s,i)=>s+(parseFloat(i.value)||0),0);
+  const warn=(el,sum)=>{if(!el)return;el.textContent=(sum>0&&(sum<90||sum>110))?`Summe: ${Math.round(sum)}% — ergibt nicht 100%, wird trotzdem gespeichert`:'';};
+  warn(document.getElementById('block-goal-warn-sport'),sumOf('.block-goal-pct[data-sport]'));
+  warn(document.getElementById('block-goal-warn-zone'),sumOf('.block-goal-pct[data-zone]'));
+}
+function parseIntOrNull(sel){
+  const el=document.querySelector(sel);
+  if(!el||el.value==='')return null;
+  const v=parseFloat(el.value);
+  return Number.isFinite(v)?Math.round(v):null;
+}
+// Liest die %/Anzahl-Zeilen einer Ziel-Kategorie (Sport oder Zone) aus dem
+// Block-Sheet zu {key:{pct,count}}. Leere Felder werden weggelassen (nicht als 0
+// gespeichert), damit eine nur teilweise gepflegte Verteilung spätere Ist/Soll-
+// Vergleiche nicht stillschweigend auf 0 zieht.
+function collectGoalMap(attr){
+  const map={};
+  document.querySelectorAll(`.block-goal-pct[data-${attr}]`).forEach(inp=>{
+    const key=inp.dataset[attr];
+    const pct=inp.value!==''?Math.round(parseFloat(inp.value)):null;
+    const countEl=document.querySelector(`.block-goal-count[data-${attr}="${CSS.escape(key)}"]`);
+    const count=countEl&&countEl.value!==''?Math.round(parseFloat(countEl.value)):null;
+    if(pct!=null||count!=null){
+      map[key]={};
+      if(pct!=null)map[key].pct=pct;
+      if(count!=null)map[key].count=count;
+    }
+  });
+  return Object.keys(map).length?map:null;
 }
 function selectBlockColor(c){
   _blockModalCtx.color=c;
@@ -6112,34 +6681,77 @@ function closeBlockModal(){
 }
 async function saveBlockFromModal(){
   const ctx=_blockModalCtx;if(!ctx)return;
+  // Doppel-Tap/-Klick-Schutz: ohne dieses Gate erzeugt ein schneller Doppelklick
+  // auf "Speichern" zwei identische Blöcke (gleicher Zeitraum/Titel), die sich in
+  // Quartal/Jahr dann deckungsgleich überlagern.
+  const saveBtn=document.getElementById('block-save');
+  if(saveBtn?.disabled)return;
+  if(saveBtn)saveBtn.disabled=true;
   const title=document.getElementById('block-title').value.trim()||'Block';
   const intention=document.getElementById('block-intention').value;
   const note=document.getElementById('block-note').value.trim()||null;
-  const payload={title,intention,color:ctx.color,note,starts_on:ctx.starts_on,ends_on:ctx.ends_on};
+  const weekly_target_min=parseIntOrNull('#block-weekly-min');
+  const sport_targets=collectGoalMap('sport');
+  const zone_targets=collectGoalMap('zone');
+  const payload={title,intention,color:ctx.color,note,starts_on:ctx.starts_on,ends_on:ctx.ends_on,weekly_target_min,sport_targets,zone_targets};
   setSyncState('syncing');
   try{
     if(ctx.existing){
-      const upd=await DB.updateBlock(ctx.existing.id,{title,intention,color:ctx.color,note});
+      const upd=await DB.updateBlock(ctx.existing.id,{title,intention,color:ctx.color,note,weekly_target_min,sport_targets,zone_targets});
       Object.assign(ctx.existing,upd);
     }else{
       const created=await DB.addBlock(payload);blocks.push(created);
     }
-    setSyncState('ok');closeBlockModal();renderCalendar();
-  }catch(e){setSyncState('error');alert('Block speichern fehlgeschlagen: '+e.message);}
+    // Auch den Log-Budget-Slot nachziehen: er rendert gegen die Block-Ziele und
+    // zeigte nach dem Speichern sonst noch die alten Werte.
+    setSyncState('ok');closeBlockModal();renderCalendar();renderLogBudgetSlot();
+  }catch(e){setSyncState('error');if(saveBtn)saveBtn.disabled=false;alert('Block speichern fehlgeschlagen: '+e.message);}
 }
 async function deleteBlockFromModal(){
   const ctx=_blockModalCtx;if(!ctx||!ctx.existing)return;
   const b=ctx.existing;
   blocks=blocks.filter(x=>String(x.id)!==String(b.id));
-  closeBlockModal();renderCalendar();
+  closeBlockModal();renderCalendar();renderLogBudgetSlot();
   setSyncState('syncing');
   try{await DB.deleteBlock(b.id);setSyncState('ok');}
   catch(e){setSyncState('error');alert('Block löschen fehlgeschlagen: '+e.message);}
   showUndoToast('Block gelöscht',async()=>{
-    const re=await DB.addBlock({title:b.title,intention:b.intention,color:b.color,note:b.note,starts_on:b.starts_on,ends_on:b.ends_on});
-    blocks.push(re);renderCalendar();
+    const re=await DB.addBlock({title:b.title,intention:b.intention,color:b.color,note:b.note,starts_on:b.starts_on,ends_on:b.ends_on,weekly_target_min:b.weekly_target_min,sport_targets:b.sport_targets,zone_targets:b.zone_targets});
+    blocks.push(re);renderCalendar();renderLogBudgetSlot();
   });
 }
+
+// ── PAKET F2/F3: Block-Info-Popover ──────────────────────────────────────────
+// Leichtgewichtiges Read-only-Fenster bei Tap auf einen Block außerhalb des
+// Block-Bearbeiten-Modus (Monat/Quartal/Jahr). "Bearbeiten" öffnet das bestehende
+// volle Editier-Sheet (openBlockModal) — keine eigene Speicherlogik hier.
+function closeBlockInfoPopover(){
+  document.getElementById('block-info-pop')?.remove();
+  document.getElementById('block-info-backdrop')?.remove();
+}
+function openBlockInfoPopover(block){
+  closeBlockInfoPopover();
+  if(!block)return;
+  const bd=document.createElement('div');bd.className='block-info-backdrop';bd.id='block-info-backdrop';
+  const pop=document.createElement('div');pop.className='block-info-pop';pop.id='block-info-pop';
+  pop.style.setProperty('--blockcolor',blockColor(block));
+  const goalLine=(label,t)=>{
+    const parts=[t.pct!=null?`${t.pct}%`:null,t.count!=null?`${t.count}/Wo`:null].filter(Boolean).join(' · ');
+    return parts?`<div class="block-info-line">${esc(label)} — ${parts}</div>`:'';
+  };
+  const sportRows=Object.entries(block.sport_targets||{}).map(([k,t])=>goalLine(sportCfg(k).label||k,t)).join('');
+  const zoneRows=Object.entries(block.zone_targets||{}).map(([k,t])=>goalLine(k,t)).join('');
+  pop.innerHTML=`
+    <h4>${esc(block.title)}</h4>
+    <p class="block-info-range">${esc(block.intention)} &#183; ${fmtBlockDate(block.starts_on)} &#8211; ${fmtBlockDate(block.ends_on)}</p>
+    ${block.weekly_target_min?`<div class="block-info-line">Wochenzeit-Ziel: ${fmtMin(block.weekly_target_min)} h</div>`:''}
+    ${sportRows}${zoneRows}
+    <div class="block-info-actions"><button type="button" id="block-info-edit">Bearbeiten</button></div>`;
+  document.body.appendChild(bd);document.body.appendChild(pop);
+  bd.addEventListener('click',closeBlockInfoPopover);
+  document.getElementById('block-info-edit').addEventListener('click',()=>{closeBlockInfoPopover();openBlockModal(block);});
+}
+
 // Block-Modus umschalten (nur Quartal/Jahr sinnvoll). Schließt den Gestalten-Modus.
 function toggleCalBlockMode(){
   calBlockActive=!calBlockActive;
@@ -6369,22 +6981,16 @@ function updateCalDrag(ev){
 // nicht in den regulären Kennzahlen (buildDailyLoadSeries default statusFilter='done').
 function computeDragProjection(hoverIso,dragged){
   const asOf=new Date(hoverIso+'T00:00:00');
-  const start=new Date(asOf);start.setDate(start.getDate()-27);
-  const series=buildDailyLoadSeries({start,end:asOf,includePlanned:true});
   const draggedWl=berechneWorkload(dragged).value||0;
-  let acuteBase=0,acuteProj=0,chronBase=0,chronProj=0;
-  series.forEach((d,i)=>{
-    // plannedLoad enthält den gezogenen Ghost an seinem alten Datum → dort herausrechnen
-    let pl=d.plannedLoad;
-    if(d.iso===dragged.date)pl=Math.max(0,pl-draggedWl);
-    const proj=d.actualLoad+pl+(d.iso===hoverIso?draggedWl:0);
-    if(i>=series.length-7){acuteBase+=d.actualLoad;acuteProj+=proj;}
-    chronBase+=d.actualLoad;chronProj+=proj;
-  });
-  const chronicBase=chronBase/series.length*7,chronicProj=chronProj/series.length*7;
-  return{acuteBase:Math.round(acuteBase),acuteProj:Math.round(acuteProj),
-    acwrBase:chronicBase>0?acuteBase/chronicBase:null,
-    acwrProj:chronicProj>0?acuteProj/chronicProj:null};
+  // Verschiebung des gezogenen Ghosts als Last-Delta: am alten Datum abziehen, am
+  // Hover-Tag addieren. Basis und Projektion laufen dadurch durch dieselbe Fenster-
+  // und Gate-Logik wie jede andere ACWR-Anzeige (kein zweiter Rechenweg).
+  const delta={};
+  delta[dragged.date]=(delta[dragged.date]||0)-draggedWl;
+  delta[hoverIso]=(delta[hoverIso]||0)+draggedWl;
+  const base=computeAcwrRollingSeries(1,asOf).slice(-1)[0]||{acute:0,acwr:null};
+  const proj=computeAcwrRollingSeries(1,asOf,{includePlanned:true,loadDelta:delta}).slice(-1)[0]||{acute:0,acwr:null};
+  return{acuteBase:base.acute,acuteProj:proj.acute,acwrBase:base.acwr,acwrProj:proj.acwr};
 }
 let _loadBandRaf=null,_loadBandHoverIso=null;
 function showCalLoadBand(){
@@ -6401,10 +7007,15 @@ function scheduleLoadBandUpdate(iso){
     const band=document.getElementById('cal-load-band');
     if(!band||!_calDrag)return;
     const p=computeDragProjection(_loadBandHoverIso,_calDrag.session);
-    const fmtA=v=>v!=null?v.toFixed(2):'–';
-    band.textContent=`7T-Load ${p.acuteBase} → ${p.acuteProj} · ACWR ${fmtA(p.acwrBase)} → ${fmtA(p.acwrProj)}`;
-    band.classList.toggle('warn',p.acwrProj!=null&&p.acwrProj>1.3);
-    band.classList.toggle('low',p.acwrProj!=null&&p.acwrProj<0.8);
+    // Ohne belastbare 28-Tage-Basis (CHRONIC_MIN_HISTORY_DAYS) bleibt der ACWR-Teil weg,
+    // statt eine erfundene Ratio zu zeigen — gleiche Regel wie in allen anderen Anzeigen.
+    const acwrPart=(p.acwrBase!=null||p.acwrProj!=null)
+      ?` · ACWR ${p.acwrBase!=null?p.acwrBase.toFixed(2):'–'} → ${p.acwrProj!=null?p.acwrProj.toFixed(2):'–'}`:'';
+    band.textContent=`7T-Load ${p.acuteBase} → ${p.acuteProj}${acwrPart}`;
+    // Warnfläche aus derselben Bandtabelle wie Log-Kachel, Poster und Workload-Karten
+    // (kein Hardcode-Rot mehr). Die -deep-Farbe trägt den hellen Bandtext, Standard bleibt Ink.
+    band.style.background=(p.acwrProj!=null&&p.acwrProj>ACWR_SWEET_HIGH)?acwrStatus(p.acwrProj).color:'';
+    band.classList.toggle('low',p.acwrProj!=null&&p.acwrProj<ACWR_SWEET_LOW);
   });
 }
 function removeCalLoadBand(){
@@ -7594,7 +8205,11 @@ function renderAnalyticsAreaChart(labels,datasets,getColor){
     '</linearGradient>'+
     '<mask id="area-soft" maskUnits="userSpaceOnUse" x="0" y="0" width="'+W+'" height="'+H+'">'+
     '<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="url(#area-soft-grad)"/></mask>';
-  const defs='<defs>'+softMask+fineBlurFilterDef('area-fineblur')+gradDefs.join('')+'</defs>';
+  // Filterbereich absolut auf die Chartfläche + kleinen Rand begrenzen (stdDeviation 6
+  // braucht ~20 px Luft). Ohne das skaliert die 240%-BBox-Region mit der Chartbreite
+  // (16 Wochen ≈ 1400 px) und iOS-Safari rendert die Flächen gar nicht mehr.
+  const BLUR_PAD=24;
+  const defs='<defs>'+softMask+fineBlurFilterDef('area-fineblur',{x:-BLUR_PAD,y:-BLUR_PAD,w:W+2*BLUR_PAD,h:H+2*BLUR_PAD})+gradDefs.join('')+'</defs>';
 
   // Die Sport-Flächen selbst nehmen die Fein-Korn-Weichzeichnung an (Filter auf der
   // Gruppe), statt eines geblurten Hintergrunds dahinter.
@@ -7750,22 +8365,26 @@ function renderPosterNumber(canvasId,fbId,txt){
   fb.textContent=txt;fb.hidden=false;
 }
 // §4 Laute Geste: farbiger Vollflächen-Bruch mit zwei Wisch-Slots zum selben Thema
-// „aktuelle Last": ACWR ⇄ Load 7 Tage. Fläche standardmäßig Signal-Blau, nur bei
-// Warn-/Überlast-Status Rot. Zahlen off-white, klare Schrift (die eine Poster-Zahl je Slot).
-async function renderAcwrPoster(stats){
+// „aktuelle Last": ACWR ⇄ Load 7 Tage. Flächenfarbe kommt aus derselben Bandtabelle wie
+// alle anderen ACWR-Anzeigen (status.posterBg) — Signal-Blau im Normalfall, Stufenfarbe
+// bei Abweichung. Zahlen off-white, klare Schrift (die eine Poster-Zahl je Slot).
+// Die Poster-Zahl ist IMMER der Wert des Bezugstags; der Vortagswert erscheint nur im
+// „kein Training"-Fall als Text im Label (Anzeigeregel: 1 Wert bzw. 2 Werte).
+async function renderAcwrPoster(view){
   const hs=document.getElementById('acwr-hswipe');
   const posterEl=document.getElementById('acwr-poster');
   if(!hs||!posterEl)return;
-  const warn=stats.currentAcwr!=null&&stats.currentStatus&&/Vorsicht|Überlast|Hohes Risiko|Erhöht/.test(stats.currentStatus.label||'');
-  posterEl.style.setProperty('--poster-bg',warn?(cssVar('--sig-high')||'#c0453f'):(cssVar('--met-endurance')||'#2441FF'));
+  const d=view.day;
+  posterEl.style.setProperty('--poster-bg',d.status.posterBg);
 
-  const acwrTxt=stats.currentAcwr!=null?stats.currentAcwr.toFixed(2):'–';
+  const acwrTxt=d.acwr!=null?d.acwr.toFixed(2):'–';
   const acwrStat=document.getElementById('acwr-poster-status');
-  if(acwrStat)acwrStat.textContent=stats.currentAcwr!=null?stats.currentStatus.label:(stats.baseIncomplete?'Basis unvollständig':'keine Daten');
+  if(acwrStat)acwrStat.textContent=(d.acwr!=null?d.status.label:(view.baseIncomplete?'Basis unvollständig':'keine Daten'))
+    +(view.showPrev?' · GESTERN '+view.prev.acwr.toFixed(2):'');
 
-  const loadTxt=stats.currentLoad!=null?String(Math.round(stats.currentLoad)):'–';
+  const loadTxt=d.acute!=null?String(Math.round(d.acute)):'–';
   const loadStat=document.getElementById('load-poster-status');
-  if(loadStat)loadStat.innerHTML=stats.currentChronic>0?('&#xD8; '+Math.round(stats.currentChronic)+' CHRONISCH'):(stats.baseIncomplete?'Basis unvollständig':'keine Daten');
+  if(loadStat)loadStat.innerHTML=d.chronic>0?('&#xD8; '+Math.round(d.chronic)+' CHRONISCH'):(view.baseIncomplete?'Basis unvollständig':'keine Daten');
 
   initHSwipe(hs,{key:'acwr'});
   renderPosterNumber('acwr-poster-canvas','acwr-poster-fallback',acwrTxt);
@@ -7776,13 +8395,20 @@ async function renderAcwrPoster(stats){
 // Korn, clippt das Korn auf die geblurte Form, damit die hellblaue Fläche getönt bleibt.
 // Eine Pipeline, in allen Charts wiederverwendet (Design-Grammatik). Regler:
 // stdDeviation = Weichheit, baseFrequency = Korngröße, Alpha im feColorMatrix = Kornstärke.
-function fineBlurFilterDef(id){
+function fineBlurFilterDef(id,region){
   // Breite, an den Rändern weich auslaufende Weichzeichnung (Vorbild IMG_5838) mit
   // feinem, krisp bleibendem Film-Korn. Das Korn wird gegen die geblurte Form geclippt
   // (operator="in") → es bleibt scharf, während die Fläche weich ist, und fadet an den
   // weichen Rändern natürlich aus. Regler: stdDeviation=Breite, baseFrequency=Korngröße,
   // feColorMatrix-Alpha=Kornstärke.
-  return `<filter id="${id}" x="-70%" y="-70%" width="240%" height="240%">`
+  // region {x,y,w,h} (optional, userSpaceOnUse): begrenzt den Filterbereich absolut.
+  // Nötig bei sehr breiten Charts — die prozentuale Standardregion (240% der BBox)
+  // wächst dort auf mehrere tausend Pixel, und iOS-Safari verwirft Filter, deren
+  // Zwischenpuffer sein Limit sprengt: der Chart bleibt leer. Siehe renderAnalyticsAreaChart.
+  const box=region
+    ?`filterUnits="userSpaceOnUse" x="${region.x}" y="${region.y}" width="${region.w}" height="${region.h}"`
+    :`x="-70%" y="-70%" width="240%" height="240%"`;
+  return `<filter id="${id}" ${box}>`
     +`<feGaussianBlur in="SourceGraphic" stdDeviation="6" result="soft"/>`
     +`<feTurbulence type="fractalNoise" baseFrequency="1.3" numOctaves="2" seed="7" stitchTiles="stitch" result="n"/>`
     +`<feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1.6 -0.35" result="grainA"/>`
@@ -8057,10 +8683,10 @@ function renderEfChartFor(sport,svgId,boxId,verdictId,legendId){
 function renderWorkloadChart(){
   const svg=document.getElementById('workload-chart-svg');
   if(!svg)return;
-  const acwrStats=computeAcwrStatsRolling();
-  document.getElementById('acwr-cards').innerHTML=acwrCardsHTML(acwrStats);
-  renderAcwrPoster(acwrStats);
-  const detailBox=document.getElementById('weekly-detail-box');
+  closeDayZoom(true); // Chart wird neu gebaut → weeklyChartData-Indizes im offenen Zoom wären stale
+  const acwrView=computeAcwrView();
+  document.getElementById('acwr-cards').innerHTML=acwrCardsHTML(acwrView);
+  renderAcwrPoster(acwrView);
   const legendEl=document.getElementById('workload-chart-legend');
   const windowDays=acwrWeeks*7;
   const weekMode=acwrWeeks>8;
@@ -8070,14 +8696,14 @@ function renderWorkloadChart(){
   const W=(box&&box.clientWidth)||svg.clientWidth||360;
   const H=(box&&box.clientHeight)||svg.clientHeight||220;
   svg.setAttribute('viewBox','0 0 '+W+' '+H);
-  const padL=34,padR=12,padT=16,padB=26;
+  const showAcwrOverlay=acwrOverlayOn&&!weekMode;
+  const padL=34,padR=showAcwrOverlay?30:12,padT=16,padB=26;
   const innerW=W-padL-padR,innerH=H-padT-padB;
   const axF=cssVar('--font-sans'),axC=cssVar('--text-muted'),dotFill=cssVar('--text');
   const sizeFactor=Math.max(1,Math.min(2.4,H/220));
   const emptyMsg=()=>{
     svg.innerHTML='<text x="50%" y="50%" text-anchor="middle" fill="'+cssVar('--text-faint')+'" font-family="'+cssVar('--font-sans')+'" font-size="12">Keine Trainingsdaten im Zeitraum</text>';
     if(legendEl)legendEl.innerHTML='';
-    if(detailBox)detailBox.style.display='none';
   };
   // Band-Füllung: flaches Hellblau (--wlc-band) + geteilte Fein-Korn-Weichzeichnung —
   // identisch zu Wochenvergleich und Lastverteilung.
@@ -8086,7 +8712,6 @@ function renderWorkloadChart(){
 
   if(!weekMode){
     // ── Session-Modus (4 W / 8 W): Punkt pro Einheit, Band = zentriertes ±14-Tage-Mean ──
-    if(detailBox)detailBox.style.display='none';
     const halfWin=14;
     const lookbackStart=new Date(displayStart);lookbackStart.setDate(lookbackStart.getDate()-halfWin);
     const lookaheadEnd=new Date(today);lookaheadEnd.setDate(lookaheadEnd.getDate()+halfWin);
@@ -8149,12 +8774,40 @@ function renderWorkloadChart(){
       return '<circle cx="'+x+'" cy="'+y+'" r="'+(4*sizeFactor).toFixed(1)+'" fill="'+cat.color+'" stroke="'+PAPER+'" stroke-width="1.2" style="cursor:pointer;" data-sid="'+(s.id||'')+'" onclick="wlcDotClick(this)">'+
              '<title>'+s.date+' · '+cat.label+(s.note?': '+s.note:'')+'</title></circle>';
     }).join('');
-    svg.innerHTML=commonDefs+yLabels+xLabels+bp+dots+specialMarks;
+    // ACWR-Overlay (zuschaltbar via acwr-overlay-btn): rollierende Tages-ACWR über dieselbe
+    // Datenquelle wie der Wochen-Zoom-Drilldown (computeAcwrRollingSeries), rechte Achse +
+    // Sweet-Spot-Band 0,8–1,3 — nur im Session-Modus (4 W/8 W), siehe showAcwrOverlay.
+    let acwrBandRect='',acwrLine='',acwrDots='',acwrRightAxis='';
+    if(showAcwrOverlay){
+      const isoAt=di=>toISODate(new Date(displayStart.getTime()+di*86400000));
+      const acwrByIso=new Map();
+      computeAcwrRollingSeries(windowDays,today).forEach(d=>{if(d.acwr!=null)acwrByIso.set(d.iso,d.acwr);});
+      const validIdx=[];
+      for(let di=0;di<windowDays;di++){if(acwrByIso.has(isoAt(di)))validIdx.push(di);}
+      if(validIdx.length){
+        const maxAcwr=Math.max(1.6,...validIdx.map(di=>acwrByIso.get(isoAt(di))*1.1));
+        const yRight=v=>padT+innerH-Math.max(0,v/maxAcwr)*innerH;
+        const yHi=yRight(ACWR_SWEET_HIGH),yLo=yRight(ACWR_SWEET_LOW);
+        acwrBandRect='<rect x="'+padL+'" y="'+yHi.toFixed(1)+'" width="'+innerW+'" height="'+(yLo-yHi).toFixed(1)+'" fill="'+BAND_BLUE+'" opacity="0.35"/>'+
+          '<line x1="'+padL+'" y1="'+yHi.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+yHi.toFixed(1)+'" stroke="'+cssVar('--acwr-optimal')+'" stroke-width="0.6" stroke-dasharray="3 3" opacity="0.5"/>'+
+          '<line x1="'+padL+'" y1="'+yLo.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+yLo.toFixed(1)+'" stroke="'+cssVar('--acwr-optimal')+'" stroke-width="0.6" stroke-dasharray="3 3" opacity="0.5"/>';
+        acwrLine='<polyline points="'+validIdx.map(di=>xAt(di).toFixed(1)+','+yRight(acwrByIso.get(isoAt(di))).toFixed(1)).join(' ')+'" fill="none" stroke="'+cssVar('--met-intensity','#7A4DFF')+'" stroke-width="1.6"/>';
+        acwrDots=validIdx.map(di=>{
+          const iso=isoAt(di),a=acwrByIso.get(iso),st=acwrStatus(a);
+          return '<circle cx="'+xAt(di).toFixed(1)+'" cy="'+yRight(a).toFixed(1)+'" r="2" fill="'+st.color+'"><title>'+iso+' · ACWR '+a.toFixed(2)+' · '+st.label+'</title></circle>';
+        }).join('');
+        acwrRightAxis=[ACWR_SWEET_LOW,ACWR_SWEET_HIGH].map(v=>
+          '<text x="'+(W-padR+4)+'" y="'+(yRight(v)+3).toFixed(1)+'" font-family="'+axF+'" font-size="8" fill="'+axC+'" text-anchor="start">'+String(v).replace('.',',')+'</text>'
+        ).join('');
+      }
+    }
+    svg.innerHTML=commonDefs+acwrBandRect+yLabels+xLabels+bp+dots+specialMarks+acwrLine+acwrDots+acwrRightAxis;
     if(legendEl)legendEl.innerHTML=
       '<span style="color:var(--text);">Einheit (Größe = Workload)</span>'+
       '<span style="color:var(--acwr-low);">Ø ±14 Tage · ±20%</span>'+
       '<span style="color:var(--text-faint);">Basis: Trainingseinheiten</span>'+
-      (dispSpecial.length?'<span style="color:'+SPECIAL_CATEGORIES.illness.color+';">Krankheit/Verletzung/Sonstiges</span>':'');
+      (dispSpecial.length?'<span style="color:'+SPECIAL_CATEGORIES.illness.color+';">Krankheit/Verletzung/Sonstiges</span>':'')+
+      (showAcwrOverlay?'<span style="color:'+cssVar('--met-intensity','#7A4DFF')+';">ACWR 7/28 (rechte Achse)</span>':'');
     return;
   }
 
@@ -8213,10 +8866,245 @@ function renderWorkloadChart(){
 function wlcWeekClick(el){
   const idx=parseInt(el.getAttribute('data-widx'));
   if(isNaN(idx)||!weeklyChartData||!weeklyChartData[idx])return;
-  openWeeklyDetail(idx);
-  const box=document.getElementById('weekly-detail-box');
-  if(box)box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  openDayZoom(idx,el);
 }
+
+// ── Wochen-Zoom-Drilldown: 21-Tage-Tagesansicht (gewählte Woche ± 7 Kontexttage) mit
+// echter rollierender Tages-ACWR (computeAcwrRollingSeries), FLIP-Zoom aus der getappten
+// Wochenbubble heraus. buildDailyLoadSeries bleibt die einzige Datenquelle (siehe
+// docs/claude-code-prompt-week-zoom-acwr.md) — kein zweiter Berechnungsweg.
+function computeDayZoomRange(weekIdx){
+  const w=weeklyChartData&&weeklyChartData[weekIdx];
+  if(!w)return null;
+  const weekStart=new Date(w.start);weekStart.setHours(0,0,0,0);
+  const weekEnd=new Date(weekStart);weekEnd.setDate(weekEnd.getDate()+6);
+  const rawStart=new Date(weekStart);rawStart.setDate(rawStart.getDate()-7);
+  const rawEnd=new Date(weekEnd);rawEnd.setDate(rawEnd.getDate()+7);
+  let firstIso=null;
+  actualSessions().forEach(s=>{if(!firstIso||s.date<firstIso)firstIso=s.date;});
+  const today=new Date();today.setHours(0,0,0,0);
+  // Randfall „Anfang der Trainingshistorie": keine Platzhaltertage vor der ersten echten Session.
+  const clampedStart=(firstIso&&firstIso>toISODate(rawStart))?new Date(firstIso+'T00:00:00'):rawStart;
+  // Randfall „laufende, unvollständige Woche": keine Zukunftstage.
+  const clampedEnd=rawEnd<today?rawEnd:today;
+  if(clampedStart>clampedEnd)return null;
+  const days=buildDailyLoadSeries({start:clampedStart,end:clampedEnd});
+  if(!days.length)return null;
+  // computeAcwrRollingSeries paddet ihren 27-Tage-Chronic-Vorlauf selbst (siehe dort).
+  // Zuordnung bewusst über das ISO-Datum statt über den Array-Index: die Längen müssen
+  // nicht deckungsgleich sein (Zeitzonen-/DST-Effekte), Index-Zippen würde dann daneben
+  // greifen und beim Rendern auf undefined laufen.
+  const acwrByIso=new Map();
+  computeAcwrRollingSeries(days.length,clampedEnd).forEach(d=>{
+    if(d&&d.acwr!=null)acwrByIso.set(d.iso,d.acwr);
+  });
+  return{
+    days,acwrByIso,
+    selectedStartIso:toISODate(weekStart),
+    selectedEndIso:toISODate(weekEnd<today?weekEnd:today)
+  };
+}
+// Der Zoom passiert IN der bestehenden Chart-Box (kein Vollbild): das Overlay wird in
+// #workload-chart-svg-box eingehängt, die FLIP-Geometrie ist relativ zu dieser Box.
+function openDayZoom(weekIdx,originEl){
+  if(document.getElementById('day-zoom-overlay'))return;
+  const box=document.getElementById('workload-chart-svg-box');
+  if(!box)return;
+  const range=computeDayZoomRange(weekIdx);
+  if(!range)return;
+  const rect=originEl.getBoundingClientRect();
+  const boxRect=box.getBoundingClientRect();
+  const originFill=originEl.getAttribute('fill')||cssVar('--text');
+  const weekSvg=document.getElementById('workload-chart-svg');
+  if(weekSvg)weekSvg.classList.add('wlc-zoom-hidden');
+  const overlay=document.createElement('div');
+  overlay.id='day-zoom-overlay';
+  overlay.className='day-zoom-overlay';
+  overlay.dataset.widx=String(weekIdx);
+  overlay.innerHTML=
+    '<button type="button" class="day-zoom-close" aria-label="Schließen" onclick="closeDayZoom()"><i class="ti ti-x"></i></button>'+
+    '<div class="day-zoom-inner">'+
+      '<div class="day-zoom-head" id="day-zoom-head"></div>'+
+      '<div class="day-zoom-scroll" id="day-zoom-scroll"><svg id="day-zoom-svg" preserveAspectRatio="none"></svg></div>'+
+    '</div>';
+  box.appendChild(overlay);
+  const innerEl=overlay.querySelector('.day-zoom-inner');
+  const sx=Math.max(rect.width/boxRect.width,0.01),sy=Math.max(rect.height/boxRect.height,0.01);
+  const tx=rect.left-boxRect.left,ty=rect.top-boxRect.top;
+  overlay.style.transformOrigin='0 0';
+  overlay.style.transition='none';
+  overlay.style.transform='translate('+tx+'px,'+ty+'px) scale('+sx+','+sy+')';
+  overlay.style.borderRadius='50%';
+  overlay.style.backgroundColor=originFill;
+  innerEl.style.transition='none';
+  innerEl.style.opacity='0';
+  overlay.offsetHeight; // Reflow erzwingen, damit der Start-Zustand vor der Transition greift
+  requestAnimationFrame(()=>{
+    overlay.style.transition='transform .45s cubic-bezier(.16,.84,.44,1), border-radius .45s cubic-bezier(.16,.84,.44,1), background-color .45s ease';
+    overlay.style.transform='translate(0,0) scale(1,1)';
+    overlay.style.borderRadius='0';
+    overlay.style.backgroundColor=cssVar('--surface');
+    innerEl.style.transition='opacity .2s ease .2s';
+    innerEl.style.opacity='1';
+  });
+  renderDayZoomView(overlay,range);
+  // Legende auf die Tagesansicht umstellen (Wochen-Legende wäre hier irreführend).
+  const legendEl=document.getElementById('workload-chart-legend');
+  if(legendEl){
+    overlay.dataset.prevLegend=legendEl.innerHTML;
+    legendEl.innerHTML=
+      '<span style="color:var(--text);">Ausgewählte Woche (Größe = Load)</span>'+
+      '<span style="color:var(--text-faint);">Kontexttage</span>'+
+      (range.days.some(d=>range.acwrByIso.has(d.iso))?'<span style="color:var(--met-intensity);">ACWR 7/28</span>':'');
+  }
+  requestAnimationFrame(()=>dayZoomInitialScroll(document.getElementById('day-zoom-scroll')));
+}
+function renderDayZoomView(overlay,range){
+  const svg=overlay.querySelector('#day-zoom-svg');
+  const headEl=overlay.querySelector('#day-zoom-head');
+  const scrollEl=overlay.querySelector('#day-zoom-scroll');
+  if(!svg)return;
+  const days=range.days,acwrByIso=range.acwrByIso||new Map();
+  const n=days.length;
+  const hasAcwr=days.some(d=>acwrByIso.has(d.iso));
+  // Kopfzeile VOR dem Messen füllen — sie verkleinert den Scroll-Bereich, sonst wird das
+  // SVG zu hoch berechnet und unten abgeschnitten.
+  if(headEl){
+    const startLbl=new Date(range.selectedStartIso+'T00:00:00').toLocaleDateString('de-DE',{day:'numeric',month:'short'});
+    const endLbl=new Date(range.selectedEndIso+'T00:00:00').toLocaleDateString('de-DE',{day:'numeric',month:'short'});
+    headEl.innerHTML='<span>'+startLbl+'&#8201;–&#8201;'+endLbl+'</span>'+
+      (hasAcwr?'<span style="color:var(--text-faint);font-size:.66rem;font-weight:400;">ACWR 7/28 · Sweet Spot 0,8–1,3</span>'
+        :'<span style="color:var(--text-faint);font-size:.66rem;font-weight:400;">ACWR erst ab 28 Tagen Historie</span>');
+  }
+  // Kompakte Maße: der Zoom lebt in der bestehenden Chart-Box (220px mobil), nicht im Vollbild.
+  const dayColW=34,padL=30,padR=30,padT=10,padB=20;
+  const H=Math.max(120,(scrollEl&&scrollEl.clientHeight)||160);
+  const W=Math.max(n*dayColW+padL+padR,(scrollEl&&scrollEl.clientWidth)||360);
+  svg.setAttribute('width',W);svg.setAttribute('height',H);
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+  const innerW=W-padL-padR,innerH=H-padT-padB,colW=innerW/n;
+  const xAt=i=>padL+colW*(i+0.5);
+  const axF=cssVar('--font-sans'),axC=cssVar('--text-muted');
+  // Tagesbubbles einheitlich schwarz (wie die Wochenbubbles, dotFill=--text) statt signalfarbig —
+  // die Zugehörigkeit zur ausgewählten Woche zeigt allein das Blockmarkierungs-Rechteck (selBg).
+  const highlightColor=cssVar('--text');
+  const dimColor=cssVar('--text-faint');
+  const isSelected=iso=>iso>=range.selectedStartIso&&iso<=range.selectedEndIso;
+  const loads=days.map(d=>d.actualLoad);
+  const maxLoad=Math.max(...loads,1)*1.15;
+  const yAt=v=>padT+innerH-Math.max(0,v/maxLoad)*innerH;
+  const radius=(v,sel)=>{const base=maxLoad<=0?4:2+Math.min(1,v/maxLoad)*7;return sel?base:base*0.6;};
+
+  const selIdxs=days.map((d,i)=>isSelected(d.iso)?i:-1).filter(i=>i>=0);
+  let selBg='';
+  if(selIdxs.length){
+    const x0=padL+colW*selIdxs[0],x1=padL+colW*(selIdxs[selIdxs.length-1]+1);
+    selBg='<rect x="'+x0.toFixed(1)+'" y="'+padT+'" width="'+(x1-x0).toFixed(1)+'" height="'+innerH+'" fill="'+cssVar('--met-endurance-tint','#D9DEFA')+'" opacity="0.45"/>';
+  }
+
+  // Indizes beziehen sich auf `days` — dadurch stimmen xAt(i) und days[i] immer überein.
+  const validAcwr=days.map((d,i)=>acwrByIso.has(d.iso)?i:-1).filter(i=>i>=0);
+  const acwrAt=i=>acwrByIso.get(days[i].iso);
+  let bandRect='',acwrLine='',acwrDots='',rightAxis='';
+  if(validAcwr.length){
+    const maxAcwr=Math.max(1.6,...validAcwr.map(i=>acwrAt(i)*1.1));
+    const yRight=v=>padT+innerH-Math.max(0,v/maxAcwr)*innerH;
+    const yHi=yRight(ACWR_SWEET_HIGH),yLo=yRight(ACWR_SWEET_LOW);
+    // Flaches Band statt bandBlurFilterDef: der Halo dort ist auf große Charts ausgelegt
+    // und würde diese kompakte In-Card-Ansicht komplett zulaufen lassen.
+    bandRect='<rect x="'+padL+'" y="'+yHi.toFixed(1)+'" width="'+innerW+'" height="'+(yLo-yHi).toFixed(1)+'" fill="'+BAND_BLUE+'" opacity="0.5"/>'+
+      '<line x1="'+padL+'" y1="'+yHi.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+yHi.toFixed(1)+'" stroke="'+cssVar('--acwr-optimal')+'" stroke-width="0.6" stroke-dasharray="3 3" opacity="0.5"/>'+
+      '<line x1="'+padL+'" y1="'+yLo.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+yLo.toFixed(1)+'" stroke="'+cssVar('--acwr-optimal')+'" stroke-width="0.6" stroke-dasharray="3 3" opacity="0.5"/>';
+    acwrLine='<polyline points="'+validAcwr.map(i=>xAt(i).toFixed(1)+','+yRight(acwrAt(i)).toFixed(1)).join(' ')+'" fill="none" stroke="'+cssVar('--met-intensity','#7A4DFF')+'" stroke-width="1.6"/>';
+    acwrDots=validAcwr.map(i=>{
+      const a=acwrAt(i),st=acwrStatus(a);
+      return '<circle cx="'+xAt(i).toFixed(1)+'" cy="'+yRight(a).toFixed(1)+'" r="2.2" fill="'+st.color+'"><title>'+days[i].iso+' · ACWR '+a.toFixed(2)+' · '+st.label+'</title></circle>';
+    }).join('');
+    rightAxis=[ACWR_SWEET_LOW,ACWR_SWEET_HIGH].map(v=>
+      '<text x="'+(W-padR+4)+'" y="'+(yRight(v)+3).toFixed(1)+'" font-family="'+axF+'" font-size="8" fill="'+axC+'" text-anchor="start">'+String(v).replace('.',',')+'</text>'
+    ).join('');
+  }
+
+  const dayBubbles=days.map((d,i)=>{
+    const sel=isSelected(d.iso);
+    const r=radius(d.actualLoad,sel).toFixed(1);
+    // Gleiches Klick-und-Öffnen-Verhalten wie bei den Session-Punkten im 4W/8W-Modus
+    // (wlcDotClick → openSessionModal): Tagesbubble mit genau einer Einheit öffnet deren Modal.
+    const sid=(d.sessions&&d.sessions.length===1)?d.sessions[0].id:null;
+    const clickAttrs=sid?' data-sid="'+sid+'" style="cursor:pointer;" onclick="wlcDotClick(this)"':'';
+    return '<circle data-sel="'+(sel?1:0)+'" cx="'+xAt(i).toFixed(1)+'" cy="'+yAt(d.actualLoad).toFixed(1)+'" r="'+r+'" fill="'+(sel?highlightColor:dimColor)+'" opacity="'+(sel?1:0.55)+'"'+clickAttrs+'><title>'+d.iso+' · '+Math.round(d.actualLoad)+' Pkt</title></circle>';
+  }).join('');
+
+  // Nur Tageszahl (Monat separat beim Monatswechsel) — volle Datumslabels überlappen
+  // bei 34px Spaltenbreite.
+  const xLabels=days.map((d,i)=>{
+    const dt=new Date(d.iso+'T00:00:00');
+    const sel=isSelected(d.iso);
+    const isMonthStart=dt.getDate()===1||i===0;
+    const label=isMonthStart?dt.toLocaleDateString('de-DE',{day:'numeric',month:'short'}):String(dt.getDate());
+    if(!sel&&!isMonthStart&&i%2!==0)return'';
+    return '<text x="'+xAt(i).toFixed(1)+'" y="'+(H-7)+'" font-family="'+axF+'" font-size="8" fill="'+(sel?cssVar('--ink'):axC)+'" text-anchor="middle" font-weight="'+(sel?'600':'400')+'">'+label+'</text>';
+  }).join('');
+
+  const yLabels=Array.from({length:3},(_,i)=>{
+    const v=Math.round(maxLoad/2*i);const y=yAt(v);
+    return '<text x="'+(padL-5)+'" y="'+(y+3)+'" font-family="'+axF+'" font-size="8" fill="'+axC+'" text-anchor="end">'+v+'</text>'+
+           '<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="rgba(44,44,42,0.07)" stroke-width="0.5"/>';
+  }).join('');
+
+  svg.innerHTML=selBg+yLabels+bandRect+xLabels+dayBubbles+acwrLine+acwrDots+rightAxis;
+}
+function dayZoomInitialScroll(scrollEl){
+  if(!scrollEl)return;
+  const sels=scrollEl.querySelectorAll('circle[data-sel="1"]');
+  if(!sels.length)return;
+  let minX=Infinity,maxX=-Infinity;
+  sels.forEach(c=>{const cx=parseFloat(c.getAttribute('cx'));if(cx<minX)minX=cx;if(cx>maxX)maxX=cx;});
+  const centerX=(minX+maxX)/2;
+  scrollEl.scrollLeft=Math.max(0,Math.min(scrollEl.scrollWidth-scrollEl.clientWidth,centerX-scrollEl.clientWidth/2));
+}
+function closeDayZoom(instant){
+  const overlay=document.getElementById('day-zoom-overlay');
+  if(!overlay)return;
+  const box=document.getElementById('workload-chart-svg-box');
+  const weekSvg=document.getElementById('workload-chart-svg');
+  // Legende zurücksetzen — nicht beim instant-Pfad aus renderWorkloadChart, der sie ohnehin neu schreibt.
+  const legendEl=document.getElementById('workload-chart-legend');
+  if(legendEl&&!instant&&overlay.dataset.prevLegend!=null)legendEl.innerHTML=overlay.dataset.prevLegend;
+  if(instant){
+    if(weekSvg)weekSvg.classList.remove('wlc-zoom-hidden');
+    overlay.remove();
+    return;
+  }
+  const idx=overlay.dataset.widx;
+  const originEl=document.querySelector('#workload-chart-svg circle[data-widx="'+idx+'"]');
+  const innerEl=overlay.querySelector('.day-zoom-inner');
+  if(innerEl){innerEl.style.transition='opacity .15s ease';innerEl.style.opacity='0';}
+  if(weekSvg)weekSvg.classList.remove('wlc-zoom-hidden');
+  const boxRect=(box||document.body).getBoundingClientRect();
+  let targetTransform,targetBg;
+  if(originEl){
+    const rect=originEl.getBoundingClientRect();
+    const sx=Math.max(rect.width/boxRect.width,0.01),sy=Math.max(rect.height/boxRect.height,0.01);
+    targetTransform='translate('+(rect.left-boxRect.left)+'px,'+(rect.top-boxRect.top)+'px) scale('+sx+','+sy+')';
+    targetBg=originEl.getAttribute('fill')||cssVar('--text');
+  }else{
+    // Fallback: Ursprungs-Bubble existiert nicht mehr (z.B. Zeitraum-Tab gewechselt) →
+    // zur Box-Mitte zurückschrumpfen statt zu einer nicht mehr vorhandenen Position.
+    targetTransform='translate('+(boxRect.width/2)+'px,'+(boxRect.height/2)+'px) scale(0.02,0.02)';
+    targetBg=cssVar('--surface');
+  }
+  requestAnimationFrame(()=>{
+    overlay.style.transition='transform .4s cubic-bezier(.16,.84,.44,1), border-radius .4s cubic-bezier(.16,.84,.44,1), background-color .4s ease';
+    overlay.style.transform=targetTransform;
+    overlay.style.borderRadius='50%';
+    overlay.style.backgroundColor=targetBg;
+  });
+  const done=()=>{if(overlay.parentNode)overlay.remove();};
+  overlay.addEventListener('transitionend',done,{once:true});
+  setTimeout(done,500);
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDayZoom();});
 // Monotonie & Strain nach Foster (1998): Bewertung der Belastungsverteilung INNERHALB
 // der Woche, ergänzend zu ACWR (das nur die Gesamtmenge bewertet).
 // Monotonie = Wochenmittel der Tageslast / SD der Tageslast (Ruhetage zählen als 0).
@@ -9178,82 +10066,30 @@ async function renderZonesDistribution(){
 // (setLogChartView entfernt: Wochenvergleich/Zonenverteilung sind jetzt beide
 //  sichtbar als horizontal wischbare hswipe-Slots — kein Umschalten mehr nötig.)
 
-// Drill-down: Tagesbalken (Mo–So) der angeklickten Woche
-function openWeeklyDetail(idx){
-  const w=weeklyChartData[idx];
-  if(!w)return;
-  const box=document.getElementById('weekly-detail-box');
-  box.style.display='block';
-  const endDate=new Date(w.start);endDate.setDate(endDate.getDate()+6);
-  document.getElementById('weekly-detail-title').textContent=
-    w.start.toLocaleDateString('de-DE',{day:'numeric',month:'short'})+' \u2013 '+endDate.toLocaleDateString('de-DE',{day:'numeric',month:'short'})+
-    ' \u00B7 '+w.total+' Punkte';
-  if(weeklyDetailChart)weeklyDetailChart.destroy();
-  const canvas=document.getElementById('weekly-detail-chart');
-  const dayLabels=['Mo','Di','Mi','Do','Fr','Sa','So'];
-
-  // Balken = Load-Metrik → Signal-Blau; Füllung als Dither-Raster mit vertikalem Dichte-
-  // Verlauf (unten dicht → oben ausdünnend), keine Umrandung, Poster-Kante statt Rundung.
-  const wdCtx=canvas.getContext('2d');
-  const wdBlue=cssVar('--met-endurance','#2441FF');
-  const boxH=(canvas.parentElement&&canvas.parentElement.clientHeight)||180;
-  const wdFill=ditherGradientPattern(wdCtx,wdBlue,boxH,cssVar('--met-endurance-tint','#D9DEFA'));
-  weeklyDetailChart=new Chart(canvas,{
-    type:'bar',
-    data:{labels:dayLabels,datasets:[{
-      data:w.daily,
-      backgroundColor:wdFill,
-      borderWidth:0,
-      borderRadius:0,maxBarThickness:44
-    }]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},
-        tooltip:{
-          callbacks:{
-            title:ctx=>{
-              const di=ctx[0].dataIndex;
-              const day=new Date(w.start);day.setDate(day.getDate()+di);
-              return day.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
-            },
-            label:ctx=>{
-              const di=ctx.dataIndex;
-              const daySess=w.dailySessions[di];
-              if(!daySess||daySess.length===0)return'Kein Training';
-              const lines=[];
-              daySess.forEach(s=>{
-                const sc=sportCfg(s.sport);
-                const wl=berechneWorkload(s);
-                const name=s.title?` \u00B7 ${s.title}`:'';
-                const load=wl.value!=null?` \u2192 ${wl.value} Pkt`:'';
-                lines.push(`${sportIconText(sc)}${sportIconText(sc)?' ':''}${sc.label||s.sport}${name} (${fmtMin(s.duration)})${load}`);
-              });
-              lines.push(`\u03A3 ${ctx.parsed.y} Punkte`);
-              return lines;
-            }
-          }
-        }
-      },
-      scales:{
-        x:{grid:{display:false},ticks:{font:{size:11}}},
-        y:{beginAtZero:true,grid:{color:'rgba(44,44,42,.07)'},ticks:{font:{size:10}}}
-      }
-    }
-  });
-  box.scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-document.getElementById('weekly-detail-close').addEventListener('click',()=>{
-  document.getElementById('weekly-detail-box').style.display='none';
-});
+// (Der frühere Tagesbalken-Drilldown openWeeklyDetail ist durch den Wochen-Zoom-Drilldown
+//  openDayZoom ersetzt, siehe wlcWeekClick weiter oben.)
 document.getElementById('analytics-mode-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{analyticsMode=btn.dataset.mode;document.getElementById('analytics-mode-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnalytics();});});
 document.getElementById('analytics-period-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{analyticsPeriod=btn.dataset.period;document.getElementById('analytics-period-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnalytics();});});
 document.getElementById('analytics-metric-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{analyticsMetric=btn.dataset.metric;document.getElementById('analytics-metric-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnalytics();});});
-document.getElementById('acwr-weeks-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{acwrWeeks=parseInt(btn.dataset.weeks);document.getElementById('acwr-weeks-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAnalytics();});});
+document.getElementById('acwr-weeks-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{acwrWeeks=parseInt(btn.dataset.weeks);document.getElementById('acwr-weeks-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updateAcwrOverlayVisibility();renderAnalytics();});});
+// ACWR-Linie ist nur im Session-Modus (4 W/8 W, Bubble je Einheit) verfügbar — im Wochen-Modus
+// (3 M/6 M) liefert der Wochen-Zoom-Drilldown bereits die echte Tages-ACWR (siehe openDayZoom).
+function updateAcwrOverlayVisibility(){
+  const tabs=document.getElementById('acwr-overlay-tabs');
+  if(tabs)tabs.style.display=acwrWeeks>8?'none':'flex';
+}
+document.getElementById('acwr-overlay-btn').addEventListener('click',()=>{
+  acwrOverlayOn=!acwrOverlayOn;
+  document.getElementById('acwr-overlay-btn').classList.toggle('active',acwrOverlayOn);
+  renderAnalytics();
+});
+updateAcwrOverlayVisibility();
 document.getElementById('breakdown-weeks-tabs').querySelectorAll('button').forEach(btn=>{btn.addEventListener('click',()=>{breakdownWeeks=parseInt(btn.dataset.weeks);document.getElementById('breakdown-weeks-tabs').querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderCategoryBreakdownChart();});});
 let _wlcResizeTimer=null;
 window.addEventListener('resize',()=>{clearTimeout(_wlcResizeTimer);_wlcResizeTimer=setTimeout(()=>{const p=document.getElementById('page-analytics');if(p&&p.classList.contains('active')&&document.getElementById('workload-chart-svg'))renderAnalytics();},180);});
 // Hero-ASCII-Zeile bei Breitenänderung neu einpassen (siehe fitLhAscii).
 let _lhFitTimer=null;
-window.addEventListener('resize',()=>{clearTimeout(_lhFitTimer);_lhFitTimer=setTimeout(()=>{const r=document.querySelector('#log-hero .lh-ascii');if(r)fitLhAscii(r);},180);});
+window.addEventListener('resize',()=>{clearTimeout(_lhFitTimer);_lhFitTimer=setTimeout(()=>{const r=document.getElementById('log-hero');if(r)fitLhAscii(r);},180);});
 
 // Log-[+]-Button: Menü mit drei Eingabe-Optionen. Wählt eine Option → blendet die
 // zugehörige Karte ein, klappt ihren Body auf, scrollt zu ihr, schließt das Menü.
@@ -9371,6 +10207,7 @@ document.getElementById('log-garmin-sync')?.addEventListener('click',triggerGarm
 function sportSettingsHTML(){
   const rows=cfg.sports.map((s,i)=>{
     const isFrei=isSportFreitext(s.key);
+    const isZoned=isSportZoneBased(s.key);
     const canDelete=s.key!=='Sonstiges';
     return`<div class="sport-row">
       <input type="text" class="sport-label-inline" data-sport="${i}" value="${esc(s.label)}" placeholder="Name" title="Anzeigename">
@@ -9379,6 +10216,7 @@ function sportSettingsHTML(){
       ${s.imgUrl?`<img src="${esc(s.imgUrl)}" class="sport-img-preview" id="img-prev-inline-${i}">`:`<span id="img-prev-inline-${i}" style="font-size:.68rem;color:var(--text-faint);width:34px;text-align:center;">–</span>`}
       <label style="cursor:pointer;font-size:.72rem;color:var(--accent);white-space:nowrap;">Bild<input type="file" accept="image/*" class="img-upload-inline" data-sport="${i}" style="display:none;"></label>
       <label class="freitext-lbl" title="Sportart ohne HF-Zonen (z.B. Kraft, Kampfsport)"><input type="checkbox" class="sport-freitext-inline" data-sport="${i}" ${isFrei?'checked':''}>frei</label>
+      <label class="freitext-lbl" title="Sportart wird in der Intensitätsverteilung (LIT/MIT/HIT) mitgezählt"><input type="checkbox" class="sport-zonebased-inline" data-sport="${i}" ${isZoned?'checked':''}>Zonen</label>
       ${canDelete?`<button class="icon sport-delete-inline" data-sport="${i}" title="Sportart löschen">&#x1F5D1;</button>`:`<span style="width:30px;"></span>`}
     </div>`;
   }).join('');
@@ -9574,7 +10412,7 @@ function addNewSport(){
   // Standardfarbe-Palette
   const palette=['#7c8ea3','#5b9bd5','#6fa86f','#c4544a','#b07cc6','#f0c674','#e8975c','#5fa8a8'];
   const color=palette[cfg.sports.length%palette.length];
-  cfg.sports.push({key,label,color,icon:'ti-medal',imgUrl:null,freitext:false});
+  cfg.sports.push({key,label,color,icon:'ti-medal',imgUrl:null,freitext:false,zoneBased:true});
   saveCfg();populateSelects();renderSettingsInline();
 }
 
@@ -9614,6 +10452,7 @@ document.getElementById('save-settings-inline').addEventListener('click',()=>{
   document.querySelectorAll('.color-pick-inline').forEach(el=>{cfg.sports[parseInt(el.dataset.sport)].color=el.value;});
   document.querySelectorAll('.emoji-pick-inline').forEach(el=>{cfg.sports[parseInt(el.dataset.sport)].icon=el.value;});
   document.querySelectorAll('.sport-freitext-inline').forEach(el=>{cfg.sports[parseInt(el.dataset.sport)].freitext=el.checked;});
+  document.querySelectorAll('.sport-zonebased-inline').forEach(el=>{cfg.sports[parseInt(el.dataset.sport)].zoneBased=el.checked;});
   // Zonen ins gerade aktive Profil (global oder Sportart-spezifisch) schreiben
   const targetProfile=currentZoneProfile;
   let targetZones;
@@ -10680,6 +11519,30 @@ function garminFieldsSummary(fields){
   return parts.join(' · ');
 }
 let pendingGarminConflicts=[];
+// "nicht koppeln" merken: sonst legt jeder weitere Import denselben Tag erneut
+// zur Kopplung vor. Gemerkt wird Tag + Signatur der Garmin-Daten — ändert sich
+// die Aktivität (neue/längere Einheit am selben Tag), wird wieder nachgefragt.
+const GARMIN_LINK_IGNORE_KEY='tlog_garmin_link_ignored';
+function garminFieldsSignature(fields){
+  return[fields.duration||0,fields.hr_avg||0,fields.distance_km||0].join('|');
+}
+function loadGarminLinkIgnored(){
+  try{return JSON.parse(localStorage.getItem(GARMIN_LINK_IGNORE_KEY))||{};}catch(e){return{};}
+}
+function saveGarminLinkIgnored(map){
+  try{localStorage.setItem(GARMIN_LINK_IGNORE_KEY,JSON.stringify(map));}catch(e){}
+}
+function isGarminLinkIgnored(date,fields){
+  return loadGarminLinkIgnored()[date]===garminFieldsSignature(fields);
+}
+function markGarminLinkIgnored(date,fields){
+  const map=loadGarminLinkIgnored();map[date]=garminFieldsSignature(fields);saveGarminLinkIgnored(map);
+}
+function clearGarminLinkIgnored(){
+  const n=Object.keys(loadGarminLinkIgnored()).length;
+  try{localStorage.removeItem(GARMIN_LINK_IGNORE_KEY);}catch(e){}
+  return n;
+}
 // Zeigt für jeden Tag, an dem bereits eine manuelle Trainingsnotiz existiert UND
 // eine Garmin-Aktivität gefunden wurde, eine Auswahl zur Bestätigung — es wird
 // nie mehr automatisch (und nie sportartabhängig) gekoppelt, immer nachgefragt.
@@ -10714,7 +11577,9 @@ async function applyGarminLinkChoices(){
   let linked=0,skipped=0;
   for(const c of pendingGarminConflicts){
     const s=c.chosenId?c.candidates.find(x=>String(x.id)===c.chosenId):null;
-    if(!s){skipped++;continue;}
+    // "nicht koppeln" ist eine Entscheidung, keine Vertagung: merken, damit der
+    // nächste Import diesen Tag nicht erneut vorlegt.
+    if(!s){markGarminLinkIgnored(c.date,c.fields);skipped++;continue;}
     try{await applyGarminLink(s,c.fields);linked++;}
     catch(e){console.warn('[Garmin-Link]',e.message||e);skipped++;}
   }
@@ -10740,7 +11605,7 @@ async function importGarminActivities(){
     // sie werden über planned_ref gekoppelt statt als Tagesbelegung gezählt.
     const byDay={};
     sessions.filter(s=>!isSpecialEntry(s)&&!isPlanned(s)).forEach(s=>{(byDay[s.date]=byDay[s.date]||[]).push(s);});
-    const rows=[];const conflicts=[];let skipped=0;
+    const rows=[];const conflicts=[];let skipped=0,ignored=0;
     Object.keys(byDate).sort().forEach(date=>{
       const existingForDay=byDay[date];
       if(existingForDay&&existingForDay.length){
@@ -10750,8 +11615,9 @@ async function importGarminActivities(){
         // solange die Notiz noch keinen HF-Verlauf trägt (sonst schon gekoppelt).
         const fields=buildGarminSessionFields(date,byDate[date]);
         const cand=existingForDay.filter(s=>!(s.hr_series&&s.hr_series!=='null'&&s.hr_series!=='[]'));
-        if(cand.length)conflicts.push({date,fields,candidates:cand,chosenId:String(cand[0].id)});
-        else skipped++;
+        if(!cand.length)skipped++;
+        else if(isGarminLinkIgnored(date,fields))ignored++;  // zuvor "nicht koppeln" gewählt
+        else conflicts.push({date,fields,candidates:cand,chosenId:String(cand[0].id)});
         return;
       }
       // Spalten exakt wie beim regulären saveSession (Schema-treu)
@@ -10769,12 +11635,12 @@ async function importGarminActivities(){
       if(planCand.length===1)session.planned_ref=planCand[0].id;
       rows.push(session);
     });
-    if(!rows.length&&!conflicts.length){st.textContent=`Nichts Neues – alle ${Object.keys(byDate).length} Tage bereits in der App.`;return;}
+    if(!rows.length&&!conflicts.length){st.textContent=`Nichts Neues – alle ${Object.keys(byDate).length} Tage bereits in der App${ignored?`, ${ignored} Tag(e) dauerhaft nicht gekoppelt`:''}.`;return;}
     setSyncState('syncing');btn.textContent=`Importiere ${rows.length}…`;
     let saved=[];
     if(rows.length){saved=await DB.addSessions(rows);sessions=[...sessions,...saved];markSessionsDirty();}
     setSyncState('ok');
-    st.textContent=`✓ ${saved.length} importiert${skipped?`, ${skipped} Tag(e) übersprungen`:''}${conflicts.length?`, ${conflicts.length} Tag(e) zur Kopplung bereit`:''}.`;
+    st.textContent=`✓ ${saved.length} importiert${skipped?`, ${skipped} Tag(e) übersprungen`:''}${ignored?`, ${ignored} Tag(e) dauerhaft nicht gekoppelt`:''}${conflicts.length?`, ${conflicts.length} Tag(e) zur Kopplung bereit`:''}.`;
     renderLog();
     if(conflicts.length)showGarminLinkModal(conflicts);
   }catch(e){setSyncState('error');st.textContent='Fehler: '+(e.message||e);}
@@ -10860,6 +11726,11 @@ async function backfillGarminPower(){
 document.getElementById('garmin-import-btn')?.addEventListener('click',importGarminActivities);
 document.getElementById('garmin-backfill-btn')?.addEventListener('click',backfillGarminHrSeries);
 document.getElementById('garmin-power-backfill-btn')?.addEventListener('click',backfillGarminPower);
+document.getElementById('garmin-link-reset-btn')?.addEventListener('click',()=>{
+  const n=clearGarminLinkIgnored();
+  const st=document.getElementById('garmin-link-reset-status');
+  if(st)st.textContent=n?`✓ ${n} Tag(e) zurückgesetzt – nächster Import fragt wieder nach.`:'Keine gemerkten Tage.';
+});
 
 // Ordner verbinden (User-Geste)
 async function wfConnect(){
@@ -11039,7 +11910,7 @@ async function showApp(user){
   if(remoteCfg){
     Object.assign(cfg,remoteCfg);
     markSessionsDirty(); // Remote-Config kann Workload-Parameter geändert haben
-    const cfgMigrated=migrateSportIcons()|migrateZoneRecoveryFactors();
+    const cfgMigrated=migrateSportIcons()|migrateZoneRecoveryFactors()|migrateSportZoneBased();
     if(cfgMigrated)DB.saveConfig(cfg).catch(e=>console.warn('saveConfig migrate:',e));
     localStorage.setItem('tlog_cfg',JSON.stringify(cfg));
   }else{

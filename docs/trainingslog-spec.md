@@ -36,7 +36,7 @@ Neu:
 - **Chronic** = Ø Tagesload Tag *d−27* bis *d* × 7 (28 Tage, auf Wochenäquivalent skaliert)
 - ACWR = Acute / Chronic
 - Für jeden Tag der Serie berechnet, nicht nur für den aktuellen
-- Chronic erst ab ≥21 Tagen Datenhistorie ausweisen, sonst `null` + Hinweis „Basis unvollständig"
+- Chronic erst ab ≥28 Tagen Datenhistorie ausweisen (volle Chronic-Fensterlänge, `CHRONIC_MIN_HISTORY_DAYS`), sonst `null` + Hinweis „Basis unvollständig"
 - Ruhetage zählen in beiden Fenstern als 0 — das ist korrekt und beabsichtigt
 
 Bestehende Kennzahlen „LETZTE 7 TAGE" (645) und „CHRONISCHE LAST Ø letzte 28 Tage" (568) auf dieselbe Berechnung umstellen, damit App-weit ein Wert gilt.
