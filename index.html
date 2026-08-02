@@ -33,10 +33,13 @@
      Die Seite ist fast weiß, die vertikalen Bereiche sitzen als leicht getönte Paper-
      Panels darauf → stärkere Abgrenzung, Gesten/Akzente fallen deutlicher auf. */
   --page-bg:rgb(241, 241, 241);          /* Seiten-Grundfläche — nahezu weiß, ruhig */
+  /* AKTUELL OHNE WIRKUNG: seit die Sektions-Panels aufgelöst sind (siehe .card-Regel
+     unten), zeichnet nichts mehr eine Blockfläche. Beide Tokens bleiben nur stehen,
+     falls einzelne Bereiche später doch wieder getönt werden sollen. */
   --block-bg:#ededed;         /* vertikale Bereiche (Karten/Sektionen) — deutlich getöntes Paper */
   --block-tex-veil:color-mix(in srgb,var(--block-bg) 76%,transparent); /* Deckschleier über der Block-Textur: höher = weniger Textur */
   --paper-raised:#ebecf3;     /* leicht gehobene Flächen (selten) */
-  --paper-dim:#deddda/
+  --paper-dim:#deddda;        /* (war unterminiert — fraß --chart-surface mit auf) */
   --chart-surface:#F7F5F0;    /* Chart-Panels: hellste Stufe, hebt sich rahmenlos ab */
   --ink:#1B1B18;              /* Poster-Schwarz */
   /* Alt-Tokens als Aliasse — die gesamte Datei liest weiter --bg/--surface/--text.
@@ -61,11 +64,17 @@
   --met-endurance-deep:#1B30BF;
   --met-endurance-tint:#D9DEFA;
   /* Lavendelblau — NUR für Logo, Buttons, Hero (entkoppelt vom Chart-Signalblau,
-     damit die Diagramme auf hellem Panel nicht ausbleichen). Logo-Ink zusätzlich
-     im JS (ensureLogoFx, `ink:'#A6ADFF'`). */
-  --signal-lav:#A6ADFF;
-  --signal-lav-deep:#7E86E6;   /* dunklere Lav-Stufe für Hover/Tiefe */
+     damit die Diagramme auf hellem Panel nicht ausbleichen). Gilt auch für das
+     Dither-Logo: ensureLogoFx() liest --signal-lav / --logo-shadow zur Laufzeit
+     aus, hier ist also die einzige Stelle zum Umfärben. */
+  --signal-lav: #9990d3;
+  --signal-lav-deep: #867dc0;   /* dunklere Lav-Stufe für Hover/Tiefe */
+  --logo-shadow:#85e76a;       /* Hellgrün — Schlagschatten hinter dem Dither-Logo */
   --ascii-ink:#FFA6D5;         /* softes Rosa — ASCII-Effekt auf blauem Hero */
+  /* Staubiges Lavendel — Kontrastfarbe der Pixel-Heroes (Hund/Hase, .hero-pixel).
+     Bewusst eine eigene Stufe neben --signal-lav: die Heroes sind Bildfläche, nicht
+     UI-Signal, und dürfen sich vom Logo-/Button-Lavendel absetzen. */
+  --hero-lavender:#bfa8dd;
   --met-intensity:#7B5CD6;
   --met-intensity-deep:#4F3796;
   --met-intensity-tint:#E4DCF6;
@@ -161,10 +170,30 @@
   --radius:0px;
   --radius-lg:0px;
 
+  /* === Rhythmus der aufgelösten Seite ===
+     Die getönten Sektions-Panels sind weg — die Seite ist EINE helle Fläche. Struktur
+     entsteht jetzt ausschließlich aus Abstand, Hairline und Typo, deshalb sind genau
+     diese beiden Maße Tokens statt Streuwerte:
+       --gap-section  Abstand zwischen zwei aufgelösten Sektionen (ersetzt die Kante,
+                      die vorher die Panelfläche gezogen hat → bewusst groß).
+       --pad-block    seitlicher Innenabstand der Sektionsinhalte („Platz zum Rand“).
+                      Kommt zum 1rem der .wrap dazu. Alle Full-Bleed-Hacks
+                      (#log-hswipe, .analytics-chart-box) rechnen mit DIESEM Wert —
+                      nie wieder hart 1.4rem/-.9rem irgendwo hinschreiben. */
+  --gap-section:3.4rem;
+  --pad-block:1.4rem;
+
   /* === Typografie === */
   --font-serif:Georgia,"Iowan Old Style","Palatino Linotype","Times New Roman",serif;
   --font-sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;  --font-mono:"SF Mono","Roboto Mono",Consolas,monospace;
   --font-pixel:"VCR OSD Mono",var(--font-mono);
+  /* Akzent-Display: Kachel-Werte (.m-value). Bewusst DIESELBE Pixelschrift wie die
+     Poster-Zahl — die §6-Regel „Pixelfont nur für die eine Poster-Zahl pro Screen" ist
+     hier auf Nutzerwunsch gelockert. Die Hierarchie trägt jetzt die Größe (Poster
+     --poster-size ≫ Kachel 2.15rem), nicht mehr die Schriftwahl.
+     VCR deckt Umlaute und Sonderzeichen ab (207 Glyphen) → auch Wort-Werte wie
+     „Stark erhöht" rendern sauber, kein Fallback-Mischsatz. */
+  --font-accent:var(--font-pixel);
   /* Sekundärrolle (§6): leichterer Schnitt DERSELBEN Grotesk für Metadaten/Zeit/
      Sekundärtext — keine zweite Familie. */
   --fw-secondary:300;
@@ -184,9 +213,19 @@
      Element ganz normal mit dem Content weg. --hero-compact-h bleibt nur als Alt-Referenz. */
   --hero-compact-h:120px;     /* Alt-Referenz (nicht mehr aktiv genutzt) */
   --hero-logo-gap:0px;        /* zusätzlicher #logo-stage-top-Versatz (Desktop: keiner) */
-  --hero-full-h:clamp(112px,18vw,150px); /* Logo-Leiste — Höhe so, dass das Logo vertikal mittig zwischen Bildschirmrand und erstem Themenbereichs-Block sitzt, ohne die Garmin/+-Zeile zu überlappen */
+  /* GEMEINSAME BANDHÖHE für BEIDE Pixel-Heroes (Nutzer-Briefing): oberes Band
+     (#hero-pixel, Kopfleiste) und unteres Band (.hero-pixel--bottom) lesen denselben
+     Wert, damit sie als Paar gelesen werden. Untergrenze = Höhe des höchsten Tier-SVG
+     (unterer Hund, 140px), weil die Figuren per bottom:0 stehen — darunter würde oben
+     abgeschnitten. Ändern heißt: beide Bänder ändern sich.
+     Stand 2026-08-02: Band UND Tiere um 20% verkleinert (vorher 170/31vh/320px). */
+  --hero-band-h:clamp(140px,24.8vh,256px);
+  /* .topbar ist position:fixed und belegt keine Flusshöhe, das obere Band deckt sich
+     dadurch genau mit header.has-logo. */
+  --hero-full-h:var(--hero-band-h);
   --hero-h:var(--hero-full-h);/* konstant = full: Logo-Anker & Header-Lücke bleiben in der Vollposition */
-  --hero-logo-anchor:0.58;    /* Logo etwas unterhalb der Bandmitte → optische Mitte inkl. Logo-Höhe stimmt (mehr Luft oben) */
+  --hero-logo-anchor:0.5;     /* Logo exakt in der Bandmitte (Nutzer-Briefing); #logo-stage
+                                 zentriert sich per translateY(-50%) auf diesen Anker */
   --hero-field-fade-start:85%;/* = gemessene Wolken-Feld-Kante (84.9%): Storm voll opak bis zum
                                  Horizont, erst das Feld darunter fadet ins Off-White */
   --hero-ink-stop:85%;        /* Blitz bleibt über dem dunklen Sturm weiß bis zur Feld-Kante;
@@ -195,15 +234,17 @@
   --hero-glow-color:hsl(42, 80%, 94%);  /* Kernfarbe des Blitz-Glows (mirrors .lh-ascii-Konvention) */
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom);}
+/* overflow-x:clip (NICHT hidden): erlaubt .hero-pixel--bottom den Full-Bleed per
+   calc(50% - 50vw), ohne dass eine sichtbare Desktop-Scrollbar horizontales Scrollen
+   auslöst. `hidden` würde hier einen Scroll-Container aufmachen und die sticky
+   .ws-nav an den Body statt an den Viewport hängen. */
+body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom);overflow-x:clip;}
 .wrap{max-width:980px;margin:0 auto;padding:0 1rem 2rem;position:relative;z-index:2;}
 
-/* ===== Hintergrund: schlichtes Off-White (--bg). Die DESIGNSYNDROME-Papercut-Textur
-   liegt NICHT mehr als ganzseitiges Overlay über der Seite, sondern nur noch IN den
-   Themenbereichen (Sektions-Blöcke: .card/.week-summary/.zone-collage/.sport-rose, siehe
-   unten) — die Textur gehört zur Fläche des Blocks, nicht zum Seitengrund. Der frühere
-   #paper-tex-/#paper-dither-Layer + zugehöriger Parallax wurden entfernt.
-   Content-z-index-Staffel: Logo 1 → .wrap 2 → Nav 80. ===== */
+/* ===== Hintergrund: EINE durchgehende, helle Off-White-Fläche (--bg). Weder ein
+   Ganzseiten-Textur-Overlay (früher #paper-tex/#paper-dither + Parallax) noch getönte
+   Sektions-Panels liegen mehr darauf — die Seite selbst ist die Fläche, von oben bis
+   unten dieselbe. Content-z-index-Staffel: Logo 1 → .wrap 2 → Nav 80. ===== */
 
 /* ===== Flächen (Poster-Grammatik, Stripe-Dev/PlayerZero-Referenz) =====
    Keine Kästen mehr: kein Rahmen, kein Schatten, keine Extra-Fläche — die Seite
@@ -216,20 +257,18 @@ body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text
   border-radius:0;
   box-shadow:none;
 }
-/* Vertikale Bereiche als getönte Paper-Panels auf hellem Seitengrund — stärkere
-   Abgrenzung zwischen den Sektionen (Nutzer-Briefing). .metric/.glass bleiben
-   transparent, damit Kacheln/Poster über dem Panel liegen.
-   Papercut-Textur liegt jetzt IN diesen Blöcken (statt als Ganzseiten-Overlay): ein
-   Schleier aus --block-bg (via color-mix, --block-tex-veil % deckend) über der Textur
-   lässt nur einen Rest der Faserstruktur durch — Textur folgt so jeder Blockfarbe. */
+/* AUFGELÖSTE SEKTIONEN (Nutzer-Briefing): die vertikalen Bereiche haben keine eigene
+   Fläche und keine eigene Textur mehr — ihr Inhalt sitzt direkt auf dem Seitengrund.
+   Was den Block trotzdem als Block lesbar hält:
+     1. --gap-section als Abstand nach unten (die Luft ersetzt die Panelkante),
+     2. die Hairline unter dem /-Mono-Label (.card>h2, siehe unten),
+     3. --pad-block als seitlicher Einzug, damit der Inhalt nicht am Rand klebt.
+   Kein background/background-image hier — die frühere --block-bg/--block-tex-veil-
+   Kombination ist bewusst entfernt, nicht vergessen. */
 .card,.week-summary,.zone-collage,.sport-rose{
-  background-color:var(--block-bg);
-  background-image:linear-gradient(var(--block-tex-veil),var(--block-tex-veil)),var(--paper-tex-bg);
-  background-size:cover;background-position:center;background-repeat:no-repeat;
-  padding:1.15rem 1.25rem 1.3rem;
-  margin-bottom:1.5rem;
+  padding:0 var(--pad-block);
+  margin:0 0 var(--gap-section);
 }
-.week-summary,.zone-collage,.sport-rose{margin-top:0;}
 /* Diagramm-Tafeln: feiner FIG-Rahmen wie in der Stripe-Dev-Referenz */
 /* #6: Chart-Panels ohne harten Rahmen — sie heben sich allein durch die hellere
    Fläche (leicht angehoben ggü. --paper-raised) vom Seitengrund ab. */
@@ -248,8 +287,10 @@ body{margin:0;font-family:var(--font-sans);background:var(--bg);color:var(--text
 }
 /* Modals/Auth: schwebende Ebenen brauchen eine Kante */
 .modal,.auth-box{position:relative;background:var(--paper-raised);border:1px solid var(--ink);border-radius:0;box-shadow:none;}
-/* Section-Label: Mono, Slash-Präfix, Hairline — ersetzt den Karten-Rahmen */
-.card>h2{font-family:var(--font-mono);font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;border-bottom:1px solid var(--border-strong);padding-bottom:.4rem;margin:0 0 .9rem;}
+/* Section-Label: Mono, Slash-Präfix, Hairline — ersetzt den Karten-Rahmen. Seit die
+   Panels aufgelöst sind, ist diese Linie der einzige gezeichnete Sektionsanfang und
+   trägt entsprechend mehr Luft nach unten. */
+.card>h2{font-family:var(--font-mono);font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;border-bottom:1px solid var(--border-strong);padding-bottom:.5rem;margin:0 0 1.5rem;}
 .card>h2::before{content:"/ ";color:var(--text-faint);}
 /* Papercut-Textur IN farbigen Flächen (Label-Plates, Poster-Gesten) — nicht als Overlay.
    --tex-shift pro Instanz variieren, damit Plates nicht geklont wirken. */
@@ -341,8 +382,15 @@ header.has-logo h1{width:1px;height:1px;overflow:hidden;position:absolute;white-
 #logo-clip{overflow:hidden;width:min(48vw,248px);aspect-ratio:2.368;}
 #logo-canvas{display:block;width:208.33%;margin-left:-54.17%;margin-top:-44.85%;image-rendering:pixelated;image-rendering:-moz-crisp-edges;image-rendering:crisp-edges;}
 @media(max-width:520px){
-  :root{--hero-compact-h:90px;--hero-logo-gap:6px;}
+  /* --hero-logo-gap bleibt 0: das Logo sitzt auch schmal exakt in der Bandmitte
+     (Nutzer-Briefing) — der frühere 6px-Versatz nach unten ist entfallen. */
+  :root{--hero-compact-h:90px;}
   #logo-clip{width:min(56vw,208px);}
+}
+/* Mobil knapper: 1rem (.wrap) + 1.4rem Innenabstand fräsen auf 375px zu viel Zeile weg.
+   Beide Full-Bleed-Hacks lesen --pad-block mit und brechen deshalb nicht mit. */
+@media(max-width:600px){
+  :root{--gap-section:2.6rem;--pad-block:.9rem;}
 }
 /* Seiten-Überschriften (alle Seiten außer Log): Inter statt Logo-Font, Großbuchstaben, luftig */
 header:not(.has-logo) h1{font-family:var(--font-sans);font-size:clamp(1.8rem,7vw,2.6rem);font-weight:600;letter-spacing:-.02em;text-indent:0;word-spacing:0;text-transform:none;}
@@ -358,7 +406,9 @@ header:not(.has-logo) h1{font-family:var(--font-sans);font-size:clamp(1.8rem,7vw
 h1,h2,h3{font-family:var(--font-sans);font-weight:600;letter-spacing:-.01em;}
 /* Überschriften auf allen Seiten außer Log: Inter, Großbuchstaben, luftig */
 .page:not(#page-log) h2,.page:not(#page-log) h3{font-family:var(--font-sans);text-transform:uppercase;letter-spacing:.08em;}
-.card{padding:1.35rem 1.4rem;margin-bottom:2rem;}.card h2{font-size:.92rem;font-weight:600;margin:0 0 1.2rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+/* Nur noch Typo-Regeln für den Karten-Kopf — Fläche/Padding/Abstand kommen aus dem
+   aufgelösten Sektionsblock oben (--pad-block/--gap-section), nicht mehr von hier. */
+.card h2{font-size:.92rem;font-weight:600;margin:0 0 1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
 /* §2 Lazy-Reveal: Bänder blenden beim Heranscrollen ruhig ein — kein Sprung, keine
    aufdringliche Bewegung. Nur Opazität/Versatz (Layout & Chart-Messung bleiben intakt). */
 .reveal-band{opacity:0;transform:translateY(26px);transition:opacity .6s cubic-bezier(.16,.84,.44,1),transform .6s cubic-bezier(.16,.84,.44,1);}
@@ -462,14 +512,19 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .week-nav{display:flex;align-items:center;justify-content:center;gap:.85rem;margin-bottom:1.1rem;}
 .week-nav .label{font-family:var(--font-mono);font-size:.85rem;font-weight:500;min-width:200px;text-align:center;}
 .current-tag{font-size:.68rem;color:var(--accent-text);background:var(--accent-light);border-radius:0;padding:.08rem .45rem;margin-left:.35rem;}
-.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:.75rem;margin-bottom:1.25rem;}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:1.2rem;margin-bottom:1.8rem;align-items:start;}
+/* Dieselbe Höhenstaffelung wie im .tile-flow, damit Grid- und Scroll-Kacheln auf der
+   aufgelösten Fläche dieselbe Sprache sprechen (align-items:start oben ist Bedingung —
+   sonst streckt das Grid die Zellen und der Versatz verpufft). */
+.metrics>.metric:nth-child(3n+2){margin-top:1.8rem;}
+.metrics>.metric:nth-child(3n+3){margin-top:.85rem;}
 .metrics-3{grid-template-columns:repeat(auto-fit,minmax(100px,1fr));}
 
 /* ===== Poster-Geste: die EINE große Headline/Zahl pro Screen (Briefing) ===== */
 /* §4 Laute Geste: vollflächiger, farbiger Bruch — ganze Fläche EINE Signalfarbe
    (ACWR-Status als Ampel: blau neutral → grün optimal → rot Überlast), riesige
    off-white Pixel-Zahl darauf. Full-bleed über die Seitenränder hinaus. */
-.poster{margin:0 -1rem 1.7rem;padding:1.6rem 1rem 1.05rem;text-align:left;position:relative;overflow:hidden;background:var(--poster-bg,var(--met-endurance));transition:background .3s ease;}
+.poster{margin:0 -1rem var(--gap-section);padding:1.6rem 1rem 1.05rem;text-align:left;position:relative;overflow:hidden;background:var(--poster-bg,var(--met-endurance));transition:background .3s ease;}
 .poster-slot{display:flex;flex-direction:column;}
 .poster canvas{display:block;height:var(--poster-size);width:auto;max-width:100%;image-rendering:pixelated;}
 /* Poster-Zahl: klare VCR-Pixelschrift (kein Dithering — das wirkte verzerrt) */
@@ -526,11 +581,11 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
    reichen die Slots von Kartenkante zu Kartenkante — die Hero-Kachel wird randlos blau, ohne
    selbst zu bleeden (sie scrollt so beim Wischen mit weg). Nur für #log-hswipe (nicht global
    .hswipe), sonst würden ws-chart/ef/poster-Wischbereiche ebenfalls bluten. */
-#log-hswipe{margin-left:-1.4rem;margin-right:-1.4rem;}
+#log-hswipe{margin-left:calc(-1 * var(--pad-block));margin-right:calc(-1 * var(--pad-block));}
 /* Slot-Inhalt wieder nach innen rücken (der Hero bleibt bewusst randlos): Liste + Budget- und
    Next-Slot bekommen das Karten-Padding als Innen-Padding zurück. */
-#log-hswipe #t-list{padding:0 1.4rem;}
-#log-slot-budget,#log-slot-next{padding-left:1.4rem;padding-right:1.4rem;}
+#log-hswipe #t-list{padding:0 var(--pad-block);}
+#log-slot-budget,#log-slot-next{padding-left:var(--pad-block);padding-right:var(--pad-block);}
 /* Hero-Detail als eigenständige Box direkt unter der Hero-Kachel (nicht in einer .entry) */
 .hero-detail{margin-top:0;margin-bottom:1.1rem;}
 
@@ -701,18 +756,164 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
   .hero-bolt.striking{animation:none;}
 }
 
+/* ===== Pixel-Heroes (Hund / Hase) =========================================
+   Zwei pixelquantisierte Tier-Bänder. Zellraster (viewBox-Einheiten): Hund 5, Hase 4 —
+   die kleinere Zelle IST die Größendifferenz der beiden Tiere und muss in BEIDEN Bändern
+   dieselbe sein, sonst stimmen die Proportionen zwischen oben und unten nicht überein
+   (der obere Hase lief vorher auf 3 statt 4 und war dadurch ein Viertel zu klein).
+   Gerendert wird das Raster verkleinert, siehe Regel 1. Oben (#hero-pixel, Kopfleiste
+   hinter dem Logo): Lavendelfeld, die Figuren geben das Foto frei — Hund jagt Hase
+   nach rechts. Unten (.hero-pixel--bottom, zwischen Wochenübersicht und "Aktuelle
+   Einheiten"): Foto als Fläche, Figuren als Lavendelplatten — Hase jagt Hund nach
+   links. Die umgekehrte Laufrichtung ist inhaltlich tragend, nicht kosmetisch.
+
+   ZWEI REGELN, die nicht verhandelbar sind:
+   1. Die SVGs tragen IMMER width/height als Attribut und werden NIE frei skaliert —
+      erlaubt sind nur Faktoren, bei denen die Zelle eine ganze CSS-Pixelzahl bleibt,
+      sonst franst das Raster aus. position:absolute (statt Flex) stellt sicher, dass
+      die Figur genau diese Größe behält und der Container nur beschneidet.
+      Stand 2026-08-02 laufen die Figuren 20% kleiner (Nutzer-Briefing): Hund ×0,8
+      (Zelle 5px → 4px), Hase ×0,75 (Zelle 4px → 3px). Die beiden Faktoren MÜSSEN
+      auseinanderliegen — es gibt keinen gemeinsamen Faktor < 1, der 5er- und 4er-Zelle
+      gleichzeitig ganzzahlig lässt (5 und 4 sind teilerfremd). Der Hase ist dadurch
+      6% kleiner als eine exakte 20%-Verkleinerung; das ist der Preis für ein sauberes
+      Raster und die kleinere der beiden Abweichungen. Die viewBox bleibt unangetastet
+      (Pfaddaten unverändert), skaliert wird nur über width/height.
+   2. shape-rendering="crispEdges" steht an jedem <svg> und muss dort bleiben, sonst
+      antialiast der Browser die Zellkanten weich.
+
+   Die FLÄCHE kommt vom Container, nicht aus den SVGs — so laufen beide Bänder
+   randlos über die volle Breite, ohne sichtbare Naht an einer SVG-Kante.
+
+   RANDVERANKERUNG: Jede Figur ist ein eigenes, auf sie zugeschnittenes SVG. Der Hund
+   klebt links, der Hase rechts — bei jeder Bandbreite. Sobald das Band zu schmal wird,
+   um beide Figuren MIT freier Mitte zu zeigen, wandern sie über die Kante hinaus
+   (Anschnitt wie im Plakat), statt in die Mitte zu laufen. --hp-gap ist die Breite, die
+   in der Mitte frei bleiben muss; --hp-dog-w / --hp-hare-w setzen die beiden Bänder
+   jeweils auf ihre Figurenbreiten.
+
+   WIE DER ANSCHNITT VERTEILT WIRD — und warum die zwei Bänder das unterschiedlich tun:
+
+   Oben (Grundregel, min(0px,…) je Figur): die freie Mitte bleibt ZENTRIERT, weil dort
+   das Logo steht. Beide Tiere verlieren dadurch denselben px-Betrag; vom breiten Hund
+   bleibt anteilig also weniger stehen als vom Hasen. Das ist der Preis dafür, dass die
+   Logozone auf keiner Seite angeknabbert wird — mehr Hund gibt es oben nur über ein
+   kleineres --hp-gap (siehe #hero-pixel), nicht über eine ungleiche Verteilung.
+
+   Unten (.hero-pixel--bottom): dort steht kein Logo, die freie Mitte darf also aus der
+   Bandmitte wandern. Deshalb wird der Fehlbetrag --hp-squeeze (= wie viel Breite dem
+   Band fehlt, um Hund + Mitte + Hase unterzubringen) NICHT gleichmäßig in px verteilt,
+   sondern im Verhältnis der Figurenbreiten (--hp-dog-share): so bleibt von beiden
+   Tieren derselbe ANTEIL stehen, statt den breiten Hund zum Stummel zu schneiden. Die
+   Mitte bleibt trotzdem exakt --hp-gap breit, weil beide Verschiebungen zusammen den
+   Fehlbetrag ergeben. */
+.hero-pixel{
+  position:relative;overflow:hidden;
+  --hp-gap:290px;
+  --hp-squeeze:max(0px, calc(var(--hp-dog-w) + var(--hp-gap) + var(--hp-hare-w) - 100%));
+}
+.hero-pixel svg{position:absolute;bottom:0;display:block;}
+.hero-pixel .hp-dog{left:min(0px,calc((100% - var(--hp-gap)) / 2 - var(--hp-dog-w)));}
+.hero-pixel .hp-hare{right:min(0px,calc((100% - var(--hp-gap)) / 2 - var(--hp-hare-w)));}
+/* Unteres Band: anteiliger statt gleicher Anschnitt (Begründung oben). */
+.hero-pixel--bottom .hp-dog{left:calc(-1 * var(--hp-squeeze) * var(--hp-dog-share,.64));}
+.hero-pixel--bottom .hp-hare{right:calc(-1 * var(--hp-squeeze) * (1 - var(--hp-dog-share,.64)));}
+/* Korn wie die alten Storm-Layer (.hero-film-top), aber als eigene Ebene ÜBER dem
+   Raster — nie in die Maske hineinrechnen, sonst zerlegt es die Zellkanten. */
+.hero-pixel::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='nh'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.62' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23nh)'/%3E%3C/svg%3E");
+  background-size:120px 120px;
+  mix-blend-mode:overlay;
+  opacity:.28;
+}
+
+/* Hero oben: liegt wie #logo-stage auf Body-Ebene (position:absolute am Dokument,
+   NICHT fixed) und deckt sich mit header.has-logo — beide lesen --hero-h. Steht im DOM
+   VOR #logo-stage: gleicher z-index, DOM-Reihenfolge entscheidet → das Logo-Canvas malt
+   immer darüber. Sichtbarkeit über showHeroVisual()/hideHeroVisual() (nur Log-Seite). */
+#hero-pixel{
+  --hp-dog-w:264px;--hp-hare-w:123px;   /* gerenderte SVG-Breiten (330×0,8 / 164×0,75) */
+  /* Freizuhaltende Mitte = Logobreite (#logo-clip: 248px, unter 520px nur 208px) + Luft. */
+  --hp-gap:290px;
+  position:absolute;left:0;right:0;top:0;
+  height:var(--hero-h);
+  z-index:1;
+  background:var(--hero-lavender);
+  opacity:0;transition:opacity .2s ease;
+  pointer-events:none;
+}
+#hero-pixel.visible{opacity:1;}
+@media(max-width:520px){#hero-pixel{--hp-gap:250px;}}  /* #logo-clip ist hier nur noch 208px breit */
+/* HOHES BAND = LUFT UNTER DEM LOGO. Die Tiere stehen auf der Unterkante, und der Hund
+   hat seine Vorderpartie (Kopf/Brust, die beim Anschnitt von links als Einzige stehen
+   bleibt) erst im unteren Drittel seines Rasters: Ink-Oberkante = Bandunterkante − 44px.
+   Das Logo sitzt mittig (--hero-logo-anchor .5), seine Unterkante also bei
+   Bandmitte + halber Logohöhe. Die Hundefront läuft damit UNTER dem Logo durch, sobald
+   Bandhöhe/2 − halbe Logohöhe > 44px ist — dann darf die freie Mitte schmaler sein als
+   das Logo und vom Hund bleibt links deutlich mehr stehen (bei 430×932: 135px statt
+   90px), ohne dass sich Figur und Logo je berühren.
+   Zwei Schwellen, weil das Logo ab 520px Breite höher wird (105px statt 88px) und dann
+   ein höheres Band braucht; beide sind so gesetzt, dass mindestens 10px Luft bleiben.
+   Darunter (kurze/gedrungene Fenster) bleibt es bei der vollen Logozone — dort ist kein
+   Platz, unter dem Logo durchzulaufen. */
+@media(min-height:790px) and (max-width:520px){#hero-pixel{--hp-gap:160px;}}
+@media(min-height:860px) and (min-width:521px){#hero-pixel{--hp-gap:160px;}}
+
+/* Hero unten: im Fluss der Log-Seite, Breite = Blockbreite der Sektionen darüber/darunter.
+   Das Foto ist hier die durchgehende CSS-Fläche; die SVGs tragen nur noch die Lavendel-
+   Figuren (kein <image> darin), deshalb gibt es keine Kante im Bild.
+   viewBox y -25…150 (175 Einheiten, gerendert 140px): der springende Hund ist 32 Zellen
+   hoch und würde in einem 150er-Kasten oben abgeschnitten. Unter der Fußlinie (y=135)
+   bleiben 15 Einheiten Bodenluft — dieselben wie im oberen Band, damit beide Bänder
+   dieselbe Standlinie zeigen und die Läufe nicht auf der Rahmenkante abreißen. */
+.hero-pixel--bottom{
+  --hp-dog-w:268px;--hp-hare-w:153px;   /* gerenderte SVG-Breiten (335×0,8 / 204×0,75) */
+  --hp-dog-share:.64;   /* 268 / (268 + 153) */
+  /* Hier steht kein Logo in der Mitte — die freizuhaltende Zone ist deshalb kleiner
+     als oben und dient nur als Mindestabstand zwischen den beiden Tieren. Weil sie
+     nichts schützen muss, darf sie auf schmalen Fenstern mitschrumpfen, statt die Tiere
+     aus dem Bild zu drücken (das Band ist full-bleed, 100% == 100vw). Ab 1000px steht
+     wieder die volle Zone; der Hund ist ab ~525px Fensterbreite komplett im Bild. */
+  --hp-gap:clamp(120px,20vw,200px);
+  /* Full-Bleed über die volle Fensterbreite (Nutzer-Briefing) — bricht aus der .wrap
+     (max 980px + 1rem Padding) aus. calc(50% - 50vw) je Seite ergibt exakt 100vw, ohne
+     dass hier eine width stehen muss. body{overflow-x:clip} fängt die Rundungsreste
+     bei sichtbarer Desktop-Scrollbar ab; `clip` (nicht `hidden`), weil hidden einen
+     Scroll-Container erzeugen und die sticky .ws-nav darüber kaputtmachen würde.
+     Höhe: --hero-band-h, geteilt mit dem oberen Band. Die SVGs behalten ihre feste
+     Rendergröße (Regel 1: Hund 140px, Hase 131,25px hoch) und stehen per bottom:0 auf
+     der Unterkante — was darüber bleibt, ist Foto. */
+  margin-left:calc(50% - 50vw);
+  margin-right:calc(50% - 50vw);
+  height:var(--hero-band-h);
+  margin-bottom:var(--gap-section);
+  background:url("assets/hero-hintergrund.jpg") center/cover no-repeat;
+}
+
 /* ===== Tile-Flow: freie, versetzte Satelliten-Kacheln, seitliches Scrollen mit
    Einrasten (mobil/schmal); ab 900px volle Fläche ohne Snap — ein Verhalten,
    an der Fensterbreite gemessen (Briefing, Kachel-Staffelung) ===== */
-.tile-flow{display:flex;gap:.9rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:.25rem .25rem 1.1rem;margin-bottom:.4rem;scrollbar-width:none;}
+.tile-flow{display:flex;gap:1.3rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:.25rem .25rem 1.4rem;margin-bottom:.6rem;scrollbar-width:none;align-items:flex-start;}
 .tile-flow::-webkit-scrollbar{display:none;}
 .tile-flow>.metric{scroll-snap-align:center;flex:0 0 min(46vw,190px);}
-.tile-flow>.metric:nth-child(odd){margin-top:1rem;}   /* Ojos-Pardos-Staffelung */
+/* Höhenstaffelung (Nutzer-Briefing „Variation in der Position"): auf der aufgelösten
+   Fläche ist der vertikale Versatz das, was die Kacheln als eigenständige Objekte
+   liest — vorher tat das der Panelrand. Dreitakt statt odd/even, damit beim
+   Weiterscrollen kein Zickzack-Muster entsteht, das sich sofort als Regel verrät. */
+.tile-flow>.metric:nth-child(3n+1){margin-top:0;}
+.tile-flow>.metric:nth-child(3n+2){margin-top:2.4rem;}
+.tile-flow>.metric:nth-child(3n+3){margin-top:1.1rem;}
 /* Log-Wochenstats: schmalere Satelliten, damit 2–3 gleichzeitig sichtbar sind */
 .tf-stats>.metric{flex:0 0 min(38vw,150px);}
+/* display:contents → die Kinder von #log-acwr-cards sind Flex-Items von .tile-flow,
+   zählen aber für nth-child in IHREM Elternteil. Deshalb hier eine eigene Staffelung
+   mit versetztem Takt, sonst startet die Reihe nach dem Übergang wieder bei 0. */
 .tf-stats #log-acwr-cards{display:contents;}
 .tf-stats #log-acwr-cards>.metric{scroll-snap-align:center;flex:0 0 min(38vw,150px);}
-.tf-stats #log-acwr-cards>.metric:nth-child(odd){margin-top:1rem;}
+.tf-stats #log-acwr-cards>.metric:nth-child(3n+1){margin-top:1.1rem;}
+.tf-stats #log-acwr-cards>.metric:nth-child(3n+2){margin-top:0;}
+.tf-stats #log-acwr-cards>.metric:nth-child(3n+3){margin-top:2.4rem;}
 @media(min-width:900px){
   .tile-flow{flex-wrap:wrap;overflow:visible;scroll-snap-type:none;padding-bottom:.4rem;}
 }
@@ -734,11 +935,22 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .modal-profile-bar{display:flex;height:14px;border-radius:0;overflow:hidden;background:var(--bg);}
 .modal-profile-bar>div{height:100%;}
 .modal-profile-legend{display:flex;flex-wrap:wrap;gap:.5rem;font-size:.7rem;margin-top:.35rem;}
-.metric{padding:.5rem 0;overflow:visible;text-align:left;}
+/* ===== Kachel als Akzent (Nutzer-Briefing) =====
+   Die Kachel bekommt KEINE eigene Fläche zurück — sie hebt sich rein durch drei
+   Mittel von der aufgelösten Seite ab:
+     1. eine kräftige 2px-Oberkante in --ink (statt Hairline) als Aufhänger,
+     2. den Wert deutlich größer und in der Akzentschrift (--font-accent),
+     3. den vertikalen Versatz aus .tile-flow (siehe oben).
+   Das Label bleibt bewusst Mono/klein: der Kontrast klein-technisch ↔ groß-plakativ
+   IST der Akzent. */
+.metric{padding:0;overflow:visible;text-align:left;}
 .metric::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent-gradient);opacity:0;transition:opacity .2s;}
 .metric:hover::before{opacity:1;}
-.metric .m-label{font-size:.68rem;font-family:var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin:0 0 .25rem;border-top:1px solid var(--ink);padding-top:.3rem;}
-.metric .m-value{font-size:1.45rem;font-weight:600;font-family:var(--font-sans);letter-spacing:-.01em;color:var(--text);font-variant-numeric:tabular-nums;}.charts{display:grid;grid-template-columns:1.4fr 1fr;gap:1.25rem;margin-bottom:1.25rem;}
+.metric .m-label{font-size:.68rem;font-family:var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin:0 0 .45rem;border-top:2px solid var(--ink);padding-top:.5rem;}
+/* font-weight bewusst 400: Vabedo hat nur einen Schnitt, alles darüber würde der
+   Browser synthetisch fetten und die Kanten verschmieren. */
+.metric .m-value{font-size:2.15rem;line-height:1;font-weight:400;font-family:var(--font-accent);letter-spacing:0;color:var(--text);font-variant-numeric:tabular-nums;}
+.charts{display:grid;grid-template-columns:1.4fr 1fr;gap:1.25rem;margin-bottom:1.25rem;}
 @media(max-width:600px){.charts{grid-template-columns:1fr;}}
 .chart-box{position:relative;height:180px;}
 .workload-chart-box{position:relative;height:220px;}
@@ -786,7 +998,7 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .log-add-menu button .ti{font-size:.95em;opacity:.85;}
 /* Schließ-X in den Eingabe-Karten (nur wenn geöffnet) */
 .log-entry-card{position:relative;}
-.log-entry-card .card-close{position:absolute;top:.6rem;right:.6rem;width:28px;height:28px;border-radius:0;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;z-index:2;}
+.log-entry-card .card-close{position:absolute;top:.6rem;right:var(--pad-block);width:28px;height:28px;border-radius:0;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;z-index:2;}
 .log-entry-card .card-close:hover{color:var(--text);border-color:var(--text);}
 
 /* Einheitliche Papier-Panels für alle Visualisierungen (SVG via .wlc-paper, Canvas via .chart-dark) */
@@ -815,7 +1027,11 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .entry-badge{font-size:.74rem;font-weight:600;padding:.22rem .55rem;border-radius:0;display:inline-flex;align-items:center;gap:.35rem;}
 .entry-title{font-style:italic;color:var(--text-muted);font-size:.8rem;}
 .entry-meta{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.4rem;font-size:.75rem;color:var(--text-faint);}
-.entry-detail{display:none;margin-top:.65rem;background:var(--bg);border-radius:var(--radius);padding:.85rem;border:1px solid var(--border);}
+/* Detailansicht klappt IN der Liste auf — kein eigenes Fenster über dem Bereich mehr:
+   kein Rahmen, keine eigene Fläche, gleiche Breite wie die Einträge. Abgesetzt nur durch
+   eine dünne Linie. Dadurch laufen auch Notiz-/Anmerkungsfelder auf volle Eintragsbreite
+   (wie das Notizfeld in „Trainingsnotiz“). */
+.entry-detail{display:none;margin-top:.65rem;padding-top:.85rem;border-top:1px solid var(--border);}
 .entry-detail.open{display:block;}
 .detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.6rem;margin-bottom:.75rem;}
 .detail-field{display:flex;flex-direction:column;gap:.22rem;}
@@ -878,8 +1094,8 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
   .cal-grid:not(.week) .cal-dur{display:none;}
   .cal-grid:not(.week) .cal-chip-icon{font-size:.78rem;}
   .cal-grid:not(.week) .cal-entries{flex-direction:row;flex-wrap:wrap;gap:.08rem;justify-content:center;align-items:center;}
-  /* Kalender-Card auf Mobile schlanker, damit 7 Spalten ohne Scroll passen */
-  #page-calendar .card{padding:.85rem .6rem;}
+  /* Kalender-Sektion auf Mobile schlanker als --pad-block, damit 7 Spalten ohne Scroll passen */
+  #page-calendar .card{padding:0 .35rem;}
   #page-calendar .cal-tabs button{padding:.3rem .65rem;font-size:.78rem;}
   #cal-label{min-width:auto!important;font-size:.78rem!important;}
 }
@@ -890,7 +1106,9 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
 .sport-filter{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem;}
 .sport-filter button{font-size:.75rem;padding:.25rem .6rem;border-radius:0;}
 .sport-filter button.active{color:#fff;border-color:transparent;}
-.analytics-chart-box{position:relative;height:220px;margin:0 -.9rem 1.3rem;width:calc(100% + 1.8rem);padding:0;}
+/* Bleedet exakt bis zur Sektionskante — rechnet deshalb mit --pad-block statt mit
+   einem eigenen Wert (früher -.9rem, was zu keinem der Paddings passte). */
+.analytics-chart-box{position:relative;height:220px;margin:0 calc(-1 * var(--pad-block)) 1.3rem;width:calc(100% + 2 * var(--pad-block));padding:0;}
 .analytics-chart-scroll{position:relative;width:100%;height:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;padding:.6rem .35rem;box-sizing:border-box;}
 .analytics-chart-scroll svg{display:block;height:100%;}
 .analytics-chart-box::after{content:'';position:absolute;top:0;left:0;bottom:0;width:24px;pointer-events:none;background:linear-gradient(to right,var(--chart-surface),transparent);}
@@ -906,7 +1124,10 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
    Bubbles sind opak → Text bleibt voll lesbar. */
 /* KI-Box als Ganzes in die Seite eingebettet: versenkter (recessed) Schatten + transparent zum Seiten-Hintergrund,
    sodass Dither-Muster und Seitengrund durchscheinen (statt deckender Fläche) */
-#page-ai .card{position:relative;overflow:hidden;border:1px solid var(--ink);border-radius:0;background:var(--paper-raised);}
+/* Der Chat behält als einziger Block Fläche + Kante (Terminal-Optik, Briefing) und
+   braucht deshalb — anders als die aufgelösten Sektionen — auch vertikales Padding,
+   sonst klebt der Inhalt an der Rahmenkante. */
+#page-ai .card{position:relative;overflow:hidden;border:1px solid var(--ink);border-radius:0;background:var(--paper-raised);padding:1.35rem var(--pad-block);}
 #page-ai .card > *{position:relative;z-index:1;}
 /* Monospace/Terminal-Schrift NUR im Chat-Bereich (alles unter der Seiten-Überschrift), nicht global */
 #page-ai .card > *{font-family:var(--font-mono);}
@@ -1161,6 +1382,58 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 .block-goal-row input{width:56px;padding:.3rem;font-size:.78rem;}
 .block-goal-hint{font-size:.66rem;color:var(--text-faint);margin:.1rem 0 .5rem;}
 .block-goal-warn{font-size:.7rem;color:#b3701e;margin:.2rem 0;min-height:1em;}
+
+/* ── PAKET G: Vorlagensektion, Dosisbänder, Erhaltungsreize ──────────────────
+   Keine neuen Farben: Hairlines in --border, Zahlen in --font-mono, Warnungen im
+   Ton von .block-goal-warn, Signale über die vorhandenen --sig-*-Tokens. Das
+   Dosisband ist eine Schiene mit zwei Marken (opt = Vorlage, Marker = eigener Wert),
+   damit der Abstand zur Vorlage ohne Zahlenlesen sichtbar wird. */
+.dose-band{display:flex;align-items:center;gap:.5rem;padding:0 0 .35rem 1rem;margin-top:-.1rem;}
+.dose-band-track{position:relative;flex:0 0 84px;height:2px;background:var(--border);}
+.dose-band-track::before,.dose-band-track::after{content:"";position:absolute;top:-3px;width:1px;height:8px;background:var(--border-strong);}
+.dose-band-track::before{left:0;} .dose-band-track::after{right:0;}
+.dose-band-opt{position:absolute;top:-2px;width:1px;height:6px;background:var(--border-strong);transform:translateX(-50%);}
+.dose-band-mark{position:absolute;top:-3px;width:8px;height:8px;border-radius:50%;transform:translateX(-50%);box-shadow:0 0 0 1.5px var(--surface);}
+.dose-band-mark.out{border-radius:0;background:#b3701e!important;}
+.dose-band-scale{font-family:var(--font-mono);font-size:.64rem;color:var(--text-faint);white-space:nowrap;}
+.dose-band.out .dose-band-scale{color:#b3701e;}
+.dose-lock{font-size:.7rem;line-height:1;opacity:.7;cursor:help;}
+
+.tpl-head{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin:.5rem 0 .3rem;}
+.tpl-badge{font-family:var(--font-mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;padding:.1rem .4rem;border:1px solid var(--border-strong);color:var(--text-muted);}
+.tpl-badge-e1{border-color:var(--sig-ok-deep);color:var(--sig-ok-deep);}
+.tpl-badge-e2{border-color:var(--text-muted);}
+.tpl-badge-none{border-style:dashed;color:var(--text-faint);}
+.tpl-days{font-family:var(--font-mono);font-size:.68rem;color:var(--text-muted);}
+.tpl-src{font-size:.68rem;color:var(--text-muted);margin:.1rem 0 .4rem;line-height:1.35;}
+.tpl-pop{color:var(--text-faint);font-weight:400;}
+.tpl-note{font-size:.7rem;color:var(--text-muted);line-height:1.45;margin:.2rem 0 .5rem;}
+.tpl-sub{font-size:.64rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-faint);margin:.6rem 0 .2rem;}
+.tpl-line{display:flex;justify-content:space-between;align-items:baseline;gap:.6rem;font-size:.72rem;color:var(--text);padding:.12rem 0;}
+.tpl-line .tpl-val{font-family:var(--font-mono);font-size:.66rem;color:var(--text-muted);text-align:right;white-space:nowrap;}
+.tpl-line.tpl-proto .tpl-val{white-space:normal;}
+.tpl-line.tpl-miss{color:#b3701e;} .tpl-line.tpl-miss .tpl-val{color:#b3701e;}
+.tpl-line.tpl-hint{color:var(--text-muted);}
+.tpl-line.tpl-ok .tpl-val{color:var(--sig-ok-deep);}
+.tpl-credit{font-size:.64rem;color:var(--text-faint);line-height:1.4;margin:.6rem 0 .2rem;padding-top:.4rem;border-top:1px solid var(--border);}
+.tpl-check{border-top:1px solid var(--border-strong);margin-top:.7rem;padding-top:.4rem;}
+
+.budget-floor-row{display:flex;align-items:baseline;gap:.5rem;font-size:.74rem;padding:.12rem 0;}
+.budget-floor-label{flex:1;color:var(--text);}
+.budget-floor-val{font-family:var(--font-mono);font-size:.68rem;color:var(--text-muted);}
+.budget-floor-mark{width:1em;text-align:center;color:var(--sig-ok-deep);}
+.budget-floor-miss .budget-floor-mark,.budget-floor-miss .budget-floor-val{color:#b3701e;}
+.budget-floor-unknown,.budget-floor-pending{color:var(--text-faint);}
+.budget-floor-unknown .budget-floor-mark,.budget-floor-pending .budget-floor-mark{color:var(--text-faint);}
+.budget-scope-note{font-size:.64rem;color:var(--text-faint);line-height:1.4;margin:.45rem 0 0;}
+
+/* Kraft-Typ-Chips — übernehmen die Optik der Bibliotheks-Filter-Pills, damit keine
+   zweite Chip-Grammatik entsteht. */
+.strength-chips{display:flex;flex-wrap:wrap;gap:.35rem;}
+.strength-chip{padding:.3rem .6rem;border:1px solid var(--border);border-radius:0;background:var(--surface);color:var(--text-muted);font-size:.72rem;cursor:pointer;white-space:nowrap;transition:all .12s;}
+.strength-chip:hover{border-color:var(--accent);color:var(--text);}
+.strength-chip.active{background:var(--text);color:var(--surface);border-color:var(--text);}
+
 /* Info-Popover: leichtgewichtiges Read-only-Fenster bei Tap auf einen Block (außerhalb Block-Modus). */
 .block-info-backdrop{position:fixed;inset:0;background:rgba(30,30,28,.35);z-index:1099;}
 .block-info-pop{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:260px;max-width:90vw;max-height:80vh;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--blockcolor,var(--ink));border-radius:var(--radius);padding:.75rem .85rem;z-index:1100;box-shadow:0 8px 22px rgba(30,30,28,.22);font-size:.8rem;}
@@ -1168,6 +1441,11 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 .block-info-pop .block-info-range{font-family:var(--font-mono);font-size:.7rem;color:var(--text-muted);margin:0 0 .5rem;}
 .block-info-pop .block-info-line{font-size:.75rem;color:var(--text);margin:.15rem 0;}
 .block-info-pop .block-info-actions{display:flex;justify-content:flex-end;margin-top:.6rem;}
+/* Paket G: Vorlagenkopf und Erhaltungsreize im Popover */
+.block-info-pop .block-info-tpl{display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--text-muted);margin:0 0 .3rem;}
+.block-info-pop .block-info-mod{font-size:.68rem;font-weight:400;color:var(--text-faint);}
+.block-info-pop .block-info-sub{font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-faint);margin:.5rem 0 .1rem;}
+.block-info-pop .block-info-floor{font-family:var(--font-mono);font-size:.68rem;color:var(--text-muted);}
 .budget-count-line{font-size:.72rem;color:var(--text-faint);margin-top:.2rem;}
 
 /* Bibliothek: Vorlagen-Karten und Filter-Pills */
@@ -1176,8 +1454,12 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 .lib-filter-pill.active{background:var(--text);color:var(--surface);border-color:var(--text);}
 .lib-filter-pill.lib-cat-add{border-style:dashed;color:var(--accent);}
 .lib-filter-pill.lib-cat-add:hover{border-color:var(--accent);color:var(--accent);}
-.lib-template-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.7rem .8rem;margin-bottom:.5rem;cursor:pointer;transition:all .12s;}
-.lib-template-card:hover{border-color:var(--accent);background:var(--surface-alt);}
+/* Aufgelöst wie die Log-Liste (.entry): die Vorlage ist eine Listenzeile mit Hairline,
+   keine eigene Fläche — sonst wäre sie das einzige verbliebene Kästchen im Seitenfluss.
+   Hover markiert nur noch die Trennlinie, nicht mehr eine Füllung. */
+.lib-template-card{background:transparent;border:0;border-bottom:1px solid var(--border);border-radius:0;padding:.95rem 0;margin-bottom:0;cursor:pointer;transition:border-color .12s;}
+.lib-template-card:last-child{border-bottom:0;}
+.lib-template-card:hover{border-bottom-color:var(--accent);}
 .lib-template-title{font-weight:600;font-size:.88rem;color:var(--text);margin-bottom:.25rem;}
 .lib-template-meta{display:flex;flex-wrap:wrap;gap:.4rem;font-size:.68rem;color:var(--text-muted);align-items:center;}
 .lib-template-tag{padding:.12rem .45rem;border-radius:0;background:var(--surface-alt);}
@@ -1225,17 +1507,21 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 .sport-row .sport-delete-inline{padding:.28rem .45rem;background:#fef2f2;border-color:#fca5a5;color:#c4544a;}
 .add-sport-btn{margin-top:.6rem;font-size:.82rem;}
 /* ── Anatomie-Collage (Zonenverteilung Log-Seite) ───────────────────────── */
-/* Bild ist NUR hinter den Balken sichtbar (via CSS-Mask). Der restliche
-   Block-Hintergrund bleibt papierfarben neutral. */
-.zone-collage{color:var(--text);padding:1.1rem 1.25rem;margin:1rem 0;}
-/* Gemeinsamer Wochen-Rahmen (Log-Seite) */
-.week-summary{color:var(--text);padding:1.1rem 1.25rem 1.3rem;margin:1rem 0;}.ws-nav{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:1rem;padding-bottom:.7rem;position:sticky;top:0;z-index:5;padding-top:.2rem;}
+/* Bild ist NUR hinter den Balken sichtbar (via CSS-Mask). Der Blockgrund ist der
+   Seitengrund — die Collage hat keine eigene Fläche mehr. */
+.zone-collage{color:var(--text);}
+/* Gemeinsamer Wochen-Rahmen (Log-Seite) — Padding/Abstand kommen aus dem
+   aufgelösten Sektionsblock (--pad-block/--gap-section). */
+.week-summary{color:var(--text);}
+/* Sticky Wochennavigation: braucht jetzt selbst eine deckende Fläche. Vorher hat die
+   Panelfläche der .week-summary den durchscrollenden Inhalt verdeckt — die ist weg. */
+.ws-nav{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:1.2rem;padding-bottom:.7rem;position:sticky;top:0;z-index:5;padding-top:.4rem;background:var(--page-bg);}
 .ws-title{font-weight:500;font-size:1rem;color:var(--text);text-align:center;flex:1;}
 .ws-nav .icon{background:rgba(44,44,42,.06);border:none;color:var(--text);width:34px;height:34px;border-radius:0;font-size:1.1rem;cursor:pointer;flex-shrink:0;}
 .ws-nav .icon:hover{background:rgba(44,44,42,.12);}
-.ws-section{margin-top:1.9rem;}
-.ws-section:first-of-type{margin-top:1.2rem;}
-.ws-h{font-size:.95rem;font-weight:600;color:var(--text);margin:0 0 .7rem;}
+.ws-section{margin-top:2.8rem;}
+.ws-section:first-of-type{margin-top:1.8rem;}
+.ws-h{font-size:.95rem;font-weight:600;color:var(--text);margin:0 0 .9rem;}
 /* ===== Metrik-Stat (PlayerZero/Stripe-Referenz): kein Kachel-Kasten mehr —
    kleines Mono-Label mit Hairline darüber, darunter der Wert als Pixel-Zahl.
    Linksbündig, Struktur aus Typo statt Rahmen. */
@@ -1245,20 +1531,21 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 }
 .week-summary .metric::before{display:none;}   /* generische Hover-Akzentleiste hier nicht nötig */
 .week-summary .m-label{
-  margin:0 0 .3rem;
-  padding:.3rem 0 0;
-  border-top:1px solid var(--ink);
+  margin:0 0 .45rem;
+  padding:.5rem 0 0;
+  border-top:2px solid var(--ink);
   background:transparent;
   color:var(--text-muted);font-weight:600;font-family:var(--font-mono);
-  letter-spacing:.08em;text-transform:uppercase;
+  letter-spacing:.1em;text-transform:uppercase;
   line-height:1.25;
 }
 .week-summary .m-value{color:var(--text);margin:0;}
 /* #4a: Wochenvergleich-Kacheln prominenter als die scrollenden Stat-Tiles darüber —
-   größere Pixel-Zahl, mehr Luft, breitere Spalten (Plakat-Optik). */
-#weekly-growth-cards{gap:1.15rem;margin-bottom:1.2rem;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));}
-#weekly-growth-cards .m-value{font-size:2.15rem;line-height:1;}
-#weekly-growth-cards .m-label{font-size:.72rem;margin-bottom:.45rem;padding-top:.4rem;}
+   größere Akzent-Zahl, mehr Luft, breitere Spalten (Plakat-Optik). Muss über der
+   2.15rem-Basis aus .metric .m-value liegen, sonst verschwindet die Hierarchie. */
+#weekly-growth-cards{gap:1.4rem;margin-bottom:1.6rem;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));}
+#weekly-growth-cards .m-value{font-size:2.9rem;line-height:1;}
+#weekly-growth-cards .m-label{font-size:.72rem;margin-bottom:.5rem;padding-top:.5rem;}
 .weekly-compare-box{height:200px;}
 /* Zonenverteilung & Wochenvergleich: ohne hellen Panel-Hintergrund, volle Kastenbreite */
 .ws-chart-panel .wlc-paper{background:transparent;padding:0;}
@@ -1271,21 +1558,26 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 /* Mobile: Kacheln unter der Wochennavigation verkleinern, damit die Tiles UND
    der Wochenvergleichschart gemeinsam ohne Scrollen auf den Bildschirm passen */
 @media(max-width:600px){
-  .week-summary{padding:.9rem 1rem 1.1rem;}
-  .week-summary .metrics{gap:.4rem;margin-bottom:.7rem;}
+  .week-summary .metrics{gap:.7rem;margin-bottom:1rem;}
   .week-summary .metric{padding:0;}
-  .week-summary .m-label{font-size:.6rem;margin:0;padding:.28rem .3rem;}
-  .week-summary .m-value{font-size:1rem;}
+  .week-summary .m-label{font-size:.6rem;margin:0 0 .3rem;padding:.35rem 0 0;}
+  .week-summary .m-value{font-size:1.55rem;}
   /* #4a: Vergleichs-Kacheln auch mobil deutlich größer als die Stat-Tiles */
-  #weekly-growth-cards{gap:.7rem;grid-template-columns:repeat(3,1fr);}
-  #weekly-growth-cards .m-value{font-size:1.5rem;}
-  #weekly-growth-cards .m-label{font-size:.6rem;padding:.3rem 0 0;}
+  #weekly-growth-cards{gap:.9rem;grid-template-columns:repeat(3,1fr);}
+  #weekly-growth-cards .m-value{font-size:2rem;}
+  #weekly-growth-cards .m-label{font-size:.6rem;padding:.35rem 0 0;}
   .week-summary .metrics-5 .metric{padding:0;}
-  .week-summary .metrics-5 .m-label{font-size:.5rem;margin:0;padding:.24rem .2rem;}
-  .week-summary .metrics-5 .m-value{font-size:.8rem;}
-  .week-summary .ws-section{margin-top:.9rem;}
-  .week-summary .ws-h{font-size:.85rem;margin-bottom:.45rem;}
+  .week-summary .metrics-5 .m-label{font-size:.5rem;margin:0;padding:.28rem 0 0;}
+  .week-summary .metrics-5 .m-value{font-size:1rem;}
+  .week-summary .ws-section{margin-top:1.8rem;}
+  .week-summary .ws-h{font-size:.85rem;margin-bottom:.6rem;}
   .weekly-compare-box{height:150px;}
+  /* Staffelung mobil flacher: die Tiles sollen mit dem Wochenvergleichschart
+     zusammen noch auf einen Screen passen. */
+  .tile-flow>.metric:nth-child(3n+2){margin-top:1.9rem;}
+  .tile-flow>.metric:nth-child(3n+3){margin-top:.9rem;}
+  .tf-stats #log-acwr-cards>.metric:nth-child(3n+1){margin-top:.9rem;}
+  .tf-stats #log-acwr-cards>.metric:nth-child(3n+3){margin-top:1.9rem;}
 }
 /* Wochen-Workload Tagesbalken */
 .wd-col{position:relative;display:flex;flex-direction:column;align-items:stretch;}
@@ -1299,14 +1591,15 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 .wd-bar-val{position:absolute;left:0;width:100%;text-align:center;font-size:.72rem;font-weight:600;color:var(--text);white-space:nowrap;}
 .wd-label{text-align:center;font-size:.72rem;color:var(--text-muted);padding-top:.35rem;}
 .wd-today{color:var(--text);font-weight:600;}
-/* Aufklappbare Karten */
-.collapsible-card{padding:0;}
-.collapse-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;padding:.85rem 1.1rem;background:none;border:none;text-align:left;font-size:.93rem;font-weight:500;color:var(--text);cursor:pointer;gap:.5rem;}
+/* Aufklappbare Karten — seitlicher Einzug kommt (wie bei jeder Sektion) aus
+   --pad-block auf .card; Toggle und Body bringen deshalb kein eigenes mehr mit,
+   sonst steht der Formularinhalt weiter innen als der Rest der Seite. */
+.collapse-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;padding:.85rem 0;background:none;border:none;text-align:left;font-size:.93rem;font-weight:500;color:var(--text);cursor:pointer;gap:.5rem;}
 .collapse-toggle:hover{background:rgba(255,255,255,.03);}
 .collapse-toggle span{display:flex;align-items:center;gap:.45rem;}
 .collapse-chevron{font-size:.95rem;color:var(--text-muted);transition:transform .22s ease;flex-shrink:0;}
 .collapse-chevron.open{transform:rotate(180deg);}
-.card-body{padding:0 1.1rem 1rem;}
+.card-body{padding:0 0 1rem;}
 .zc-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.85rem;padding-bottom:.5rem;border-bottom:0.5px solid var(--border);}
 .zc-h h2{font-weight:600;font-size:1.05rem;letter-spacing:-.01em;margin:0;color:var(--text);}
 .zc-week{font-style:italic;font-size:.78rem;color:var(--text-muted);}
@@ -1322,7 +1615,7 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 .zc-tot strong{font-weight:500;font-size:1rem;}
 .zc-empty{grid-column:1/-1;display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:.85rem;padding:2rem;}
 /* ── Sportart-Rose (Polar-Bar: Winkel=Zeit · Radius=Load) ─────────────────── */
-.sport-rose{color:var(--text);padding:1.1rem 1.25rem;margin:1rem 0;}.sr-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.85rem;padding-bottom:.5rem;border-bottom:0.5px solid var(--border);}
+.sport-rose{color:var(--text);}.sr-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.85rem;padding-bottom:.5rem;border-bottom:0.5px solid var(--border);}
 .sr-h h2{font-weight:600;font-size:1.05rem;letter-spacing:-.01em;margin:0;color:var(--text);}
 .sr-week{font-style:italic;font-size:.78rem;color:var(--text-muted);}
 .sr-body{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:center;}
@@ -1363,6 +1656,16 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
   <div class="hero-shade"></div>
   <pre id="hero-bolt" class="hero-bolt"></pre>
   <div class="hero-film-top"></div>
+</div>
+
+<!-- Pixel-Hero oben (Log-Seite): Lavendelfeld, die Figuren geben das Foto frei —
+     flacher Hund jagt geduckten Hasen, Laufrichtung rechts. Muss VOR #logo-stage im
+     DOM stehen: gleicher z-index (1), DOM-Reihenfolge entscheidet → das Logo-Canvas
+     malt über dem Band. Fläche + Höhe kommen vom Container (siehe #hero-pixel im CSS),
+     das SVG bleibt fix 600×150 und wird nur beschnitten, nie skaliert. -->
+<div id="hero-pixel" class="hero-pixel" aria-hidden="true">
+  <svg class="hp-dog" viewBox="0 0 330 150" width="264" height="120" shape-rendering="crispEdges"><defs><mask id="m-dog" maskUnits="userSpaceOnUse" x="0" y="0" width="330" height="150"><rect width="330" height="150" fill="#000"/><path fill="#fff" d="M205 65h40v5h-40ZM185 70h80v5h-80ZM115 75h170v5h-170ZM90 80h205v5h-205ZM80 85h220v5h-220ZM75 90h230v5h-230ZM265 95h50v5h-50ZM70 95h185v5h-185ZM280 100h40v5h-40ZM75 100h180v5h-180ZM65 100h5v10h-5ZM295 105h10v5h-10ZM140 105h145v5h-145ZM75 105h45v5h-45ZM155 110h135v5h-135ZM70 110h45v5h-45ZM60 110h5v5h-5ZM235 115h60v5h-60ZM170 115h50v5h-50ZM25 115h85v5h-85ZM0 115h15v5h-15ZM250 120h80v5h-80ZM235 120h5v5h-5ZM185 120h25v5h-25ZM0 120h105v5h-105ZM290 125h40v5h-40ZM50 125h50v5h-50ZM5 125h20v5h-20ZM75 130h20v5h-20ZM5 130h10v5h-10Z"/></mask></defs><g mask="url(#m-dog)"><image href="assets/hero-hintergrund.jpg" x="0" y="0" width="960" height="150" preserveAspectRatio="xMidYMid slice"/></g></svg>
+  <svg class="hp-hare" viewBox="0 0 164 150" width="123" height="112.5" shape-rendering="crispEdges"><defs><mask id="m-hare" maskUnits="userSpaceOnUse" x="0" y="0" width="164" height="150"><rect width="164" height="150" fill="#000"/><path fill="#fff" d="M116 39h4v4h-4ZM116 43h8v4h-8ZM116 47h12v4h-12ZM108 51h8v4h-8ZM120 51h8v4h-8ZM32 55h44v4h-44ZM108 55h24v4h-24ZM4 59h84v4h-84ZM108 59h28v4h-28ZM0 63h96v4h-96ZM112 63h24v4h-24ZM16 67h88v4h-88ZM116 67h8v4h-8ZM128 67h12v4h-12ZM16 71h92v4h-92ZM120 71h28v4h-28ZM16 75h96v4h-96ZM132 75h20v4h-20ZM16 79h140v8h-140ZM20 87h140v4h-140ZM24 91h136v4h-136ZM28 95h136v4h-136ZM36 99h28v4h-28ZM68 99h92v4h-92ZM48 103h20v4h-20ZM76 103h64v4h-64ZM144 103h12v4h-12ZM52 107h72v4h-72ZM52 111h52v4h-52ZM44 115h36v4h-36ZM40 119h16v4h-16ZM60 119h16v4h-16ZM40 123h12v4h-12ZM60 123h24v4h-24ZM68 127h24v4h-24ZM72 131h20v4h-20Z"/></mask></defs><g mask="url(#m-hare)"><image href="assets/hero-hintergrund.jpg" x="-796" y="0" width="960" height="150" preserveAspectRatio="xMidYMid slice"/></g></svg>
 </div>
 
 <!-- Dither-Schriftzug: fixiert über dem Content, nur auf der Log-Seite sichtbar
@@ -1479,6 +1782,12 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
         <label>Name der Einheit</label>
         <input type="text" id="t-title" placeholder="z.B. Oberkörper A, Leg Day">
       </div>
+      <!-- Paket G: Kraft-Typ. Trägt den Erhaltungsreiz-Floor "Kraft schwer" —
+           nur Maximalkraft erfüllt ihn (siehe isStrengthHeavy). -->
+      <div id="t-strength-wrap" class="field" style="margin-bottom:.75rem;display:none;">
+        <label>Kraft-Typ</label>
+        <div class="strength-chips" id="t-strength-chips"></div>
+      </div>
       <div class="grid" style="margin-bottom:.75rem;">
         <div class="field"><label>Ø-HF</label><input type="number" id="t-hravg" min="0" step="1" placeholder="142"></div>
         <div class="field"><label>Max-HF</label><input type="number" id="t-hrmax" min="0" step="1" placeholder="168"></div>
@@ -1583,6 +1892,16 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
       </div>
     </div>
   </div>
+  <!-- Pixel-Hero unten: Foto als Fläche, Figuren als Lavendelplatten — Hase jagt Hund,
+       Laufrichtung LINKS. Die Umkehr gegenüber dem oberen Band ist inhaltlich tragend,
+       nicht kosmetisch — nicht vereinheitlichen. Das Foto liegt als CSS-Background am
+       Container (.hero-pixel--bottom), damit es randlos über die Blockbreite läuft;
+       im SVG steht deshalb nur der Figuren-Pfad. -->
+  <div class="hero-pixel hero-pixel--bottom" aria-hidden="true">
+    <svg class="hp-dog" viewBox="0 -25 335 175" width="268" height="140" shape-rendering="crispEdges"><path fill="var(--hero-lavender)" d="M60 -25h5v5h-5ZM50 -25h5v5h-5ZM45 -20h20v5h-20ZM35 -15h70v5h-70ZM160 -10h10v5h-10ZM30 -10h120v5h-120ZM30 -5h175v5h-175ZM25 0h195v5h-195ZM20 5h215v5h-215ZM70 10h170v5h-170ZM20 10h35v5h-35ZM75 15h175v5h-175ZM30 15h10v5h-10ZM75 20h180v5h-180ZM75 25h185v5h-185ZM210 30h50v5h-50ZM75 30h115v5h-115ZM215 35h50v5h-50ZM75 35h100v5h-100ZM305 40h5v5h-5ZM220 40h50v5h-50ZM75 40h90v5h-90ZM270 45h5v5h-5ZM225 45h40v5h-40ZM55 45h105v5h-105ZM300 50h5v5h-5ZM275 50h10v5h-10ZM230 50h40v5h-40ZM50 50h100v5h-100ZM285 55h15v5h-15ZM235 55h40v5h-40ZM125 55h10v5h-10ZM100 55h10v5h-10ZM30 55h60v5h-60ZM240 60h45v5h-45ZM25 60h35v5h-35ZM245 65h60v5h-60ZM50 65h5v5h-5ZM10 65h25v5h-25ZM255 70h50v5h-50ZM50 70h10v5h-10ZM0 70h15v5h-15ZM295 75h15v5h-15ZM260 75h20v5h-20ZM50 75h5v5h-5ZM305 80h15v5h-15ZM270 80h20v5h-20ZM315 85h10v5h-10ZM275 85h15v5h-15ZM320 90h15v5h-15ZM280 90h10v5h-10ZM325 95h10v5h-10ZM285 95h10v5h-10ZM330 100h5v5h-5ZM290 100h10v5h-10ZM295 105h5v5h-5ZM300 110h5v5h-5ZM300 115h10v10h-10ZM305 125h5v10h-5Z"/></svg>
+    <svg class="hp-hare" viewBox="0 -25 204 175" width="153" height="131.25" shape-rendering="crispEdges"><path fill="var(--hero-lavender)" d="M52 43h8v4h-8ZM44 47h12v4h-12ZM64 51h8v4h-8ZM40 51h16v4h-16ZM144 55h4v4h-4ZM40 55h32v4h-32ZM108 59h44v4h-44ZM36 59h32v4h-32ZM96 63h56v4h-56ZM36 63h28v4h-28ZM88 67h60v4h-60ZM32 67h24v4h-24ZM168 71h36v4h-36ZM80 71h68v4h-68ZM20 71h24v4h-24ZM68 75h136v4h-136ZM16 75h28v4h-28ZM16 79h152v4h-152ZM168 83h12v4h-12ZM12 83h148v4h-148ZM120 87h72v4h-72ZM12 87h104v4h-104ZM180 91h20v4h-20ZM128 91h40v4h-40ZM16 91h92v4h-92ZM188 95h16v4h-16ZM136 95h20v4h-20ZM32 95h72v4h-72ZM196 99h4v4h-4ZM32 99h68v4h-68ZM36 103h60v4h-60ZM32 107h56v4h-56ZM28 111h52v4h-52ZM44 115h16v4h-16ZM12 115h28v4h-28ZM32 119h24v4h-24ZM0 119h12v4h-12ZM28 123h12v4h-12ZM4 123h4v4h-4ZM20 127h8v4h-8ZM16 131h12v4h-12Z"/></svg>
+  </div>
+
   <!-- Die eine laute Poster-Geste des Log-Screens (Design-Briefing): die jüngste/
        heutige Einheit als große Hero-Kachel — Dauer als Pixel-Zahl auf blauer,
        papercut-texturierter Fläche. Danach die kompakte Liste. -->
@@ -2097,15 +2416,20 @@ const BUCKET='sport-icons';
 // 2026-07-24-paket-a.sql — bis sie gelaufen ist, greifen die Spalten-Fallbacks
 // unten (Inserts/Updates laufen dann ohne die neuen Spalten durch).
 const A1_COLS=['status','planned_ref','block_id'];
+// Paket G: Kraft-Typ ('max'|'hyp'|'ausdauer'), Migration 2026-08-02-paket-g.sql.
+// Eigene (erste) Fallback-Stufe, damit eine fehlende G-Spalte nicht gleich das
+// Legacy-Minimalschema erzwingt und dabei workload/EF-Felder mit wegwirft.
+const G_SESSION_COLS=['strength_type'];
 const LEGACY_OPT_COLS=['srpe','workload','workload_method','avg_power_w','peak_power_w','normalized_power_w','intensity_factor','tss','planned','marker_color','ef','decoupling','analysis_window_sec'];
 function stripCols(obj,cols){const o={...obj};cols.forEach(c=>delete o[c]);return o;}
-// Fallback-Stufen (jeweils kumulativ): 1) A1-Spalten weg, 2) zusätzlich hr_series
-// weg (workload bleibt erhalten), 3) Legacy-Minimalschema.
+// Fallback-Stufen (jeweils kumulativ): 1) Paket-G-Spalten weg, 2) zusätzlich
+// A1-Spalten, 3) zusätzlich hr_series (workload bleibt erhalten), 4) Legacy-Minimalschema.
 function dbPayloadVariants(s,forInsert){
-  const v1=stripCols(s,A1_COLS);
+  const v0=stripCols(s,G_SESSION_COLS);
+  const v1=stripCols(v0,A1_COLS);
   const v2=stripCols(v1,['hr_series']);
   const v3=stripCols(v2,LEGACY_OPT_COLS);
-  return[s,v1,v2,forInsert?{...v3,avg_pace:null}:v3];
+  return[s,v0,v1,v2,forInsert?{...v3,avg_pace:null}:v3];
 }
 // Führt op(payload) mit progressiv reduzierten Payloads aus, bis kein
 // "column ... does not exist"-Fehler mehr auftritt. Andere Fehler (Constraints,
@@ -2126,6 +2450,26 @@ async function dbTryProgressive(op,s,forInsert){
     }
   }
   throw lastErr||new Error('Speichern fehlgeschlagen');
+}
+// Paket G: dieselbe Mechanik für die blocks-Tabelle, aber nur zweistufig — es gibt
+// genau eine neue Spaltengeneration (Migration 2026-08-02-paket-g.sql). Ohne
+// gelaufene Migration speichert der Block weiter Titel/Zeitraum/Ziele, verliert
+// aber die Vorlagenbindung; das ist sichtbar (keine Bänder/Floors im Sheet) und
+// besser als ein harter Fehler beim Speichern.
+const G_BLOCK_COLS=['template_id','template_version','dose_bands','floors','modified','modified_fields','exit_booking'];
+async function blockTryProgressive(op,payload){
+  for(const p of[payload,stripCols(payload,G_BLOCK_COLS)]){
+    if(!Object.keys(p).length)break;
+    try{
+      const{data,error}=await op(p);
+      if(error)throw error;
+      return data;
+    }catch(e){
+      if(e.message&&e.message.includes('column'))continue;
+      throw e;
+    }
+  }
+  throw new Error('Block speichern fehlgeschlagen: Spalten fehlen (Migration docs/migrations/2026-08-02-paket-g.sql ausführen).');
 }
 // status konsistent aus dem bestehenden planned-Boolean ableiten, solange
 // Call-Sites nur planned setzen — beide Repräsentationen bleiben synchron.
@@ -2282,6 +2626,8 @@ const DB={
   // ── Paket F1: Blöcke ────────────────────────────────────────────────────────
   // Zeitspannen mit Intention. Tabelle blocks (Migration 2026-07-24-paket-f.sql).
   // Fehlt die Tabelle noch → leeres Array, App läuft weiter (wie getTemplates).
+  // Paket-G-Spalten (Vorlagenbindung) werden bei fehlender Migration gestrippt,
+  // siehe blockTryProgressive.
   async getBlocks(){
     const{data,error}=await sb.from('blocks').select('*').order('starts_on',{ascending:true});
     if(error){
@@ -2291,12 +2637,10 @@ const DB={
     return data||[];
   },
   async addBlock(b){
-    const{data,error}=await sb.from('blocks').insert([{...b,user_id:currentUser.id}]).select().single();
-    if(error)throw error;return data;
+    return blockTryProgressive(p=>sb.from('blocks').insert([{...p,user_id:currentUser.id}]).select().single(),b);
   },
   async updateBlock(id,patch){
-    const{data,error}=await sb.from('blocks').update(patch).eq('id',id).select().single();
-    if(error)throw error;return data;
+    return blockTryProgressive(p=>sb.from('blocks').update(p).eq('id',id).select().single(),patch);
   },
   async deleteBlock(id){
     const{error}=await sb.from('blocks').delete().eq('id',id);
@@ -2675,6 +3019,26 @@ function inferZone(hrAvg,sport){
   }
   return null;
 }
+// Klassifiziert einen HF-Zeitverlauf gegen die vom Nutzer konfigurierten Zonengrenzen
+// (bpm, pro Sportart über zonesFor()) — dieselbe Matching-Regel wie inferZone(), aber über
+// den vollen Verlauf statt nur Ø-HF. Rückgabe: Minuten-Array [Z1..Z5], oder null wenn für
+// diese Sportart nicht alle 5 Zonen mit hrMin+hrMax konfiguriert sind (dann Edwards-Fallback
+// in zoneProfileMin()). Bewusst getrennt von calcEdwardsTRIMP()/berechneWorkload(): die
+// Trainingslast-Zahl (TRIMP) bleibt bei den akademischen %HFmax-Bändern, nur die Anzeige der
+// Zonenverteilung soll die echten, konfigurierten Zonen widerspiegeln.
+function zoneMinFromCfgBounds(hrSeries,sport){
+  if(!hrSeries||hrSeries.length===0)return null;
+  const list=zonesFor(sport);
+  const ranges=['Z1','Z2','Z3','Z4','Z5'].map(k=>list.find(z=>z.key===k));
+  if(ranges.some(z=>!z||!z.hrMin||!z.hrMax))return null;
+  const zoneMin=[0,0,0,0,0];
+  hrSeries.forEach(p=>{
+    if(!p.hr||p.hr<=0||!p.sec||p.sec<=0)return;
+    const idx=ranges.findIndex(z=>p.hr>=z.hrMin&&p.hr<=z.hrMax);
+    if(idx>=0)zoneMin[idx]+=p.sec/60;
+  });
+  return zoneMin.map(m=>Math.round(m*10)/10);
+}
 
 // ── WORKLOAD ──────────────────────────────────────────────────────────────────
 // Power / TSS
@@ -2758,12 +3122,18 @@ function berechneWorkload(session){
   return{value:null,method:'none'};
 }
 
-// Liefert das Zonen-Intensitätsprofil einer Einheit aus dem HF-Zeitverlauf (Edwards-zoneMin).
-// Rückgabe: Array [Z1..Z5] mit Minuten pro Zone, oder null wenn kein HF-Verlauf vorhanden.
+// Liefert das Zonen-Intensitätsprofil einer Einheit aus dem HF-Zeitverlauf.
+// Priorität 1: gegen die vom Nutzer konfigurierten bpm-Zonengrenzen (zoneMinFromCfgBounds) —
+// stimmt mit der Zone-Pille (inferZone/zoneCfg) überein. Priorität 2 (Fallback, wenn für die
+// Sportart keine vollständigen Zonengrenzen konfiguriert sind): Edwards-%HFmax-Bänder
+// (calcEdwardsTRIMP), wie zuvor. Rückgabe: Array [Z1..Z5] mit Minuten pro Zone, oder null
+// wenn kein HF-Verlauf vorhanden.
 function zoneProfileMin(session){
   let series=session.hr_series;
   if(typeof series==='string'){try{series=JSON.parse(series);}catch(e){series=null;}}
   if(!series||!Array.isArray(series)||series.length===0)return null;
+  const cfgProf=zoneMinFromCfgBounds(series,session.sport);
+  if(cfgProf)return cfgProf;
   const ed=calcEdwardsTRIMP(series,cfg.hrMax||192);
   return ed?ed.zoneMin:null;
 }
@@ -4072,11 +4442,13 @@ async function ensureLogoFx(){
       // über eine KÜRZERE Scroll-Distanz (effectVh 0.35) — es verpixelt früh/schnell,
       // während es aus dem Bild läuft — und nur SANFT (End-Grain 2 statt 3, wenig blur).
       // ink = Poster-Ink der Grammatik; noiseFloor kappt schwache Alpha-Reste.
+      // Farben kommen aus :root (--signal-lav / --logo-shadow), nicht aus Ad-hoc-Hex:
+      // das Logo bleibt so automatisch auf demselben Lavendel wie Buttons/Hero (§8).
       return new DitherLogo({
         canvas,
         logoSrc:'assets/training-log-logo.png',
         blueNoiseSrc:'assets/bluenoise64.png',
-        ink:'#A6ADFF',
+        ink:cssVar('--signal-lav','#A6ADFF'),
         effectVh:0.35,
         hold:0,
         transition:0.04,
@@ -4085,7 +4457,7 @@ async function ensureLogoFx(){
         noiseFloor:0.15,
         // Schlagschatten in derselben Dither-Grammatik: leichtes Hellgrün, geringere
         // Deckkraft, versetzt hinter dem Logo — scheint durch die Pixel-Lücken.
-        shadow:{color:'#5CDF76',offsetX:2,offsetY:3,opacity:0.7},
+        shadow:{color:cssVar('--logo-shadow','#5CDF76'),offsetX:2,offsetY:3,opacity:0.7},
       }).init();
     });
   }
@@ -4267,11 +4639,13 @@ function playHeroBoltIntro(){
 function showHeroVisual(){
   initHeroVisual();
   document.getElementById('hero-visual')?.classList.add('visible');
+  document.getElementById('hero-pixel')?.classList.add('visible');
   updateHero();
   playHeroBoltIntro();
 }
 function hideHeroVisual(){
   document.getElementById('hero-visual')?.classList.remove('visible');
+  document.getElementById('hero-pixel')?.classList.remove('visible');
 }
 
 // ── LAZY-REVEAL (§2) ──────────────────────────────────────────────────────────
@@ -4846,8 +5220,21 @@ function updateNoteLabel(){
   // Zone: bei Freitext auf '-', bei Capacity bleibt sie wählbar (HF-Zuordnung gewünscht)
   if(isFrei&&!linkable)document.getElementById('t-zone').value='-';
   document.getElementById('t-note').classList.toggle('note-expanded',linkable);
+  // Paket G: Kraft-Typ nur bei Sport = Kraft. Beim Sportwechsel weg von Kraft wird die
+  // Auswahl zurückgesetzt — sonst würde ein Radfahrt-Datensatz mit strength_type='max'
+  // gespeichert und den "Kraft schwer"-Floor still verfälschen.
+  const strengthWrap=document.getElementById('t-strength-wrap');
+  if(strengthWrap){
+    const show=sport==='Kraft';
+    strengthWrap.style.display=show?'':'none';
+    if(!show)_qnStrengthType=null;
+    document.getElementById('t-strength-chips').innerHTML=strengthChipsHTML(_qnStrengthType);
+  }
   renderNoteHistory(linkable?sport:null);
 }
+// Auswahl der Schnellerfassung. Eigene Variable statt DOM-Lesen, weil updateNoteLabel
+// die Chip-Reihe bei jedem Sportwechsel neu baut.
+let _qnStrengthType=null;
 // Baut die HTML-Liste der letzten Einträge derselben Sportart zum Vergleichen.
 // excludeId: aktuelle Session ausschließen (relevant beim Nachtragen in der Detailansicht).
 // Jeder Eintrag ist standardmäßig eingeklappt (nur Datum + Name sichtbar) — Klick fährt aus.
@@ -4874,6 +5261,19 @@ function renderNoteHistory(sportKey){
   box.innerHTML=buildNoteHistoryHTML(sportKey,null);
 }
 document.getElementById('t-sport').addEventListener('change',updateNoteLabel);
+// Paket G: EIN delegierter Handler für alle Kraft-Typ-Chip-Reihen (Schnellerfassung,
+// Detail-Inline-Editor, Session-Modal) — die drei Formulare bauen ihre Chips zu
+// unterschiedlichen Zeitpunkten per innerHTML, eine Delegation am Dokument trifft sie
+// alle. Nochmaliges Tippen wählt ab (kein Typ), damit ein Fehlgriff korrigierbar bleibt.
+document.addEventListener('click',e=>{
+  const btn=e.target.closest('.strength-chip');
+  if(!btn)return;
+  const box=btn.closest('.strength-chips');
+  if(!box)return;
+  const next=btn.classList.contains('active')?null:btn.dataset.strength;
+  box.querySelectorAll('.strength-chip').forEach(b=>b.classList.toggle('active',b.dataset.strength===next));
+  if(box.id==='t-strength-chips')_qnStrengthType=next;
+});
 
 // HF-Zone Auto-Inferenz beim Tippen der Ø-HF
 document.getElementById('t-hravg').addEventListener('input',()=>{
@@ -5141,6 +5541,7 @@ async function saveSession(){
     avg_power_w:parseInt(document.getElementById('t-avgpower').value)||null,
     peak_power_w:parseInt(document.getElementById('t-peakpower').value)||null,
     normalized_power_w:null,
+    strength_type:document.getElementById('t-sport').value==='Kraft'?_qnStrengthType:null,
     user_id:currentUser.id,srpe:null,workload:null,workload_method:null};
   const wl=berechneWorkload(session);
   if(wl.value!=null){session.workload=wl.value;session.workload_method=wl.method;if(wl.method==='tss'){session.tss=wl.tss;session.intensity_factor=wl.intensityFactor;}}
@@ -5149,6 +5550,7 @@ async function saveSession(){
   try{
     const saved=await DB.addSession(session);sessions.unshift(saved);markSessionsDirty();setSyncState('ok');
     ['t-note','t-hravg','t-hrmax','t-distance','t-elevation','t-title','t-avgpower','t-peakpower'].forEach(id=>document.getElementById(id).value='');
+    _qnStrengthType=null;updateNoteLabel();   // Kraft-Typ mit leeren (Paket G)
     statusEl.textContent='Gespeichert <i class="ti ti-check"></i>';setTimeout(()=>{statusEl.textContent='';},2000);renderLog();
     // sRPE-Prompt wenn kein Workload automatisch berechnet
     if(saved.workload==null)openSrpeModal(saved);
@@ -5200,7 +5602,7 @@ function buildDetailHTML(s){
   const zp=zoneProfileMin(s);
   if(zp&&zp.some(m=>m>0)){
     const totalZ=zp.reduce((a,b)=>a+b,0);
-    const zColors=['#b8d4e8','#5b9bd5','#f0c674','#e8975c','#c4544a'];
+    const zColors=zp.map((m,i)=>zoneCfg('Z'+(i+1),s.sport).color);
     const zLabels=['Z1','Z2','Z3','Z4','Z5'];
     const segs=zp.map((m,i)=>{const pct=totalZ>0?(m/totalZ*100):0;return pct>0?`<div style="width:${pct}%;background:${zColors[i]};" title="${zLabels[i]}: ${Math.round(m)} min"></div>`:'';}).join('');
     const legend=zp.map((m,i)=>m>0?`<span style="color:${zColors[i]};font-weight:600;">${zLabels[i]} ${Math.round(m)}m</span>`:'').filter(Boolean).join('  ');
@@ -5269,6 +5671,9 @@ function buildDetailHTML(s){
     <div class="detail-field"><label>Max Watt</label><input class="ed-peakpower" type="number" value="${s.peak_power_w||''}" data-id="${s.id}"></div>
     <div class="detail-field"><label>Normalized Power</label><input class="ed-normpower" type="number" value="${s.normalized_power_w||''}" data-id="${s.id}"></div>
   </div>
+  ${isKraft?`<div class="detail-field" style="margin-bottom:.65rem;"><label>Kraft-Typ</label>
+    <div class="strength-chips ed-strength" data-id="${s.id}">${strengthChipsHTML(s.strength_type)}</div>
+  </div>`:''}
   <div class="detail-field" style="margin-bottom:.65rem;"><label>${isFrei?'&#xDC;bungen':'Notiz'}</label>
     <textarea class="ed-note note-paper${isKraft?' note-expanded':''}" data-id="${s.id}" rows="${isKraft?6:2}">${esc(s.note||'')}</textarea>
     ${noteHistoryHTML}
@@ -5302,6 +5707,12 @@ async function handleSaveEdit(id){
     peak_power_w:parseInt(wrap.querySelector('.ed-peakpower')?.value)||null,
     normalized_power_w:parseInt(wrap.querySelector('.ed-normpower')?.value)||null};
   const titleEl=wrap.querySelector('.ed-title');if(titleEl)updates.title=titleEl.value||null;
+  // Paket G: Kraft-Typ. Die Chips gibt es nur bei Sport = Kraft; wechselt der Nutzer
+  // hier die Sportart weg von Kraft, muss der Typ mit — sonst bliebe ein 'max' an einer
+  // Radfahrt hängen und würde den "Kraft schwer"-Floor still erfüllen.
+  const strengthEl=wrap.querySelector('.ed-strength');
+  if(updates.sport!=='Kraft')updates.strength_type=null;
+  else if(strengthEl)updates.strength_type=strengthEl.querySelector('.strength-chip.active')?.dataset.strength||null;
   // Workload neu berechnen
   const merged={...s,...updates};
   const wl=berechneWorkload(merged);
@@ -5641,7 +6052,9 @@ function renderLogBudgetSlot(){
   else renderLogBudgetSlotDefault(el);
 }
 function hasAnyBlockTargets(b){
-  return!!(b.weekly_target_min||(b.sport_targets&&Object.keys(b.sport_targets).length)||(b.zone_targets&&Object.keys(b.zone_targets).length));
+  // Paket G: floors zählen mit — ein Vorlagenblock ohne Verteilungsziel (G5 führt
+  // zone_targets bewusst leer) hat trotzdem Erhaltungsreize zu zeigen.
+  return!!(b.weekly_target_min||(b.sport_targets&&Object.keys(b.sport_targets).length)||(b.zone_targets&&Object.keys(b.zone_targets).length)||(Array.isArray(b.floors)&&b.floors.length));
 }
 // Globales Budget-Ziel — gleiche Form wie die Block-Ziele, damit Renderer und
 // Editor geteilt werden. Ein leeres (nicht: fehlendes) sport_targets/zone_targets
@@ -5703,6 +6116,449 @@ function computeBlockBudget(block){
   const a=computeBudgetActuals(new Date(block.starts_on+'T00:00:00'),today);
   return{...a,weeksElapsed:a.weeks};
 }
+
+// ── PAKET G: Makrobilanz, Erhaltungsreize, Eintritt/Austritt ─────────────────
+// Leitgedanke der Spec: Polarisierung ist eine MAKRO-Größe. Ein einzelner Block darf
+// in sich das Gegenteil von 80/20 sein — bewertet wird das rollende 84-Tage-Fenster.
+// Blöcke setzen Reizspitzen auf ein LIT-Fundament, sie ersetzen es nicht.
+//
+// Die Makrobilanz ist bewusst ein dünner Aufsatz auf computeBudgetActuals und führt
+// KEINEN zweiten Rechenweg ein: Session-Goal-Zonenlogik, isSportZoneBased-Filter und
+// der Ausschluss von Ghosts/Sondereinträgen kommen von dort. Dass Kraft nicht in die
+// TID einfließt, folgt damit automatisch aus isSportZoneBased.
+const MACRO_WINDOW_DAYS=84;
+const LIT_DEBT_MAX=8;              // Rückstandskonto geklemmt (Spec §6.2)
+const LIT_DEBT_WEEK_THRESHOLD=0.80;// LIT-Anteil, ab dem eine Woche Rückstand abbaut
+function addDaysIso(iso,n){const d=new Date(iso+'T00:00:00');d.setDate(d.getDate()+n);return toISODate(d);}
+function daysBetweenIso(a,b){return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000);}
+
+// Tage seit der ersten absolvierten Einheit. Gleiche Ableitung wie in
+// computeAcwrRollingSeries — die Makrobilanz und der ACWR sollen bei dünner Historie
+// nicht unterschiedlich urteilen.
+function historyDaysSoFar(endIso){
+  let firstIso=null;
+  sessions.forEach(s=>{
+    if(isPlanned(s)||isSpecialEntry(s))return;
+    if(!firstIso||s.date<firstIso)firstIso=s.date;
+  });
+  return firstIso?daysBetweenIso(firstIso,endIso)+1:0;
+}
+
+// Laufdistanz im Fenster. missingDist = Lauf-Einheiten OHNE distance_km: fehlt die
+// Distanz, weist die App den Floor als "nicht prüfbar" aus statt als verletzt —
+// sonst warnt sie gegen fehlende Daten statt gegen fehlendes Training (Spec §4.2).
+function computeRunKm(endD,days){
+  const end=new Date(endD);end.setHours(0,0,0,0);
+  const start=new Date(end);start.setDate(start.getDate()-(days-1));
+  const loIso=toISODate(start),hiIso=toISODate(end);
+  let km=0,count=0,missingDist=0;
+  sessions.forEach(s=>{
+    if(s.sport!=='Lauf'||isPlanned(s)||isSpecialEntry(s))return;
+    if(s.date<loIso||s.date>hiIso)return;
+    count++;
+    if(s.distance_km>0)km+=s.distance_km;else missingDist++;
+  });
+  return{km:Math.round(km*10)/10,count,missingDist};
+}
+function computeRunKm7d(endD){return computeRunKm(endD||new Date(),7).km;}
+
+// Erfüllt eine Einheit den Erhaltungsreiz "Kraft schwer"? Nur Maximalkraft — der Floor
+// schützt den neuromuskulären Reiz (Spec §3.2 G2: die maximale Laufgeschwindigkeit sank
+// in den ersten vier Blockwochen). Hypertrophie und Kraftausdauer sind ein anderer Reiz,
+// metabolische Belastung wird als eigene Sportart 'Capacity' geführt.
+function isStrengthHeavy(s){return s.sport==='Kraft'&&s.strength_type==='max';}
+// Kraft-Typen (Migration 2026-08-02-paket-g.sql). Bewusst genau drei: metabolische
+// Belastung führt die App als eigene Sportart 'Capacity' und nicht als Kraft-Typ.
+const STRENGTH_TYPES=[
+  {key:'max',     label:'Maximalkraft', hint:'hohe Last, niedrige Wiederholungszahl — erfüllt den Erhaltungsreiz'},
+  {key:'hyp',     label:'Hypertrophie', hint:'Muskelaufbau, mittlere Wiederholungszahl'},
+  {key:'ausdauer',label:'Kraftausdauer',hint:'hohe Wiederholungszahl, kurze Pausen'}
+];
+function strengthTypeLabel(k){const t=STRENGTH_TYPES.find(x=>x.key===k);return t?t.label:null;}
+// Chip-Reihe. Auswahl ist ab-wählbar (nochmal tippen = kein Typ), damit ein versehentlich
+// gesetzter Wert nicht dauerhaft klebt.
+function strengthChipsHTML(cur,idPrefix){
+  return STRENGTH_TYPES.map(t=>
+    `<button type="button" class="strength-chip${cur===t.key?' active':''}" data-strength="${t.key}"${idPrefix?` data-scope="${esc(idPrefix)}"`:''} title="${esc(t.hint)}">${esc(t.label)}</button>`).join('');
+}
+// Verdrahtet eine Chip-Reihe. Gibt einen Getter auf den aktuellen Wert zurück.
+function bindStrengthChips(container,cur){
+  let value=cur||null;
+  if(!container)return()=>value;
+  container.addEventListener('click',e=>{
+    const btn=e.target.closest('.strength-chip');
+    if(!btn||!container.contains(btn))return;
+    value=value===btn.dataset.strength?null:btn.dataset.strength;
+    container.querySelectorAll('.strength-chip').forEach(b=>b.classList.toggle('active',b.dataset.strength===value));
+  });
+  return()=>value;
+}
+
+// Zwei Ebenen (Spec §4.3): Tage seit dem letzten abgeschlossenen BLOCK dieser Intention
+// (speist die Eintrittsbedingungen) und Tage seit der letzten schweren Krafteinheit
+// (speist den Floor). Infinity = noch nie — damit erfüllen ">= n Tage"-Bedingungen.
+function computeDaysSince(endD){
+  const end=endD?new Date(endD):new Date();end.setHours(0,0,0,0);
+  const todayIso=toISODate(end);
+  const out={strengthHeavy:Infinity};
+  BLOCK_INTENTIONS.forEach(i=>{out[i]=Infinity});
+  blocks.forEach(b=>{
+    if(b.ends_on>=todayIso)return;   // noch laufend oder in der Zukunft
+    const d=daysBetweenIso(b.ends_on,todayIso);
+    if(out[b.intention]==null||d<out[b.intention])out[b.intention]=d;
+  });
+  sessions.forEach(s=>{
+    if(!isStrengthHeavy(s)||isPlanned(s)||isSpecialEntry(s))return;
+    if(s.date>todayIso)return;
+    const d=daysBetweenIso(s.date,todayIso);
+    if(d<out.strengthHeavy)out.strengthHeavy=d;
+  });
+  return out;
+}
+
+// Rückstandskonto (Spec §6.2). Jeder abgeschlossene Vorlagenblock bucht beim Austritt
+// litDebtWeeks; LIT-lastige Wochen bauen den Rückstand ab. Die LIT-Vorlage bucht einen
+// NEGATIVEN Wert und schreibt damit Guthaben. Die Abbaurate ist ein Vorschlag, keine
+// belegte Größe (Spec §10.2).
+function countWeeksAboveLit(threshold,sinceIso){
+  if(!sinceIso)return 0;
+  const today=new Date();today.setHours(0,0,0,0);
+  let n=0;
+  // Rückwärts über abgeschlossene ISO-Wochen, gedeckelt auf ein halbes Jahr — mehr
+  // kann das auf 0..8 geklemmte Konto ohnehin nicht bewegen.
+  for(let i=1;i<=26;i++){
+    const ws=startOfWeek(today);ws.setDate(ws.getDate()-7*i);
+    const we=new Date(ws);we.setDate(we.getDate()+6);
+    if(toISODate(we)<sinceIso)break;
+    const a=computeBudgetActuals(ws,we);
+    if(a.zoneTotalMin>0&&a.zoneMin.LIT/a.zoneTotalMin>=threshold)n++;
+  }
+  return n;
+}
+function computeLitDebt(){
+  let debt=0,earliest=null;
+  for(const b of blocks){
+    const eb=b.exit_booking;
+    if(!eb||eb.litDebtWeeks==null)continue;
+    debt+=eb.litDebtWeeks;
+    if(eb.completedAt&&(!earliest||eb.completedAt<earliest))earliest=eb.completedAt;
+  }
+  debt-=countWeeksAboveLit(LIT_DEBT_WEEK_THRESHOLD,earliest);
+  return Math.max(0,Math.min(LIT_DEBT_MAX,debt));
+}
+
+// Die Makrobilanz selbst — ein Funktionsaufruf über das 84-Tage-Fenster (Spec §1.2).
+// Bei weniger als 28 Tagen Historie ist die Basis strukturell unvollständig: dann
+// insufficient=true, die Eintrittsprüfung entfällt vollständig (Spec §6.1).
+function computeMacroBalance(today){
+  const end=today?new Date(today):new Date();end.setHours(0,0,0,0);
+  const start=new Date(end);start.setDate(start.getDate()-(MACRO_WINDOW_DAYS-1));
+  const a=computeBudgetActuals(start,end);
+  const zt=a.zoneTotalMin||0;
+  const historyDays=historyDaysSoFar(toISODate(end));
+  let acwr=null;
+  try{acwr=computeAcwrView(end).day.acwr;}catch(e){acwr=null;}
+  return{
+    tid:{LIT:zt>0?a.zoneMin.LIT/zt:null,MIT:zt>0?a.zoneMin.MIT/zt:null,HIT:zt>0?a.zoneMin.HIT/zt:null},
+    zoneTotalMin:a.zoneTotalMin,
+    weeklyMin:a.totalMin,
+    sportMin:a.sportMin,
+    runKm:computeRunKm7d(end),
+    daysSince:computeDaysSince(end),
+    litDebt:computeLitDebt(),
+    acwr,
+    historyDays,
+    insufficient:historyDays<CHRONIC_MIN_HISTORY_DAYS
+  };
+}
+
+// ── Pfad-Auflösung ───────────────────────────────────────────────────────────
+// Dosisband-Keys adressieren die bestehenden Zielfelder (Spec §3.1). Der Resolver
+// löst Sport-Keys zusätzlich case-insensitiv auf, damit ein von Hand getippter Pfad
+// ('sport.lauf.count' statt 'sport.Lauf.count') nicht still ins Leere läuft.
+function resolveSportKey(k){
+  const hit=(cfg.sports||[]).find(s=>s.key===k)||(cfg.sports||[]).find(s=>s.key.toLowerCase()===String(k).toLowerCase());
+  return hit?hit.key:k;
+}
+// Liest einen Dosisband-Pfad aus einem Block/Ziel-Objekt. null = Pfad zielt auf kein
+// Zielfeld (reines Orientierungsband wie run_km).
+function readTargetPath(target,path){
+  if(path==='weekly_target_min')return target.weekly_target_min!=null?target.weekly_target_min:null;
+  const p=path.split('.');
+  if(p.length!==3)return null;
+  if(p[0]==='zone'){const t=(target.zone_targets||{})[p[1]];return t&&t[p[2]]!=null?t[p[2]]:null;}
+  if(p[0]==='sport'){const t=(target.sport_targets||{})[resolveSportKey(p[1])];return t&&t[p[2]]!=null?t[p[2]]:null;}
+  return null;
+}
+// Gegenstück für den Editor: Pfad → {attr,key,field} der zugehörigen Ziel-Eingabezeile.
+// null, wenn der Pfad kein Eingabefeld hat.
+function targetPathInput(path){
+  if(path==='weekly_target_min')return{attr:null,key:null,field:'weekly'};
+  const p=path.split('.');
+  if(p.length!==3)return null;
+  if(p[0]==='zone')return{attr:'zone',key:p[1],field:p[2]};
+  if(p[0]==='sport')return{attr:'sport',key:resolveSportKey(p[1]),field:p[2]};
+  return null;
+}
+function resolveMacroPath(macro,path){
+  return String(path).split('.').reduce((o,k)=>(o==null?null:o[k]),macro);
+}
+function compareOp(actual,op,value){
+  if(actual==null||!Number.isFinite(actual))return null;   // nicht prüfbar
+  return op==='<='?actual<=value:op==='<'?actual<value:op==='>'?actual>value:actual>=value;
+}
+
+// ── Erhaltungsreize (Floors) ─────────────────────────────────────────────────
+// Fensterlänge folgt der Unit (*_per_7d / *_per_10d). Läuft der Block noch und ist
+// jünger als das Fenster, wird der Fensterstart auf starts_on geklemmt (Spec §4.1);
+// solange gilt ein nicht erreichter Floor als "läuft noch", nicht als verletzt —
+// sonst wäre am ersten Blocktag jeder Wochen-Floor rot.
+const FLOOR_LABELS={run_km:'Lauf-Umfang',strength_heavy:'Kraft schwer',
+  'zone.LIT.count':'LIT-Einheiten','zone.MIT.count':'MIT-Einheiten','zone.HIT.count':'HIT-Einheiten',
+  'zone.LIT.min':'LIT-Minuten','zone.MIT.min':'MIT-Minuten','zone.HIT.min':'HIT-Minuten'};
+function floorLabel(key){
+  if(FLOOR_LABELS[key])return FLOOR_LABELS[key];
+  const p=String(key).split('.');
+  if(p[0]==='sport'&&p.length===3)return(sportCfg(resolveSportKey(p[1])).label||p[1])+(p[2]==='min'?'-Minuten':'-Einheiten');
+  return key;
+}
+function floorUnitDays(unit){
+  const m=/_per_(\d+)d$/.exec(unit||'');
+  return m?parseInt(m[1],10):7;
+}
+function floorUnitSuffix(unit){
+  if(/^km_/.test(unit||''))return'km';
+  if(/^min_/.test(unit||''))return'min';
+  return'';
+}
+function evaluateFloors(floors,block){
+  if(!Array.isArray(floors)||!floors.length)return[];
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayIso=toISODate(today);
+  // Bezugstag ist das Blockende, sobald der Block vorbei ist — sonst heute.
+  const endIso=block&&block.ends_on&&block.ends_on<todayIso?block.ends_on:todayIso;
+  const end=new Date(endIso+'T00:00:00');
+  return floors.map(f=>{
+    const nominalDays=floorUnitDays(f.unit);
+    let startIso=addDaysIso(endIso,-(nominalDays-1));
+    let clamped=false;
+    if(block&&block.starts_on&&block.starts_on>startIso){startIso=block.starts_on;clamped=true;}
+    const start=new Date(startIso+'T00:00:00');
+    const windowDays=daysBetweenIso(startIso,endIso)+1;
+    let actual=null,unknown=false,unknownNote='';
+    if(f.key==='run_km'){
+      const r=computeRunKm(end,windowDays);
+      actual=r.km;
+      if(r.missingDist>0){unknown=true;unknownNote=r.missingDist+' ohne Distanz';}
+    }else if(f.key==='strength_heavy'){
+      let n=0,unspecified=0;
+      sessions.forEach(s=>{
+        if(s.sport!=='Kraft'||isPlanned(s)||isSpecialEntry(s))return;
+        if(s.date<startIso||s.date>endIso)return;
+        if(isStrengthHeavy(s))n++;else if(!s.strength_type)unspecified++;
+      });
+      actual=n;
+      if(unspecified>0){unknown=true;unknownNote=unspecified+' ohne Kraft-Typ';}
+    }else{
+      // Zonen-/Sport-Floors: computeBudgetActuals liefert Wochenäquivalente — mit
+      // weeks zurückmultipliziert ergibt das die Rohwerte des Fensters, ohne die
+      // Zonenlogik ein zweites Mal zu implementieren.
+      const a=computeBudgetActuals(start,end);
+      const p=f.key.split('.');
+      if(p[0]==='zone'&&p.length===3){
+        actual=(p[2]==='min'?a.zoneMin[p[1]]:a.zoneCount[p[1]])*a.weeks;
+      }else if(p[0]==='sport'&&p.length===3){
+        const sk=resolveSportKey(p[1]);
+        actual=(p[2]==='min'?a.sportMin[sk]:a.sportCount[sk])*a.weeks;
+        actual=actual||0;
+      }
+      if(actual!=null)actual=Math.round(actual*10)/10;
+    }
+    const met=compareOp(actual,f.op||'>=',f.value);
+    // Verkürztes Fenster: ein noch nicht erreichter Floor ist "läuft noch".
+    const pending=clamped&&windowDays<nominalDays&&met===false;
+    return{key:f.key,label:floorLabel(f.key),op:f.op||'>=',required:f.value,
+      unit:f.unit,unitSuffix:floorUnitSuffix(f.unit),nominalDays,windowDays,clamped,
+      actual,met,pending,unknown:unknown&&met===false,unknownNote};
+  });
+}
+
+// ── Austritt: exit_booking automatisch buchen (Spec §6.2) ────────────────────
+// Wird beim ersten Render nach ends_on geschrieben. Läuft asynchron und löst KEIN
+// Re-Render aus — der nächste reguläre Render zeigt das Ergebnis. Ohne das In-Flight-Set
+// würde ein zweiter Render während des Schreibvorgangs dieselbe Buchung doppelt anlegen.
+const _blockSettleInFlight=new Set();
+// Erreichte gegen geplante Dosis, in Prozent. Referenz ist der Wert, der tatsächlich im
+// Block stand (nicht der opt-Wert der Vorlage) — gemessen wird die Umsetzung des Plans,
+// nicht die Treue zur Bibliothek.
+function blockCompliance(block){
+  const parts=[];
+  const a=computeBudgetActuals(new Date(block.starts_on+'T00:00:00'),new Date(block.ends_on+'T00:00:00'));
+  if(block.weekly_target_min>0)parts.push(a.totalMin/block.weekly_target_min);
+  ZONE_KEYS.forEach(zk=>{
+    const t=(block.zone_targets||{})[zk];
+    if(t&&t.count>0)parts.push((a.zoneCount[zk]||0)/t.count);
+  });
+  Object.entries(block.sport_targets||{}).forEach(([k,t])=>{
+    if(t&&t.count>0)parts.push((a.sportCount[k]||0)/t.count);
+  });
+  if(!parts.length)return null;
+  return Math.round(parts.reduce((s,v)=>s+Math.min(1.5,v),0)/parts.length*100);
+}
+function settleFinishedBlocks(){
+  const todayIso=toISODate(new Date());
+  blocks.forEach(b=>{
+    if(!b.template_id||b.exit_booking&&b.exit_booking.completedAt)return;
+    if(b.ends_on>=todayIso)return;
+    const tpl=blockTemplateOf(b);
+    if(!tpl||!tpl.exit)return;
+    const id=String(b.id);
+    if(_blockSettleInFlight.has(id))return;
+    _blockSettleInFlight.add(id);
+    const booking={
+      completedAt:todayIso,
+      complianceP:blockCompliance(b),
+      // Rate je 7 Tage × Blockdauer — die LIT-Vorlage bucht negativ (Guthaben).
+      litDebtWeeks:Math.round(tpl.exit.litDebtWeeks*(blockDays(b)/7)*10)/10,
+      lockUntil:addDaysIso(b.ends_on,tpl.exit.lockDays||0),
+      // Beim Anlegen dokumentierte Override-Bedingungen erhalten.
+      entryOverride:(b.exit_booking&&b.exit_booking.entryOverride)||[]
+    };
+    const prev=b.exit_booking||null;   // beim Anlegen dokumentierter entryOverride
+    b.exit_booking=booking;            // lokal sofort, damit derselbe Render nicht erneut bucht
+    DB.updateBlock(b.id,{exit_booking:booking})
+      .catch(e=>{console.warn('exit_booking:',e);b.exit_booking=prev;})
+      .finally(()=>_blockSettleInFlight.delete(id));
+  });
+}
+
+// Comeback-Constraint, vorlagenübergreifend (Spec §9): Lauf-Progression über +10 %
+// je Woche warnt, unabhängig davon, ob eine Vorlage gewählt wurde.
+const RUN_PROGRESSION_MAX=1.10;
+function checkRunProgression(endD){
+  const end=endD?new Date(endD):new Date();end.setHours(0,0,0,0);
+  const cur=computeRunKm(end,7);
+  const prevEnd=new Date(end);prevEnd.setDate(prevEnd.getDate()-7);
+  const prev=computeRunKm(prevEnd,7);
+  if(!(prev.km>0)||!(cur.km>0))return null;
+  const ratio=cur.km/prev.km;
+  if(ratio<=RUN_PROGRESSION_MAX)return null;
+  return{ratio,cur:cur.km,prev:prev.km,pct:Math.round((ratio-1)*100)};
+}
+
+// ── Eintrittsbedingungen ─────────────────────────────────────────────────────
+// Nicht erfüllte Bedingungen werden angezeigt, blockieren aber NICHT — dasselbe
+// Muster wie updateBlockGoalWarnings. Wird trotzdem gespeichert, landet das in
+// exit_booking.entryOverride (Spec §6.1).
+function evaluateEntry(template,macro){
+  if(!template||!Array.isArray(template.entry)||!template.entry.length)return[];
+  if(macro&&macro.insufficient)return[];
+  return template.entry.map(c=>{
+    const actual=resolveMacroPath(macro,c.key);
+    return{key:c.key,label:c.label,op:c.op,required:c.value,actual,
+      met:compareOp(actual,c.op,c.value)};
+  });
+}
+function fmtEntryValue(key,v){
+  if(v==null)return'&#x2014;';
+  if(v===Infinity)return'nie';
+  if(/^tid\./.test(key))return Math.round(v*100)+'%';
+  if(/^daysSince\./.test(key))return Math.round(v)+' d';
+  if(key==='acwr')return v.toFixed(2);
+  if(key==='runKm')return(Math.round(v*10)/10)+' km';
+  if(key==='weeklyMin')return fmtMin(Math.round(v))+' h';
+  return String(Math.round(v*100)/100);
+}
+function fmtEntryRequired(key,v){
+  if(/^tid\./.test(key))return Math.round(v*100)+'%';
+  if(/^daysSince\./.test(key))return v+' d';
+  if(key==='runKm')return v+' km';
+  if(key==='weeklyMin')return fmtMin(v)+' h';
+  return String(v);
+}
+
+// ── Reizdichte bei Blockdehnung (Spec §5) ────────────────────────────────────
+// Der einzige Punkt, an dem die vorhandene Rate-Semantik nicht ausreicht:
+// zone_targets[k].count ist nominal PRO WOCHE. Wird der Block gedehnt, sinkt die real
+// erreichbare Dichte, wenn die Gesamtzahl konstant bleibt — 2 HIT auf 10 Tage sind
+// nominal weiter 2/Wo, real aber 1.4/7d. Gerechnet wird gegen den opt-Wert der
+// VORLAGE, nicht gegen den gespeicherten Wert.
+function densityReadouts(block,template){
+  if(!template||!template.days)return[];
+  const days=blockDays(block);
+  if(days===template.days.nominal)return[];
+  const out=[];
+  Object.entries(template.doseBands||{}).forEach(([path,band])=>{
+    if(!/\.count$/.test(path))return;
+    const nominal=band.opt;
+    if(nominal==null)return;
+    const perCycle=Math.round(nominal*days/7);
+    const realRate=perCycle*7/days;
+    out.push({path,label:floorLabel(path),nominal,days,perCycle,
+      realRate:Math.round(realRate*10)/10,ratio:realRate/nominal});
+  });
+  return out;
+}
+
+// ── Realisierbarkeit (Spec §4.4) ─────────────────────────────────────────────
+// Läuft beim Öffnen und bei jeder Änderung, blockiert nie. Konflikte werden angezeigt,
+// nicht stillschweigend aufgelöst.
+const HARD_SESSION_DEFAULT_MIN=50;   // ohne gewähltes Protokoll
+const HARD_SESSION_MIN_SPACING_D=1.5;// konservativer Mindestabstand harter Einheiten
+const FLOOR_SESSION_MIN=60;          // Annahme je Ausdauereinheit aus einem Floor
+const FLOOR_STRENGTH_MIN=45;         // Annahme je Krafteinheit aus einem Floor
+const RUN_MIN_PER_KM=6;              // Annahme für die Umrechnung des km-Floors
+// Geschätzte Wochenminuten, die ein Floor bindet. Ausdauer-Floors überlappen sich in
+// der Praxis (ein lockerer Lauf erfüllt run_km UND zone.LIT.count), deshalb geht in die
+// Volumenprüfung ihr MAXIMUM ein, nicht ihre Summe — sonst warnte die App schon bei den
+// opt-Werten einer studienbelegten Vorlage.
+function floorWeeklyMinutes(f){
+  const per7=7/floorUnitDays(f.unit);
+  if(f.key==='run_km')return f.value*RUN_MIN_PER_KM*per7;
+  if(f.key==='strength_heavy')return f.value*FLOOR_STRENGTH_MIN*per7;
+  const p=String(f.key).split('.');
+  if(p.length===3&&p[2]==='min')return f.value*per7;
+  return f.value*FLOOR_SESSION_MIN*per7;
+}
+function checkFeasibility(block,template,targets){
+  const out=[];
+  const days=blockDays(block);
+  const t=targets||block;
+  // Harte Einheiten = Intensitäts-Slots aus den Zonenzielen.
+  const hardPerWeek=['MIT','HIT'].reduce((s,zk)=>{
+    const c=(t.zone_targets||{})[zk];
+    return s+((c&&c.count)||0);
+  },0);
+  // Abstandsprüfung: harte Einheiten × Mindestabstand ≤ Blockdauer.
+  const hardPerCycle=Math.round(hardPerWeek*days/7);
+  if(hardPerCycle>0&&hardPerCycle*HARD_SESSION_MIN_SPACING_D>days){
+    out.push({level:'warn',text:`${hardPerCycle} harte Einheiten in ${days} Tagen — bei `
+      +`${HARD_SESSION_MIN_SPACING_D} d Mindestabstand passen h&#xF6;chstens `
+      +`${Math.floor(days/HARD_SESSION_MIN_SPACING_D)}.`});
+  }
+  // Volumenprüfung: Kernreiz + Floors gegen das Wochenzeit-Ziel.
+  const weekly=t.weekly_target_min;
+  if(weekly>0){
+    let protoMin=HARD_SESSION_DEFAULT_MIN;
+    const protos=(template&&template.protocols||[]).map(k=>SESSION_PROTOCOLS[k]).filter(Boolean);
+    if(protos.length)protoMin=Math.round(protos.reduce((s,p)=>s+p.durationMin,0)/protos.length);
+    const kern=hardPerWeek*protoMin;
+    const floors=(block.floors||(template&&template.floors)||[]);
+    let endur=0,strength=0;
+    floors.forEach(f=>{
+      const m=floorWeeklyMinutes(f);
+      if(f.key==='strength_heavy')strength+=m;else endur=Math.max(endur,m);
+    });
+    const rest=Math.round(weekly-(kern+endur+strength));
+    out.push({level:rest<0?'warn':rest<30?'hint':'ok',rest,
+      text:rest<0?`Volumen reicht nicht: Kernreiz + Erhaltungsreize brauchen ca. `
+          +`${Math.round(kern+endur+strength)} min, Ziel sind ${weekly} min (${rest} min).`
+        :rest<30?`Residualvolumen aufgebraucht: nach Kernreiz und Erhaltungsreizen bleiben `
+          +`noch ca. ${rest} min je Woche.`
+        :`Residualvolumen ca. ${rest} min je Woche nach Kernreiz und Erhaltungsreizen.`});
+  }
+  return out;
+}
 // Skala von Zeile 1: der Balken reicht bis 140 % des Solls, damit eine
 // Überschreitung Platz hat und die Ziellinie ortsfest bleibt (früher wurde auf das
 // Ist reskaliert — dann stand der Balken immer voll und die Ziellinie wanderte).
@@ -5716,9 +6572,11 @@ const HIT_ROW_OPEN_KEY='tlog_budget_hit_open';
 //   2 Intensitätsverteilung Ist/Soll — nur zonenbasierte Sportarten
 //   3 HIT nach Sportart (eingeklappt) — Anteil am gesamten HIT-Volumen
 //   4 Einheiten je Sportart als Punktmuster (Ø/Woche gerundet gegen Ziel-Anzahl)
+//   5 Erhaltungsreize (Paket G) — nur bei Vorlagenblöcken mit floors
 // editFn hängt den Stift in die Kopfzeile — beim Block führt er ins Block-Sheet,
-// sonst ins Budget-Ziel-Sheet.
-function renderBudgetPanel(el,a,targets,headSuffix,editFn){
+// sonst ins Budget-Ziel-Sheet. `block` ist optional und nur für Zeile 5 nötig
+// (Fensterklemmung auf starts_on).
+function renderBudgetPanel(el,a,targets,headSuffix,editFn,block){
   const targetMin=targets.weekly_target_min||Math.max(1,Math.round(a.totalMin));
   const sportTarget=targets.sport_targets||{};
   const zoneTarget=targets.zone_targets||{};
@@ -5819,10 +6677,15 @@ function renderBudgetPanel(el,a,targets,headSuffix,editFn){
     .map(zk=>`${zk}: ${Math.round(a.zoneCount[zk]||0)}/${zoneTarget[zk].count}`);
   const countLine=zoneCountParts.length?`<div class="budget-count-line">${zoneCountParts.join(' &#183; ')}</div>`:'';
 
+  // ── Zeile 5 (Paket G): Erhaltungsreize ────────────────────────────────────
+  // Nur bei gesetzten floors — das globale Budget-Ziel und jeder Block ohne Vorlage
+  // rendern dieses Panel damit unverändert.
+  const floorRow=renderFloorRowHTML(targets,block);
+
   el.innerHTML=`
     <div class="budget-head">Budget <span class="budget-head-sub">${headSuffix}</span>
       <button type="button" class="budget-edit" id="budget-edit" title="Ziel bearbeiten" aria-label="Ziel bearbeiten"><i class="ti ti-adjustments-horizontal"></i></button></div>
-    ${volRow}${distRow}${hitRow}${dotRow}${countLine}`;
+    ${volRow}${distRow}${hitRow}${dotRow}${countLine}${floorRow}`;
   document.getElementById('budget-edit').addEventListener('click',editFn);
   const toggle=document.getElementById('budget-hit-toggle');
   toggle.addEventListener('click',()=>{
@@ -5845,7 +6708,41 @@ function renderLogBudgetSlotForBlock(el,block){
   const fmtB=iso=>new Date(iso+'T00:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
   renderBudgetPanel(el,b,block,
     `&#216; Woche &#183; seit ${fmtB(block.starts_on)} (Woche ${Math.ceil(b.weeksElapsed)})`,
-    ()=>openBlockModal(block));
+    ()=>openBlockModal(block),block);
+}
+// ── PAKET G: Zeile 5 — Erhaltungsreize ───────────────────────────────────────
+// Untergrenzen, keine Ziele: ein Floor ist erfüllt oder nicht, es gibt keinen Balken.
+// Fehlende Daten (Distanz, Kraft-Typ) ergeben "nicht prüfbar" statt "verletzt" —
+// sonst warnt die App gegen fehlende Daten statt gegen fehlendes Training (Spec §4.2).
+// Darunter die Klarstellung, dass ACWR/Monotonie NICHT an den Blockgrenzen hängen:
+// bei Blöcken ≠ 7-Tage-Vielfachen wäre die Verwechslung mit den Blockzielen sonst nah.
+function renderFloorRowHTML(targets,block){
+  const floors=(targets&&targets.floors)||null;
+  if(!Array.isArray(floors)||!floors.length)return'';
+  const prog=checkRunProgression();
+  const rows=evaluateFloors(floors,block).map(f=>{
+    const win=f.clamped?`Fenster ${f.windowDays} d (seit Blockstart)`:`Fenster ${f.nominalDays} d`;
+    let mark='&#10003;',cls='ok',val;
+    if(f.actual==null){mark='&#183;';cls='unknown';val='&#x2014;';}
+    else if(f.unknown){mark='&#183;';cls='unknown';val=`${f.actual}${f.unitSuffix?' '+f.unitSuffix:''} &#183; nicht pr&#252;fbar (${esc(f.unknownNote)})`;}
+    else if(f.pending){mark='&#183;';cls='pending';val=`${f.actual} / ${f.required}${f.unitSuffix?' '+f.unitSuffix:''} &#183; l&#228;uft noch`;}
+    else{
+      if(f.met===false){mark='&#9888;';cls='miss';}
+      val=`${f.actual} / ${f.required}${f.unitSuffix?' '+f.unitSuffix:''}`;
+    }
+    return`<div class="budget-floor-row budget-floor-${cls}" title="${esc(f.label)} &#183; ${win}">
+      <span class="budget-floor-label">${esc(f.label)}</span>
+      <span class="budget-floor-val">${val}</span>
+      <span class="budget-floor-mark">${mark}</span>
+    </div>`;
+  }).join('');
+  const progRow=prog?`<div class="budget-floor-row budget-floor-miss" title="Comeback-Constraint, vorlagenunabh&#228;ngig">
+      <span class="budget-floor-label">Lauf-Progression</span>
+      <span class="budget-floor-val">${prog.cur} km vs. ${prog.prev} km &#183; +${prog.pct}%</span>
+      <span class="budget-floor-mark">&#9888;</span></div>`:'';
+  return`<div class="budget-sub-label">Erhaltungsreize <span class="budget-sub-scope">&#8212; Untergrenzen, nicht Ziele</span></div>
+    ${rows}${progRow}
+    <p class="budget-scope-note">ACWR und Monotonie rechnen in festen rollenden 7-/28-Tage-Fenstern &#8212; blockunabh&#228;ngig, nicht gegen diese Blockziele.</p>`;
 }
 // Slot 3 — die drei nächsten geplanten Einheiten (Ghosts) mit Countdown.
 function renderLogNextSlot(){
@@ -6171,6 +7068,7 @@ function renderCalendar(){
   const container=document.getElementById('cal-container');
   const labelEl=document.getElementById('cal-label');
   updateCalBlockBtn();
+  settleFinishedBlocks();   // Paket G: abgelaufene Vorlagenblöcke austragen
   // Paket B4: Auflösungsstufen — Quartal/Jahr sind eigene Renderer (dieselben
   // Daten, andere Auflösung; Blöcke als Hinterlegung in Paket F).
   if(calMode==='quarter'){renderCalQuarter(container,labelEl);return;}
@@ -6258,8 +7156,12 @@ function calSwipeResolution(dir){
 // Blöcke sind Zeitspannen mit Intention. sessions.block_id wird NICHT fixiert,
 // sondern per Datum abgeleitet (Spec F1): bei überlappenden Blöcken gewinnt der
 // kürzere. Die Zuordnung dient nur Rendering (F3) und Auswertungsfilter (F5).
-const BLOCK_INTENTIONS=['LIT','MIT','HIT','Deload','Frei'];
-const BLOCK_INTENTION_COLORS={LIT:'#7E93EC',MIT:'#4F9D8C',HIT:'#7B5CD6',Deload:'#9aa39a',Frei:'#c9c6bc'};
+// Paket G: 'Kraft' flach ergänzt (Spec §3.2/§10.4 — keine zweistufige Domäne/Intention-
+// Struktur, dafür sind fünf Vorlagen zu wenig). Farbe = --zone-5, die tiefe Stufe der
+// Lila-Familie (Design-Briefing §8: Lila = Intensität/Kraft) — bleibt damit von HIT
+// (--zone-4, #7B5CD6) unterscheidbar, ohne eine neue Farbe einzuführen.
+const BLOCK_INTENTIONS=['LIT','MIT','HIT','Kraft','Deload','Frei'];
+const BLOCK_INTENTION_COLORS={LIT:'#7E93EC',MIT:'#4F9D8C',HIT:'#7B5CD6',Kraft:'#4F3796',Deload:'#9aa39a',Frei:'#c9c6bc'};
 function blockColor(b){return b.color||BLOCK_INTENTION_COLORS[b.intention]||'#9aa39a';}
 function blockDays(b){return Math.round((new Date(b.ends_on)-new Date(b.starts_on))/86400000)+1;}
 // Gültiger Block an einem ISO-Tag; bei Mehrfachtreffer gewinnt der kürzere.
@@ -6276,6 +7178,239 @@ function resolveBlockForDate(iso){
 function blocksOverlapping(loIso,hiIso){
   return blocks.filter(b=>b.starts_on<=hiIso&&b.ends_on>=loIso);
 }
+
+// ── PAKET G: Vorlagenbibliothek ──────────────────────────────────────────────
+// Statisch und versioniert als JS-Konstante (Spec §3), NICHT als Supabase-Tabelle:
+// die Vorlagen ändern sich mit dem App-Code, nicht mit den Nutzerdaten — ein Sync
+// wäre nur zusätzliche Fehlerquelle. Ein Block friert bei der Auswahl template_id +
+// template_version ein und bleibt davon unberührt, wenn die Bibliothek später wächst.
+//
+// EINORDNUNG (Spec §11), die in der Bibliothek sichtbar bleiben soll: Über 12 Wochen
+// fand sich bei trainierten Radfahrern KEIN Unterschied zwischen blockperiodisiertem
+// und gut gemachtem traditionellem Training. Diese Vorlagen sind Strukturhilfen mit
+// belegten Dosierungen — kein nachgewiesen überlegenes Modell. Der Nutzen liegt im
+// Reizwechsel und in der Planbarkeit.
+//
+// Dosisband-Keys adressieren die BESTEHENDEN Zielfelder per Pfad (Spec §3.1), damit
+// die Vorlage in das vorhandene Zielmodell schreibt statt ein zweites aufzumachen:
+//   weekly_target_min         → Spalte blocks.weekly_target_min
+//   zone.<LIT|MIT|HIT>.<pct|count>  → blocks.zone_targets
+//   sport.<key>.<pct|count>   → blocks.sport_targets  (key = cfg.sports[].key, groß)
+// Keys ohne Zielfeld (z.B. run_km) sind reine Orientierungsbänder und werden im
+// Editor read-only ausgewiesen.
+//
+// Lock-Level: 'fixed' (Abweichung → modified), 'bounded' (außerhalb min/ceil → Warnung
+// + modified), 'free' (frei).
+const BLOCK_TEMPLATE_VERSION=1;
+const BLOCK_TEMPLATES=[
+  {
+    id:'lit_akkumulation',
+    name:'LIT-Akkumulation',
+    intention:'LIT',
+    evidence:'deskriptiv',
+    source:{authors:'Seiler (TID-Review); Rønnestad & Hansen',year:2017,
+            journal:'Scand J Med Sci Sports / Übersichtsarbeiten',
+            population:'Elite-Ausdauersport bzw. Einzelfall'},
+    days:{nominal:21,min:14,max:28,rigid:false},
+    recoveryDays:[],
+    doseBands:{
+      'weekly_target_min':{min:240,opt:360,ceil:480,lock:'free'},
+      'zone.LIT.pct':     {min:80, opt:88, ceil:95, lock:'bounded'},
+      'run_km':           {min:12, opt:18, ceil:22, lock:'bounded'}
+    },
+    zoneTargetsDefault:null,
+    floors:[
+      {key:'zone.HIT.count',  op:'>=',value:1, unit:'sessions_per_7d', lock:'bounded'},
+      {key:'strength_heavy',  op:'>=',value:1, unit:'sessions_per_10d',lock:'bounded'},
+      {key:'run_km',          op:'>=',value:12,unit:'km_per_7d',       lock:'bounded'}
+    ],
+    entry:[],
+    exit:{litDebtWeeks:-1,lockDays:0},
+    protocols:[],
+    noteDe:'Basisvorlage — immer wählbar, keine Eintrittsbedingungen. Baut das LIT-Fundament auf, '
+      +'gegen das die Makrobilanz alle harten Blöcke verrechnet. Der Austritt schreibt ein '
+      +'Guthaben (−1 Woche LIT-Rückstand je 7 Tage) statt eines Rückstands. '
+      +'Übertragbarkeit: Prinzip ja, Volumen nein — die Quellen stammen aus dem Elitebereich.'
+  },
+  {
+    id:'hit_block_run',
+    name:'HIT-Block Lauf',
+    intention:'HIT',
+    evidence:'RCT',
+    source:{authors:'Nuuttila et al.',year:2017,journal:'Int J Sports Med 38:909–920',
+            population:'32 freizeittrainierte Männer, 19–37 J'},
+    days:{nominal:7,min:7,max:7,rigid:true},
+    recoveryDays:[5,7],
+    doseBands:{
+      'zone.HIT.count':   {min:3,  opt:4,  ceil:5,  lock:'fixed'},
+      'sport.Lauf.count': {min:1,  opt:2,  ceil:2,  lock:'fixed'},
+      'weekly_target_min':{min:240,opt:330,ceil:420,lock:'free'}
+    },
+    zoneTargetsDefault:{LIT:{pct:45},MIT:{pct:5},HIT:{pct:50}},
+    floors:[
+      {key:'run_km',         op:'>=',value:12,unit:'km_per_7d',       lock:'bounded'},
+      {key:'zone.LIT.count', op:'>=',value:1, unit:'sessions_per_7d', lock:'bounded'},
+      {key:'strength_heavy', op:'>=',value:1, unit:'sessions_per_10d',lock:'bounded'}
+    ],
+    entry:[
+      {key:'tid.LIT',       op:'>=',value:0.80,label:'LIT-Anteil 84 d'},
+      {key:'runKm',         op:'>=',value:15,  label:'Lauf-Basis'},
+      {key:'daysSince.HIT', op:'>=',value:28,  label:'letzter HIT-Block'},
+      {key:'acwr',          op:'<=',value:1.25,label:'ACWR'}
+    ],
+    exit:{litDebtWeeks:2.5,lockDays:28},
+    protocols:['run_4x4','run_3x10x30_15','run_6x3','run_10_20_30','bike_ronnestad_30_15','capacity_generic'],
+    noteDe:'Studie: 4–5 HIT je Woche in Blockwochen, Erholungswochen mit einer. Alternative '
+      +'Modalitäten für LIT ausdrücklich erlaubt (Überlastungsschutz). Beobachtet: die maximale '
+      +'Laufgeschwindigkeit sank in den ersten vier Wochen — den Kraft-Floor während des Blocks '
+      +'nicht streichen. Ceiling bewusst 5 statt 6: Comeback-Anpassung.'
+  },
+  {
+    id:'mit_impact',
+    name:'MIT-Impact',
+    intention:'MIT',
+    evidence:'RCT',
+    source:{authors:'Mølmen et al.',year:2025,journal:'—',
+            population:'gut trainierte Radfahrer'},
+    days:{nominal:7,min:7,max:7,rigid:true},
+    recoveryDays:[6],
+    doseBands:{
+      'zone.MIT.count':   {min:5,  opt:6,  ceil:6,  lock:'fixed'},
+      'weekly_target_min':{min:300,opt:420,ceil:540,lock:'bounded'}
+    },
+    zoneTargetsDefault:null,
+    floors:[
+      {key:'run_km',         op:'>=',value:12,unit:'km_per_7d',       lock:'bounded'},
+      {key:'strength_heavy', op:'>=',value:1, unit:'sessions_per_10d',lock:'bounded'}
+    ],
+    entry:[
+      {key:'tid.LIT',       op:'>=',value:0.80,label:'LIT-Anteil 84 d'},
+      {key:'weeklyMin',     op:'>=',value:300, label:'Wochenumfang'},
+      {key:'daysSince.MIT', op:'>=',value:28,  label:'letzter MIT-Block'},
+      {key:'acwr',          op:'<=',value:1.20,label:'ACWR'}
+    ],
+    exit:{litDebtWeeks:2.0,lockDays:28},
+    protocols:['bike_5x12_mit','run_5x10_mit','bike_4x8','capacity_generic'],
+    noteDe:'Die Dichte ist die Intervention: sechs Einheiten in sieben Tagen. Auf zehn Tage '
+      +'gedehnt entsteht ein anderer, schwächerer Block — deshalb rigid. Unter 5 h/Woche nicht '
+      +'sinnvoll: die Einzeldosis würde unterschritten. Übertragbarkeit mittel — die Quelle '
+      +'testet die Radmodalität.'
+  },
+  {
+    id:'run_10_20_30',
+    name:'10-20-30',
+    intention:'HIT',
+    evidence:'kontrolliert',
+    source:{authors:'Gunnarsson & Bangsbo',year:2012,journal:'J Appl Physiol 113:16–24',
+            population:'18 mäßig trainierte Läufer, VO₂max ~52'},
+    days:{nominal:28,min:21,max:49,rigid:false},
+    recoveryDays:[],
+    doseBands:{
+      'zone.HIT.count':   {min:2,  opt:3,  ceil:3,  lock:'fixed'},
+      'weekly_target_min':{min:150,opt:210,ceil:300,lock:'free'}
+    },
+    zoneTargetsDefault:null,
+    floors:[
+      {key:'strength_heavy', op:'>=',value:1, unit:'sessions_per_10d',lock:'bounded'},
+      {key:'zone.LIT.count', op:'>=',value:1, unit:'sessions_per_7d', lock:'bounded'},
+      {key:'run_km',         op:'>=',value:12,unit:'km_per_7d',       lock:'bounded'}
+    ],
+    entry:[
+      {key:'runKm',op:'>=',value:12,  label:'Lauf-Basis'},
+      {key:'acwr', op:'<=',value:1.30,label:'ACWR'}
+    ],
+    exit:{litDebtWeeks:0.5,lockDays:0},
+    protocols:['run_10_20_30','run_4x4','capacity_generic'],
+    noteDe:'30 s locker / 20 s Dauerlauftempo / 10 s Sprint, fortlaufend über 5 min, 2 min Pause, '
+      +'3–4 Blöcke. Studienbelastung: mittlere HF ~85 %, Spitze ~96 % HFmax. Ergebnis: VO₂max '
+      +'+4 % bei 54 % weniger Umfang. COMEBACK: in den ersten 3–4 Wochen den 10-s-Anteil zügig '
+      +'statt als Sprint laufen. Als Notfallvorlage geeignet, wenn eine Woche auf 4 h schrumpft.'
+  },
+  {
+    id:'kraftaufbau',
+    name:'Kraftaufbau',
+    intention:'Kraft',
+    evidence:'—',
+    source:null,
+    days:{nominal:21,min:21,max:42,rigid:false},
+    recoveryDays:[],
+    // Achsentausch: Kraft ist der Kern, Ausdauer wird zum Floor. Einzige Kerngröße ist
+    // die Reizdichte (Einheiten je 7 Tage) — bewusst KEIN Band auf Sätzen, Last oder
+    // Übungswahl, das steuert der Nutzer aus eigener Erfahrung (Spec §3.2 G5).
+    doseBands:{
+      'sport.Kraft.count':{min:1,  opt:3,  ceil:4,  lock:'free'},
+      'weekly_target_min':{min:240,opt:300,ceil:420,lock:'free'}
+    },
+    zoneTargetsDefault:null,   // leer — hasAnyBlockTargets greift über sport_targets
+    floors:[
+      {key:'run_km',         op:'>=',value:12, unit:'km_per_7d',      lock:'bounded'},
+      {key:'zone.HIT.count', op:'>=',value:1,  unit:'sessions_per_7d',lock:'bounded'},
+      {key:'zone.LIT.min',   op:'>=',value:120,unit:'min_per_7d',     lock:'bounded'}
+    ],
+    entry:[
+      {key:'acwr',op:'<=',value:1.25,label:'ACWR'}
+    ],
+    exit:{litDebtWeeks:0.5,lockDays:0},
+    protocols:['capacity_generic'],
+    noteDe:'Bewusst anders geartet als die Ausdauervorlagen: dort trägt die Vorlage eine '
+      +'Studiendosis, hier trägst du sie aus eigener Erfahrung. Einstellbar ist nur die '
+      +'Reizdichte. Die App prüft, ob die Ausdauer-Floors bei der gewählten Dichte ins '
+      +'Zeitbudget passen, und bucht den Block in die Makrobilanz. Bei Zeitknappheit Rad '
+      +'kürzen, nicht Laufen — Umfangskontinuität ist im Comeback wichtiger.'
+  }
+];
+function blockTemplateById(id){return id?BLOCK_TEMPLATES.find(t=>t.id===id)||null:null;}
+function blockTemplateOf(b){return b?blockTemplateById(b.template_id):null;}
+// Ist die Dauer dieses Blocks durch seine Vorlage festgelegt? Steuert Kanten-Handles
+// im Kalender und den Dauer-Schnapp im Editor.
+function isBlockRigid(b){const t=blockTemplateOf(b);return!!(t&&t.days&&t.days.rigid);}
+
+// Sessionprotokolle (Spec §8). Zunächst reine Anzeige im Editor ("erlaubte Protokolle")
+// und als Textbaustein — keine Automatik, keine Anrechnung.
+// Zielwerte als Funktion über cfg, NICHT als feste bpm/Watt: eine neue Leistungsdiagnostik
+// (cfg.hrMax / cfg.ftp) zieht damit alle Protokolle mit. Ein LTHR führt die App nicht,
+// deshalb sind die Ziele über %HFmax bzw. %FTP formuliert.
+const SESSION_PROTOCOLS={
+  run_10_20_30:{name:'10-20-30',sport:'Lauf',class:'HIT',
+    structure:'3–4 × 5 min (30 s locker / 20 s DL / 10 s Sprint), 2 min Pause',
+    durationMin:35,evidence:'kontrolliert',
+    target:c=>`Spitze ~${Math.round((c.hrMax||192)*0.96)} bpm · Mittel ~${Math.round((c.hrMax||192)*0.85)} bpm`},
+  run_4x4:{name:'4×4 min',sport:'Lauf',class:'HIT',
+    structure:'4 × 4 min, 3 min Trabpause',
+    durationMin:45,evidence:'RCT',
+    target:c=>`${Math.round((c.hrMax||192)*0.90)}–${Math.round((c.hrMax||192)*0.95)} bpm`},
+  run_3x10x30_15:{name:'3 × 10 × 30/15',sport:'Lauf',class:'HIT',
+    structure:'3 Serien à 10 × (30 s schnell / 15 s locker), 3 min Serienpause',
+    durationMin:40,evidence:'RCT',
+    target:c=>`${Math.round((c.hrMax||192)*0.90)}–${Math.round((c.hrMax||192)*0.95)} bpm`},
+  run_6x3:{name:'6×3 min',sport:'Lauf',class:'HIT',
+    structure:'6 × 3 min, 2 min Trabpause',
+    durationMin:45,evidence:'RCT',
+    target:c=>`${Math.round((c.hrMax||192)*0.88)}–${Math.round((c.hrMax||192)*0.93)} bpm`},
+  bike_ronnestad_30_15:{name:'Rønnestad 30/15',sport:'Rad',class:'HIT',
+    structure:'3 Serien à 13 × (30 s hart / 15 s locker), 3 min Serienpause',
+    durationMin:55,evidence:'RCT',
+    target:c=>`${Math.round((c.ftp||200)*1.00)}–${Math.round((c.ftp||200)*1.10)} W (30-s-Abschnitte)`},
+  bike_4x8:{name:'4×8 min',sport:'Rad',class:'HIT',
+    structure:'4 × 8 min, 4 min Pause',
+    durationMin:55,evidence:'RCT',
+    target:c=>`${Math.round((c.ftp||200)*0.95)}–${Math.round((c.ftp||200)*1.05)} W`},
+  bike_5x12_mit:{name:'5×12 min (MIT)',sport:'Rad',class:'MIT',
+    structure:'5 × 12 min, 4 min Pause',
+    durationMin:80,evidence:'kontrolliert',
+    target:c=>`${Math.round((c.ftp||200)*0.85)}–${Math.round((c.ftp||200)*0.92)} W`},
+  run_5x10_mit:{name:'5×10 min (MIT)',sport:'Lauf',class:'MIT',
+    structure:'5 × 10 min, 2 min Trabpause',
+    durationMin:65,evidence:'kontrolliert',
+    target:c=>`${Math.round((c.hrMax||192)*0.82)}–${Math.round((c.hrMax||192)*0.88)} bpm`},
+  capacity_generic:{name:'Capacity (generisch)',sport:'Capacity',class:'HIT',
+    structure:'Zirkel/Hybrid nach Bibliotheksvorlage, durchgehend belastet',
+    durationMin:30,evidence:'deskriptiv',
+    target:c=>'sRPE 7–8 · HF nachrangig (neuromuskulär dominiert)'}
+};
+// Substitutions- und Anrechnungsregel (Spec §8) — bewusst nur Hinweistext, keine Automatik.
+const PROTOCOL_CREDIT_NOTE='Eine Einheit belegt genau EINEN Intensitäts-Slot und HÖCHSTENS EINEN Floor. '
+  +'Capacity → HIT-Slot 1.0 · VO₂max-Kernreiz 0.5 (max. 1 je Block) · Kraft metabolisch 0.5 · Kraft schwer 0.0';
 
 function renderCalQuarter(container,labelEl){
   const now=new Date();
@@ -6373,8 +7508,10 @@ function paintCalBlocks(container,loBound,hiBound){
     bar.dataset.blockId=b.id;
     bar.style.setProperty('--blockcolor',blockColor(b));
     const lbl=b.title===b.intention?b.title:b.title+' · '+b.intention;
+    // Paket G: rigid-Vorlagen bekommen keine Kanten-Handles — die Blockdauer ist bei
+    // ihnen Teil der Intervention (Spec §5/§7.5), nicht ein freier Parameter.
     bar.innerHTML=`<span class="cal-block-rail" title="${esc(lbl)}"><span class="cal-block-rail-title">${esc(lbl)}</span>`
-      +(calBlockActive?'<span class="cal-block-handle cal-block-handle-top"></span><span class="cal-block-handle cal-block-handle-bottom"></span>':'')
+      +(calBlockActive&&!isBlockRigid(b)?'<span class="cal-block-handle cal-block-handle-top"></span><span class="cal-block-handle cal-block-handle-bottom"></span>':'')
       +'</span>';
     positionBar(bar,first,last,laneOf.get(String(b.id)),laneCount);
     layer.appendChild(bar);
@@ -6477,6 +7614,12 @@ function onBlockPointerUp(){
     openBlockModal(null,{starts_on:f.dataset.rowLo,ends_on:l.dataset.rowHi});
   }else if(d.mode==='bar'){
     if(!d.moved)openBlockModal(d.block);
+    // Paket G: Ziehversuch an einem rigid-Block bleibt wirkungslos — das ist ohne
+    // Rückmeldung nicht von einem Bug zu unterscheiden, also sagen, warum.
+    else if(isBlockRigid(d.block)){
+      const t=blockTemplateOf(d.block);
+      showToast(`Vorlage ist auf ${t.days.nominal} Tage festgelegt &#8212; die Dichte ist die Intervention.`);
+    }
   }else if(d.mode==='edge'&&d.moved&&d.newStart&&(d.newStart!==d.block.starts_on||d.newEnd!==d.block.ends_on)){
     persistBlockDates(d.block,d.newStart,d.newEnd);
   }else{
@@ -6508,12 +7651,57 @@ let _blockModalCtx=null;
 // Paket F2: Wochenzeit- und Verteilungsziele eines Blocks — Datumsformat auch
 // vom Info-Popover genutzt.
 function fmtBlockDate(iso){return new Date(iso+'T00:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'});}
-function blockGoalRowHTML(attr,key,label,color,target){
+// Paket G: `bands` ist OPTIONAL. Ohne bands ist das erzeugte Markup byte-identisch mit
+// dem Stand vor Paket G — darauf verlassen sich openBudgetGoalModal (das gar keine
+// Vorlagen kennt), collectGoalMap und updateBlockGoalWarnings.
+// bands = {pct:<band>, count:<band>} für genau diese Zeile.
+function blockGoalRowHTML(attr,key,label,color,target,bands){
   const t=target||{};
-  return`<div class="block-goal-row"><span class="bg-swatch" style="background:${esc(color)};"></span><span class="bg-label">${esc(label)}</span>
+  const row=`<div class="block-goal-row"><span class="bg-swatch" style="background:${esc(color)};"></span><span class="bg-label">${esc(label)}</span>
     <input type="number" min="0" max="100" class="block-goal-pct" data-${attr}="${esc(key)}" placeholder="%" value="${t.pct!=null?t.pct:''}">
     <input type="number" min="0" class="block-goal-count" data-${attr}="${esc(key)}" placeholder="#/Wo" value="${t.count!=null?t.count:''}">
   </div>`;
+  if(!bands)return row;
+  const scales=['pct','count'].filter(f=>bands[f]).map(f=>doseBandHTML(bands[f],t[f],f==='pct'?'%':'#/Wo',color)).join('');
+  return row+scales;
+}
+// Dosisband-Skala (Spec §7.2) — in der Grammatik des bestehenden Sheets, keine neuen
+// Farben: Hairline-Schiene in --border, Marker in der Zeilenfarbe, Zahlen in der
+// Mono-Schrift. Lock-Glyphen: fest / bedingt / (frei = kein Glyph).
+const DOSE_LOCK_GLYPH={fixed:'&#128274;',bounded:'&#9680;'};
+const DOSE_LOCK_TITLE={fixed:'fest — Abweichung markiert den Block als modifiziert',
+  bounded:'bedingt — au&#223;erhalb min/ceil warnt die App',free:'frei w&#228;hlbar'};
+function doseBandHTML(band,value,unitLabel,color){
+  if(!band)return'';
+  const lo=band.min,hi=band.ceil;
+  const span=(hi-lo)||1;
+  const pos=v=>Math.max(0,Math.min(100,(v-lo)/span*100));
+  const out=value!=null&&(value<lo||value>hi);
+  const mark=value!=null
+    ?`<span class="dose-band-mark${out?' out':''}" style="left:${pos(value).toFixed(1)}%;background:${esc(color||'currentColor')};"></span>`:'';
+  const lock=DOSE_LOCK_GLYPH[band.lock]
+    ?`<span class="dose-lock" title="${DOSE_LOCK_TITLE[band.lock]}">${DOSE_LOCK_GLYPH[band.lock]}</span>`:'';
+  // Zeilenfarbe am Element hinterlegen: updateDoseBandMarks baut den Marker beim Tippen
+  // ggf. neu und träfe sonst die Intentionsfarbe statt der Farbe dieser Zielzeile.
+  return`<div class="dose-band${out?' out':''}" data-band-color="${esc(color||'')}">
+    <span class="dose-band-track"><span class="dose-band-opt" style="left:${pos(band.opt).toFixed(1)}%;"></span>${mark}</span>
+    <span class="dose-band-scale">min ${band.min} &#183; opt ${band.opt} &#183; ceil ${band.ceil}${unitLabel?' '+unitLabel:''}</span>${lock}
+  </div>`;
+}
+// Ordnet die Dosisbänder einer Vorlage den Ziel-Eingabezeilen zu:
+// {zone:{HIT:{count:band}}, sport:{Lauf:{count:band}}, weekly:band, extra:[[path,band]]}
+// `extra` sind Bänder ohne Zielfeld (z.B. run_km) — reine Orientierungswerte, die der
+// Editor read-only ausweist, statt sie stillschweigend zu verschlucken.
+function groupDoseBands(bands){
+  const out={zone:{},sport:{},weekly:null,extra:[]};
+  Object.entries(bands||{}).forEach(([path,band])=>{
+    const inp=targetPathInput(path);
+    if(!inp){out.extra.push([path,band]);return;}
+    if(inp.field==='weekly'){out.weekly=band;return;}
+    const bag=out[inp.attr]||(out[inp.attr]={});
+    (bag[inp.key]||(bag[inp.key]={}))[inp.field]=band;
+  });
+  return out;
 }
 function openBlockModal(existing,preset){
   closeBlockModal();
@@ -6521,38 +7709,62 @@ function openBlockModal(existing,preset){
   const ends_on=existing?existing.ends_on:preset.ends_on;
   const curIntention=existing?existing.intention:'LIT';
   const curColor=existing?blockColor(existing):BLOCK_INTENTION_COLORS[curIntention];
-  _blockModalCtx={existing,starts_on,ends_on,color:curColor};
+  const tpl=blockTemplateOf(existing);
+  // Paket G: Bänder/Floors des Blocks kommen aus der gespeicherten Kopie (dose_bands/
+  // floors), nicht aus der Vorlage — ein laufender Block soll sich nicht ändern, wenn
+  // die Bibliothek später wächst. Nur beim Wechsel der Vorlage werden sie neu gesetzt.
+  _blockModalCtx={existing,starts_on,ends_on,color:curColor,
+    template:tpl,
+    templateId:existing?existing.template_id||null:null,
+    templateVersion:existing&&existing.template_version!=null?existing.template_version:null,
+    bands:(existing&&existing.dose_bands)||(tpl&&tpl.doseBands)||null,
+    floors:(existing&&existing.floors)||(tpl&&tpl.floors)||null,
+    // Makrobilanz einmal beim Öffnen rechnen: 84-Tage-Fenster plus Wochenschleife für
+    // den LIT-Rückstand ist zu teuer, um an jedem Tastendruck zu hängen.
+    macro:computeMacroBalance()};
   const palette=[...new Set(Object.values(BLOCK_INTENTION_COLORS))];
   const fmt=fmtBlockDate;
   const sportT=(existing&&existing.sport_targets)||{};
   const zoneT=(existing&&existing.zone_targets)||{};
   const hasGoals=!!(existing&&(existing.weekly_target_min||Object.keys(sportT).length||Object.keys(zoneT).length));
-  const sportGoalRows=(cfg.sports||[]).map(s=>blockGoalRowHTML('sport',s.key,s.label||s.key,s.color,sportT[s.key])).join('');
-  const zoneGoalRows=['LIT','MIT','HIT'].map(zk=>blockGoalRowHTML('zone',zk,zk,BLOCK_INTENTION_COLORS[zk],zoneT[zk])).join('');
+  // Vorlagensektion offen, wenn eine Vorlage hängt ODER ein Block neu angelegt wird —
+  // beim Anlegen ist die Vorlagenwahl der eigentliche Einstieg. Nur ein bestehender
+  // freier Block startet eingeklappt und bleibt damit optisch wie vor Paket G.
+  const tplOpen=!!tpl||!existing;
   const bd=document.createElement('div');bd.className='ghost-sheet-backdrop';bd.id='block-sheet-backdrop';
   const sheet=document.createElement('div');sheet.className='block-sheet';sheet.id='block-sheet';
   sheet.innerHTML=`
-    <p class="ghost-sheet-title">${existing?'Block bearbeiten':'Block anlegen'} &#183; ${fmt(starts_on)} &#8211; ${fmt(ends_on)}</p>
+    <p class="ghost-sheet-title" id="block-sheet-title">${existing?'Block bearbeiten':'Block anlegen'} &#183; ${fmt(starts_on)} &#8211; ${fmt(ends_on)}</p>
     <label class="block-field-lbl">Titel</label>
     <input type="text" id="block-title" placeholder="z.B. Grundlagenaufbau" value="${esc(existing?existing.title:'')}" style="width:100%;">
+    <button type="button" id="block-tpl-toggle" class="block-goal-toggle${tplOpen?' open':''}">Vorlage <i class="ti ti-chevron-down"></i></button>
+    <div id="block-tpl-body" class="block-goal-body${tplOpen?' open':''}">
+      <select id="block-template" style="width:100%;">
+        <option value="">&#x2013; ohne Vorlage &#x2013;</option>
+        ${BLOCK_TEMPLATES.map(t=>`<option value="${esc(t.id)}"${tpl&&t.id===tpl.id?' selected':''}>${esc(t.name)}</option>`).join('')}
+      </select>
+      <div id="block-tpl-meta"></div>
+    </div>
     <label class="block-field-lbl">Intention</label>
     <select id="block-intention" style="width:100%;">${BLOCK_INTENTIONS.map(i=>`<option value="${i}"${i===curIntention?' selected':''}>${i}</option>`).join('')}</select>
     <label class="block-field-lbl">Farbe</label>
     <div class="block-swatches" id="block-swatches">${palette.map(c=>`<button type="button" class="block-swatch${c===curColor?' active':''}" data-color="${c}" style="background:${c};"></button>`).join('')}</div>
     <label class="block-field-lbl">Notiz</label>
     <textarea id="block-note" rows="2" placeholder="optional" style="width:100%;">${esc(existing&&existing.note?existing.note:'')}</textarea>
-    <button type="button" id="block-goal-toggle" class="block-goal-toggle${hasGoals?' open':''}">Ziel <i class="ti ti-chevron-down"></i></button>
-    <div id="block-goal-body" class="block-goal-body${hasGoals?' open':''}">
+    <button type="button" id="block-goal-toggle" class="block-goal-toggle${hasGoals||tpl?' open':''}">Ziel <i class="ti ti-chevron-down"></i></button>
+    <div id="block-goal-body" class="block-goal-body${hasGoals||tpl?' open':''}">
       <label class="block-field-lbl">Wochenzeit-Ziel (Min/Woche)</label>
       <input type="number" min="0" id="block-weekly-min" placeholder="z.B. 480" value="${existing&&existing.weekly_target_min!=null?existing.weekly_target_min:''}" style="width:100%;">
+      <div id="block-weekly-band"></div>
       <label class="block-field-lbl">Sport-Verteilung</label>
       <p class="block-goal-hint">Muss nicht 100% ergeben.</p>
-      ${sportGoalRows}
+      <div id="block-goal-sport-rows"></div>
       <p class="block-goal-warn" id="block-goal-warn-sport"></p>
       <label class="block-field-lbl">Intensitäts-Verteilung</label>
-      ${zoneGoalRows}
+      <div id="block-goal-zone-rows"></div>
       <p class="block-goal-warn" id="block-goal-warn-zone"></p>
     </div>
+    <div id="block-tpl-check"></div>
     <div class="block-sheet-actions">
       ${existing?'<button type="button" id="block-delete" class="block-btn-delete"><i class="ti ti-trash"></i> L&#xF6;schen</button>':'<span></span>'}
       <div style="display:flex;gap:.5rem;">
@@ -6572,12 +7784,250 @@ function openBlockModal(existing,preset){
   });
   document.querySelectorAll('#block-swatches .block-swatch').forEach(sw=>sw.addEventListener('click',()=>selectBlockColor(sw.dataset.color)));
   document.getElementById('block-goal-toggle').addEventListener('click',toggleBlockGoalSection);
-  document.querySelectorAll('.block-goal-pct').forEach(inp=>inp.addEventListener('input',updateBlockGoalWarnings));
+  document.getElementById('block-tpl-toggle').addEventListener('click',()=>{
+    document.getElementById('block-tpl-toggle').classList.toggle('open');
+    document.getElementById('block-tpl-body').classList.toggle('open');
+  });
+  document.getElementById('block-template').addEventListener('change',onBlockTemplateChange);
+  renderBlockGoalRows(sportT,zoneT);
+  renderBlockTemplateMeta();
   updateBlockGoalWarnings();
   document.getElementById('block-save').addEventListener('click',()=>saveBlockFromModal());
   const delBtn=document.getElementById('block-delete');
   if(delBtn)delBtn.addEventListener('click',()=>deleteBlockFromModal());
   document.getElementById('block-title').focus();
+}
+
+// ── PAKET G: Vorlagensektion im Block-Sheet ──────────────────────────────────
+// ACHTUNG (Akzeptanzkriterium "Additivität"): openBudgetGoalModal teilt IDs, Klassen und
+// Renderer mit openBlockModal. Alles hier drin hängt an _blockModalCtx.bands bzw. an
+// IDs, die es NUR im Block-Sheet gibt (#block-goal-sport-rows, #block-tpl-*) — das
+// Budget-Ziel-Sheet baut seine Zeilen weiterhin direkt mit blockGoalRowHTML ohne Band
+// und bleibt damit unberührt.
+function renderBlockGoalRows(sportT,zoneT){
+  const ctx=_blockModalCtx;if(!ctx)return;
+  const g=groupDoseBands(ctx.bands);
+  const sportEl=document.getElementById('block-goal-sport-rows');
+  const zoneEl=document.getElementById('block-goal-zone-rows');
+  if(!sportEl||!zoneEl)return;
+  sportEl.innerHTML=(cfg.sports||[]).map(s=>
+    blockGoalRowHTML('sport',s.key,s.label||s.key,s.color,sportT[s.key],g.sport[s.key])).join('');
+  zoneEl.innerHTML=['LIT','MIT','HIT'].map(zk=>
+    blockGoalRowHTML('zone',zk,zk,BLOCK_INTENTION_COLORS[zk],zoneT[zk],g.zone[zk])).join('');
+  const weeklyEl=document.getElementById('block-weekly-band');
+  const weeklyVal=parseIntOrNull('#block-weekly-min');
+  weeklyEl.innerHTML=g.weekly?doseBandHTML(g.weekly,weeklyVal,'min/Wo',BLOCK_INTENTION_COLORS[document.getElementById('block-intention').value]):'';
+  // Bänder und Prüfblock leben von den aktuellen Eingaben — an jedem Input nachziehen.
+  document.querySelectorAll('#block-goal-body .block-goal-pct,#block-goal-body .block-goal-count,#block-weekly-min')
+    .forEach(inp=>inp.addEventListener('input',onBlockGoalInput));
+}
+// Ein Input ändert Bandmarker UND Prüfblock. Die Ziel-Zeilen selbst werden dabei NICHT
+// neu gebaut (das würde den Fokus aus dem Feld reißen) — nur die Bandzeilen darunter.
+function onBlockGoalInput(){
+  updateBlockGoalWarnings();
+  updateDoseBandMarks();
+  renderBlockTemplateCheck();
+}
+function updateDoseBandMarks(){
+  const ctx=_blockModalCtx;if(!ctx||!ctx.bands)return;
+  const g=groupDoseBands(ctx.bands);
+  const fallback=BLOCK_INTENTION_COLORS[document.getElementById('block-intention').value];
+  const paint=(bandRow,band,value)=>{
+    if(!bandRow||!band)return;
+    const span=(band.ceil-band.min)||1;
+    const out=value!=null&&(value<band.min||value>band.ceil);
+    bandRow.classList.toggle('out',!!out);
+    let mark=bandRow.querySelector('.dose-band-mark');
+    if(value==null){if(mark)mark.remove();return;}
+    if(!mark){mark=document.createElement('span');mark.className='dose-band-mark';bandRow.querySelector('.dose-band-track').appendChild(mark);}
+    mark.classList.toggle('out',!!out);
+    mark.style.left=Math.max(0,Math.min(100,(value-band.min)/span*100)).toFixed(1)+'%';
+    mark.style.background=bandRow.dataset.bandColor||fallback;
+  };
+  ['sport','zone'].forEach(attr=>{
+    Object.entries(g[attr]||{}).forEach(([key,fields])=>{
+      Object.entries(fields).forEach(([field,band])=>{
+        const inp=document.querySelector(`.block-goal-${field}[data-${attr}="${CSS.escape(key)}"]`);
+        if(!inp)return;
+        // Bandzeilen folgen der Zielzeile in Reihenfolge pct → count.
+        const rows=[...inp.closest('.block-goal-row').parentElement.children];
+        const rowIdx=rows.indexOf(inp.closest('.block-goal-row'));
+        const own=[];
+        for(let i=rowIdx+1;i<rows.length&&rows[i].classList.contains('dose-band');i++)own.push(rows[i]);
+        const order=['pct','count'].filter(f=>fields[f]);
+        paint(own[order.indexOf(field)],band,inp.value!==''?parseFloat(inp.value):null);
+      });
+    });
+  });
+  paint(document.querySelector('#block-weekly-band .dose-band'),g.weekly,parseIntOrNull('#block-weekly-min'));
+}
+
+// Vorlagenwechsel: Intention/Farbe setzen, Bänder+Floors übernehmen, Ziele mit den
+// opt-Werten vorbefüllen, bei rigid die Blockdauer auf die Nominaldauer schnappen.
+function onBlockTemplateChange(){
+  const ctx=_blockModalCtx;if(!ctx)return;
+  const id=document.getElementById('block-template').value;
+  const tpl=blockTemplateById(id);
+  ctx.template=tpl;
+  ctx.templateId=tpl?tpl.id:null;
+  ctx.templateVersion=tpl?BLOCK_TEMPLATE_VERSION:null;
+  ctx.bands=tpl?tpl.doseBands:null;
+  ctx.floors=tpl?tpl.floors:null;
+  // Rigid schnappt die Blockdauer auf die Nominaldauer — die ursprünglich aufgezogene
+  // Spanne dabei merken, damit ein Wechsel zurück auf eine elastische Vorlage (oder auf
+  // "ohne Vorlage") sie wiederherstellt statt die geschnappte Dauer stillschweigend zu behalten.
+  if(ctx.originalEnd==null)ctx.originalEnd=ctx.ends_on;
+  const setRange=iso=>{
+    ctx.ends_on=iso;
+    const titleEl=document.getElementById('block-sheet-title');
+    if(titleEl)titleEl.innerHTML=`${ctx.existing?'Block bearbeiten':'Block anlegen'} &#183; ${fmtBlockDate(ctx.starts_on)} &#8211; ${fmtBlockDate(ctx.ends_on)}`;
+  };
+  if(!tpl){setRange(ctx.originalEnd);renderBlockGoalRows({},{});renderBlockTemplateMeta();updateBlockGoalWarnings();return;}
+  // Intention + Default-Farbe über die bestehende Logik, nicht dupliziert.
+  const intentionEl=document.getElementById('block-intention');
+  intentionEl.value=tpl.intention;
+  intentionEl.dispatchEvent(new Event('change'));
+  // Rigid: die Dichte IST die Intervention (Spec §3.2 G3) — Dauer auf nominal schnappen.
+  setRange(tpl.days&&tpl.days.rigid?addDaysIso(ctx.starts_on,tpl.days.nominal-1):ctx.originalEnd);
+  // Ziele vorbefüllen: zoneTargetsDefault zuerst, dann die opt-Werte der Bänder.
+  // Deep-Copy, damit die Bibliothekskonstante nicht mutiert wird.
+  const zoneT=JSON.parse(JSON.stringify(tpl.zoneTargetsDefault||{}));
+  const sportT={};
+  let weekly=null;
+  Object.entries(tpl.doseBands||{}).forEach(([path,band])=>{
+    if(band.opt==null)return;
+    const inp=targetPathInput(path);
+    if(!inp)return;                      // Orientierungsband ohne Zielfeld (run_km)
+    if(inp.field==='weekly'){weekly=band.opt;return;}
+    const bag=inp.attr==='zone'?zoneT:sportT;
+    (bag[inp.key]||(bag[inp.key]={}))[inp.field]=band.opt;
+  });
+  document.getElementById('block-weekly-min').value=weekly!=null?weekly:'';
+  document.getElementById('block-goal-toggle').classList.add('open');
+  document.getElementById('block-goal-body').classList.add('open');
+  const titleInput=document.getElementById('block-title');
+  if(!titleInput.value.trim())titleInput.value=tpl.name;
+  renderBlockGoalRows(sportT,zoneT);
+  renderBlockTemplateMeta();
+  updateBlockGoalWarnings();
+}
+
+const EVIDENCE_ORDER={'RCT':1,'kontrolliert':2,'einzelfall':3,'deskriptiv':4};
+function evidenceBadgeHTML(ev){
+  if(!ev||ev==='—')return'<span class="tpl-badge tpl-badge-none" title="keine Studienvorlage &#8212; bewusst offen">ohne Evidenz</span>';
+  return`<span class="tpl-badge tpl-badge-e${EVIDENCE_ORDER[ev]||4}">${esc(ev)}</span>`;
+}
+// Kopf der Vorlagensektion: Evidenz, Quelle, Dauer, Floors, Protokolle, Eintritt.
+function renderBlockTemplateMeta(){
+  const el=document.getElementById('block-tpl-meta');
+  if(!el)return;
+  const ctx=_blockModalCtx;
+  const tpl=ctx&&ctx.template;
+  if(!tpl){el.innerHTML='<p class="block-goal-hint">Ohne Vorlage: freier Block wie bisher &#8212; keine Dosisb&#xE4;nder, keine Erhaltungsreize, keine Makrobuchung.</p>';renderBlockTemplateCheck();return;}
+  const s=tpl.source;
+  const srcLine=s?`${esc(s.authors)}${s.year?' '+s.year:''}${s.journal&&s.journal!=='—'?' &#183; '+esc(s.journal):''}${s.population?'<br><span class="tpl-pop">'+esc(s.population)+'</span>':''}`:'';
+  const d=tpl.days;
+  const dayLine=d.rigid?`${d.nominal} Tage &#183; <strong>fest</strong>`:`${d.nominal} Tage &#183; ${d.min}&#8211;${d.max} elastisch`;
+  const rec=tpl.recoveryDays&&tpl.recoveryDays.length
+    ?` &#183; Erholung ${tpl.recoveryDays.length>1?tpl.recoveryDays[0]+'&#8211;'+tpl.recoveryDays[tpl.recoveryDays.length-1]:tpl.recoveryDays[0]} d`:'';
+  const g=groupDoseBands(tpl.doseBands);
+  const extraBands=g.extra.length?`<div class="tpl-sub">Orientierungswerte (kein Zielfeld)</div>`
+    +g.extra.map(([path,band])=>`<div class="tpl-line"><span>${esc(floorLabel(path))}</span><span class="tpl-val">${band.min} / ${band.opt} / ${band.ceil}</span></div>`).join(''):'';
+  const floorList=(tpl.floors||[]).map(f=>
+    `<div class="tpl-line"><span>${esc(floorLabel(f.key))}</span><span class="tpl-val">${esc(f.op)} ${f.value}${f.unit&&/^km_/.test(f.unit)?' km':''} / ${floorUnitDays(f.unit)} d</span></div>`).join('');
+  const protoList=(tpl.protocols||[]).map(k=>SESSION_PROTOCOLS[k]).filter(Boolean).map(p=>
+    `<div class="tpl-line tpl-proto"><span>${esc(p.name)} <span class="tpl-pop">${esc(p.structure)}</span></span><span class="tpl-val">${esc(p.target(cfg))} &#183; ${p.durationMin} min</span></div>`).join('');
+  const macro=ctx.macro;
+  const entry=evaluateEntry(tpl,macro);
+  let entryHTML='';
+  if(macro&&macro.insufficient){
+    entryHTML=`<div class="tpl-sub">Eintritt</div><p class="block-goal-hint">Unzureichende Datenlage `
+      +`(${macro.historyDays} von ${CHRONIC_MIN_HISTORY_DAYS} Tagen Historie) &#8212; Eintrittspr&#xFC;fung entf&#xE4;llt.</p>`;
+  }else if(entry.length){
+    entryHTML=`<div class="tpl-sub">Eintritt &#8212; wird angezeigt, blockiert nicht</div>`
+      +entry.map(c=>`<div class="tpl-line ${c.met===false?'tpl-miss':c.met===true?'tpl-ok':''}">
+        <span>${c.met===false?'&#9888;':c.met===true?'&#10003;':'&#183;'} ${esc(c.label)}</span>
+        <span class="tpl-val">${fmtEntryValue(c.key,c.actual)} <span class="tpl-pop">/ ${esc(c.op)} ${fmtEntryRequired(c.key,c.required)}</span></span></div>`).join('');
+  }
+  el.innerHTML=`
+    <div class="tpl-head">${evidenceBadgeHTML(tpl.evidence)}<span class="tpl-days">${dayLine}${rec}</span></div>
+    ${srcLine?`<p class="tpl-src">${srcLine}</p>`:''}
+    <p class="tpl-note">${esc(tpl.noteDe)}</p>
+    ${extraBands}
+    ${floorList?`<div class="tpl-sub">Erhaltungsreize &#8212; Untergrenzen, nicht Ziele</div>${floorList}`:''}
+    ${entryHTML}
+    ${protoList?`<div class="tpl-sub">Erlaubte Protokolle</div>${protoList}`:''}
+    <p class="tpl-credit">${esc(PROTOCOL_CREDIT_NOTE)}</p>`;
+  renderBlockTemplateCheck();
+}
+// Fixblock unter der Ziel-Sektion: Reizdichte, Realisierbarkeit, Makroprojektion.
+// Läuft beim Öffnen und bei jeder Änderung; blockiert nie (Spec §4.4/§9).
+function renderBlockTemplateCheck(){
+  const el=document.getElementById('block-tpl-check');
+  if(!el)return;
+  const ctx=_blockModalCtx;
+  const tpl=ctx&&ctx.template;
+  const prog=checkRunProgression();
+  if(!tpl){
+    // Comeback-Constraint gilt vorlagenübergreifend, also auch ohne Vorlage.
+    el.innerHTML=prog?`<div class="tpl-check"><div class="tpl-line tpl-miss"><span>&#9888; Lauf-Progression</span>
+      <span class="tpl-val">${prog.cur} km vs. ${prog.prev} km &#183; +${prog.pct}%</span></div>
+      <p class="block-goal-hint">&#252;ber +10 %/Woche &#8212; unabh&#228;ngig von der Vorlage.</p></div>`:'';
+    return;
+  }
+  const draft={starts_on:ctx.starts_on,ends_on:ctx.ends_on,floors:ctx.floors};
+  const targets={weekly_target_min:parseIntOrNull('#block-weekly-min'),
+    sport_targets:collectGoalMap('sport')||{},zone_targets:collectGoalMap('zone')||{}};
+  const dens=densityReadouts(draft,tpl);
+  const densHTML=dens.length?`<div class="tpl-sub">Reizdichte &#8212; Block ${blockDays(draft)} statt ${tpl.days.nominal} Tage</div>`
+    +dens.map(r=>`<div class="tpl-line${Math.abs(r.ratio-1)>0.15?' tpl-miss':''}"><span>${esc(r.label)}</span>
+      <span class="tpl-val">${r.perCycle} je ${r.days} d = ${r.realRate} / 7 d &#183; ${r.ratio>=1?'+':'&#8722;'}${Math.abs(Math.round((r.ratio-1)*100))} % ggü. Vorlage</span></div>`).join(''):'';
+  const feas=checkFeasibility(draft,tpl,targets);
+  const feasHTML=feas.length?`<div class="tpl-sub">Realisierbarkeit</div>`
+    +feas.map(f=>`<div class="tpl-line ${f.level==='warn'?'tpl-miss':f.level==='hint'?'tpl-hint':'tpl-ok'}"><span>${f.text}</span></div>`).join(''):'';
+  const proj=projectMacroAfterBlock(draft,targets,ctx.macro);
+  const projHTML=proj?`<div class="tpl-sub">Makroprojektion &#8212; LIT-Anteil im 84-Tage-Fenster</div>
+    <div class="tpl-line${proj.after<0.75?' tpl-miss':''}"><span>nach dem Block</span>
+      <span class="tpl-val">${Math.round(proj.before*100)} % &#8594; ${Math.round(proj.after*100)} %</span></div>
+    <p class="block-goal-hint">Sch&#228;tzung: Blockdosis addiert, gleich viele Tage am Fensteranfang abgezogen. `
+    +`LIT-R&#252;ckstand nach Austritt: ${(ctx.macro.litDebt+(tpl.exit.litDebtWeeks*blockDays(draft)/7)).toFixed(1)} Wochen.</p>`:'';
+  const progHTML=prog?`<div class="tpl-line tpl-miss"><span>&#9888; Lauf-Progression &#252;ber +10 %/Woche</span>
+    <span class="tpl-val">${prog.cur} km vs. ${prog.prev} km &#183; +${prog.pct}%</span></div>`:'';
+  el.innerHTML=(densHTML||feasHTML||projHTML||progHTML)
+    ?`<div class="tpl-check">${densHTML}${feasHTML}${projHTML}${progHTML}</div>`:'';
+}
+// Grobe Projektion des 84-Tage-LIT-Anteils: Blockdosis wird addiert, dieselbe Anzahl
+// Tage am Fensteranfang zum bisherigen Schnitt abgezogen. Bewusst eine Schätzung —
+// sie soll die Richtung zeigen, nicht eine Zahl versprechen.
+function projectMacroAfterBlock(block,targets,macro){
+  if(!macro||macro.insufficient||!(macro.zoneTotalMin>0))return null;
+  const zt=targets.zone_targets||{};
+  const sum=['LIT','MIT','HIT'].reduce((s,k)=>s+((zt[k]&&zt[k].pct)||0),0);
+  const weekly=targets.weekly_target_min;
+  if(!(weekly>0)||!(sum>0))return null;
+  const days=blockDays(block);
+  const windowMin=macro.zoneTotalMin*(MACRO_WINDOW_DAYS/7);
+  const keep=Math.max(0,(MACRO_WINDOW_DAYS-days)/MACRO_WINDOW_DAYS);
+  const addTotal=weekly*(days/7);
+  const before=macro.tid.LIT!=null?macro.tid.LIT:0;
+  const litAfter=before*windowMin*keep+addTotal*(((zt.LIT&&zt.LIT.pct)||0)/sum);
+  const totAfter=windowMin*keep+addTotal;
+  if(!(totAfter>0))return null;
+  return{before,after:litAfter/totAfter};
+}
+// Lock-Auswertung beim Speichern (Spec §3.1): 'fixed' → jede Abweichung vom opt-Wert,
+// 'bounded' → nur außerhalb [min,ceil]. Beides markiert den Block als modifiziert und
+// trägt den Pfad in modified_fields; blockiert nie.
+function evaluateLocks(bands,targets){
+  const fields=[];
+  Object.entries(bands||{}).forEach(([path,band])=>{
+    if(!targetPathInput(path))return;    // Orientierungsband ohne Zielfeld
+    const v=readTargetPath(targets,path);
+    if(v==null)return;
+    if(band.lock==='fixed'&&v!==band.opt)fields.push(path);
+    else if(band.lock==='bounded'&&(v<band.min||v>band.ceil))fields.push(path);
+  });
+  return{modified:fields.length>0,modified_fields:fields};
 }
 // Globales Budget-Ziel bearbeiten (Log → Budget → Stift). Bewusst dieselben
 // Felder, Klassen und IDs wie die Ziel-Sektion im Block-Sheet, damit
@@ -6585,6 +8035,10 @@ function openBlockModal(existing,preset){
 // unverändert mitgenutzt werden — nur ohne Zeitraum, Titel und Farbe.
 function openBudgetGoalModal(){
   closeBlockModal();
+  // Paket G: Kontext hart leeren. Das Budget-Ziel kennt keine Vorlagen — ohne das
+  // würden updateBlockGoalWarnings/updateDoseBandMarks gegen die Bänder des zuletzt
+  // bearbeiteten Blocks prüfen.
+  _blockModalCtx=null;
   const t=budgetTargetsFromCfg();
   const sportT=t.sport_targets||{},zoneT=t.zone_targets||{};
   const sportGoalRows=(cfg.sports||[]).map(s=>blockGoalRowHTML('sport',s.key,s.label||s.key,s.color,sportT[s.key])).join('');
@@ -6640,9 +8094,36 @@ function toggleBlockGoalSection(){
 // 100% abweichen — blockiert das Speichern nicht, ist nur ein Hinweis.
 function updateBlockGoalWarnings(){
   const sumOf=sel=>[...document.querySelectorAll(sel)].reduce((s,i)=>s+(parseFloat(i.value)||0),0);
-  const warn=(el,sum)=>{if(!el)return;el.textContent=(sum>0&&(sum<90||sum>110))?`Summe: ${Math.round(sum)}% — ergibt nicht 100%, wird trotzdem gespeichert`:'';};
-  warn(document.getElementById('block-goal-warn-sport'),sumOf('.block-goal-pct[data-sport]'));
-  warn(document.getElementById('block-goal-warn-zone'),sumOf('.block-goal-pct[data-zone]'));
+  // Paket G: Bandverletzungen hängen sich an dieselbe Warnzeile an (Spec §7.2 —
+  // .block-goal-warn wiederverwenden, keine zweite Warnfläche). Ohne Vorlage
+  // (u.a. im Budget-Ziel-Sheet) ist bandNote leer und die Zeile bleibt wie bisher.
+  const bands=(_blockModalCtx&&_blockModalCtx.bands)||null;
+  const bandNote=attr=>{
+    if(!bands)return'';
+    const g=groupDoseBands(bands)[attr]||{};
+    const bad=[];
+    Object.entries(g).forEach(([key,fields])=>{
+      Object.entries(fields).forEach(([field,band])=>{
+        if(band.lock==='free')return;
+        const inp=document.querySelector(`.block-goal-${field}[data-${attr}="${CSS.escape(key)}"]`);
+        if(!inp||inp.value==='')return;
+        const v=parseFloat(inp.value);
+        if(band.lock==='fixed'&&v!==band.opt)bad.push(`${key} ${field==='pct'?'%':'#/Wo'} ${v} ≠ Vorlage ${band.opt}`);
+        else if(band.lock==='bounded'&&(v<band.min||v>band.ceil))bad.push(`${key} ${field==='pct'?'%':'#/Wo'} ${v} außerhalb ${band.min}–${band.ceil}`);
+      });
+    });
+    return bad.length?`Abweichung von der Vorlage: ${bad.join(' · ')} — wird als „modifiziert“ gespeichert`:'';
+  };
+  const warn=(el,sum,extra)=>{
+    if(!el)return;
+    const parts=[];
+    if(sum>0&&(sum<90||sum>110))parts.push(`Summe: ${Math.round(sum)}% — ergibt nicht 100%, wird trotzdem gespeichert`);
+    if(extra)parts.push(extra);
+    el.textContent=parts.join(' · ');
+  };
+  warn(document.getElementById('block-goal-warn-sport'),sumOf('.block-goal-pct[data-sport]'),bandNote('sport'));
+  warn(document.getElementById('block-goal-warn-zone'),sumOf('.block-goal-pct[data-zone]'),bandNote('zone'));
+  // Wochenzeit-Band hat keine eigene Warnzeile — die Bandzeile selbst trägt .out.
 }
 function parseIntOrNull(sel){
   const el=document.querySelector(sel);
@@ -6693,11 +8174,33 @@ async function saveBlockFromModal(){
   const weekly_target_min=parseIntOrNull('#block-weekly-min');
   const sport_targets=collectGoalMap('sport');
   const zone_targets=collectGoalMap('zone');
-  const payload={title,intention,color:ctx.color,note,starts_on:ctx.starts_on,ends_on:ctx.ends_on,weekly_target_min,sport_targets,zone_targets};
+  // ── Paket G: Vorlagenbindung ──────────────────────────────────────────────
+  // template_version wird beim Anlegen eingefroren und bei späteren Edits NICHT
+  // hochgezogen — ein laufender Block soll seine Dosierung behalten, auch wenn die
+  // Bibliothek inzwischen eine neue Fassung der Vorlage führt.
+  const targetsNow={weekly_target_min,sport_targets:sport_targets||{},zone_targets:zone_targets||{}};
+  const locks=evaluateLocks(ctx.bands,targetsNow);
+  // Offene Eintrittsbedingungen blockieren nicht, werden aber dokumentiert (Spec §6.1).
+  const entryOverride=evaluateEntry(ctx.template,ctx.macro).filter(c=>c.met===false)
+    .map(c=>({key:c.key,label:c.label,op:c.op,required:c.required,actual:c.actual}));
+  const gFields={
+    template_id:ctx.templateId||null,
+    template_version:ctx.templateId?(ctx.templateVersion!=null?ctx.templateVersion:BLOCK_TEMPLATE_VERSION):null,
+    dose_bands:ctx.templateId?ctx.bands:null,
+    floors:ctx.templateId?ctx.floors:null,
+    modified:locks.modified,
+    modified_fields:locks.modified_fields.length?locks.modified_fields:null,
+    // Nur beim Anlegen setzen — ein bereits gebuchter Austritt darf nicht überschrieben
+    // werden, deshalb übernimmt der Update-Pfad exit_booking gar nicht.
+    exit_booking:ctx.existing?undefined:(entryOverride.length?{entryOverride}:null)
+  };
+  if(gFields.exit_booking===undefined)delete gFields.exit_booking;
+  const payload={title,intention,color:ctx.color,note,starts_on:ctx.starts_on,ends_on:ctx.ends_on,weekly_target_min,sport_targets,zone_targets,...gFields};
   setSyncState('syncing');
   try{
     if(ctx.existing){
-      const upd=await DB.updateBlock(ctx.existing.id,{title,intention,color:ctx.color,note,weekly_target_min,sport_targets,zone_targets});
+      const upd=await DB.updateBlock(ctx.existing.id,{title,intention,color:ctx.color,note,
+        starts_on:ctx.starts_on,ends_on:ctx.ends_on,weekly_target_min,sport_targets,zone_targets,...gFields});
       Object.assign(ctx.existing,upd);
     }else{
       const created=await DB.addBlock(payload);blocks.push(created);
@@ -6716,7 +8219,10 @@ async function deleteBlockFromModal(){
   try{await DB.deleteBlock(b.id);setSyncState('ok');}
   catch(e){setSyncState('error');alert('Block löschen fehlgeschlagen: '+e.message);}
   showUndoToast('Block gelöscht',async()=>{
-    const re=await DB.addBlock({title:b.title,intention:b.intention,color:b.color,note:b.note,starts_on:b.starts_on,ends_on:b.ends_on,weekly_target_min:b.weekly_target_min,sport_targets:b.sport_targets,zone_targets:b.zone_targets});
+    // Paket G mitnehmen — sonst verliert ein Undo die Vorlagenbindung und der Block
+    // käme ohne Bänder, Floors und Austrittsbuchung zurück.
+    const re=await DB.addBlock({title:b.title,intention:b.intention,color:b.color,note:b.note,starts_on:b.starts_on,ends_on:b.ends_on,weekly_target_min:b.weekly_target_min,sport_targets:b.sport_targets,zone_targets:b.zone_targets,
+      template_id:b.template_id,template_version:b.template_version,dose_bands:b.dose_bands,floors:b.floors,modified:b.modified,modified_fields:b.modified_fields,exit_booking:b.exit_booking});
     blocks.push(re);renderCalendar();renderLogBudgetSlot();
   });
 }
@@ -6741,11 +8247,29 @@ function openBlockInfoPopover(block){
   };
   const sportRows=Object.entries(block.sport_targets||{}).map(([k,t])=>goalLine(sportCfg(k).label||k,t)).join('');
   const zoneRows=Object.entries(block.zone_targets||{}).map(([k,t])=>goalLine(k,t)).join('');
+  // Paket G: Vorlage + Evidenz in der Kopfzeile, "(modifiziert)" hinter dem Titel,
+  // sobald ein fixed/bounded-Wert vom Band abweicht.
+  const tpl=blockTemplateOf(block);
+  // Vorlagenname weglassen, wenn er ohnehin der Titel ist (der Editor übernimmt ihn als
+  // Default) — sonst steht dieselbe Zeichenkette zweimal untereinander.
+  const tplHead=tpl?`<p class="block-info-tpl">${evidenceBadgeHTML(tpl.evidence)}${tpl.name===block.title?'':`<span>${esc(tpl.name)}</span>`}</p>`:'';
+  const modSuffix=block.modified?' <span class="block-info-mod">(modifiziert)</span>':'';
+  const eb=block.exit_booking;
+  const exitLine=eb&&eb.completedAt
+    ?`<div class="block-info-line">Abgeschlossen ${fmtBlockDate(eb.completedAt)}`
+      +(eb.complianceP!=null?` &#183; ${Math.round(eb.complianceP)} % der Dosis`:'')
+      +(eb.litDebtWeeks?` &#183; LIT-${eb.litDebtWeeks<0?'Guthaben':'R&#252;ckstand'} ${Math.abs(eb.litDebtWeeks).toFixed(1)} Wo`:'')+`</div>`
+    :'';
+  const floorLines=(block.floors||[]).map(f=>
+    `<div class="block-info-line block-info-floor">${esc(floorLabel(f.key))} ${esc(f.op)} ${f.value}${/^km_/.test(f.unit||'')?' km':''} / ${floorUnitDays(f.unit)} d</div>`).join('');
   pop.innerHTML=`
-    <h4>${esc(block.title)}</h4>
+    <h4>${esc(block.title)}${modSuffix}</h4>
+    ${tplHead}
     <p class="block-info-range">${esc(block.intention)} &#183; ${fmtBlockDate(block.starts_on)} &#8211; ${fmtBlockDate(block.ends_on)}</p>
     ${block.weekly_target_min?`<div class="block-info-line">Wochenzeit-Ziel: ${fmtMin(block.weekly_target_min)} h</div>`:''}
     ${sportRows}${zoneRows}
+    ${floorLines?`<div class="block-info-sub">Erhaltungsreize</div>${floorLines}`:''}
+    ${exitLine}
     <div class="block-info-actions"><button type="button" id="block-info-edit">Bearbeiten</button></div>`;
   document.body.appendChild(bd);document.body.appendChild(pop);
   bd.addEventListener('click',closeBlockInfoPopover);
@@ -7189,6 +8713,16 @@ function ghostDefaultsFor(sport){
 }
 
 // Undo-Toast (querschnittlich: alle Drag-/Schnell-Aktionen bestätigen mit Undo).
+// Reine Meldung ohne Rückgängig-Aktion — teilt sich die .tlog-toast-Optik mit
+// showUndoToast, damit keine zweite Toast-Grammatik entsteht.
+function showToast(msg,ms=4000){
+  document.querySelectorAll('.tlog-toast').forEach(t=>t.remove());
+  const el=document.createElement('div');
+  el.className='tlog-toast';
+  el.innerHTML=`<span>${msg}</span>`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),ms);
+}
 function showUndoToast(msg,onUndo,ms=5000){
   document.querySelectorAll('.tlog-toast').forEach(t=>t.remove());
   const el=document.createElement('div');
@@ -7622,7 +9156,7 @@ function openSessionModal(id){
   let profileBlock='';
   if(zp&&zp.some(m=>m>0)){
     const totalZ=zp.reduce((a,b)=>a+b,0);
-    const zColors=['#b8d4e8','#5b9bd5','#f0c674','#e8975c','#c4544a'];
+    const zColors=zp.map((m,i)=>zoneCfg('Z'+(i+1),s.sport).color);
     const zLabels=['Z1','Z2','Z3','Z4','Z5'];
     const segs=zp.map((m,i)=>{
       const pct=totalZ>0?(m/totalZ*100):0;
@@ -7770,6 +9304,11 @@ function buildModalEditPanel(s){
       <label>H&#xF6;henmeter (m)</label>
       <input type="number" id="me-elevation" min="0" step="1" value="${s.elevation_m||''}">
     </div>`:''}
+    ${s.sport==='Kraft'?`
+    <div class="modal-edit-row">
+      <label>Kraft-Typ</label>
+      <div class="strength-chips" id="me-strength">${strengthChipsHTML(s.strength_type)}</div>
+    </div>`:''}
     <div class="modal-edit-row">
       <label>${noteLabel}</label>
       <textarea id="me-note" class="note-paper" rows="${isStrength?6:3}" placeholder="${isStrength?'\u00DCbungen, S\u00E4tze, Gewichte':''}">${esc(s.note||'')}</textarea>
@@ -7804,6 +9343,9 @@ function bindModalEditPanel(s){
       note:document.getElementById('me-note').value.trim()||null,
       marker_color:selectedMarker||null
     };
+    // Paket G: Kraft-Typ (nur bei Sport = Kraft im Sheet vorhanden).
+    const strengthBox=document.getElementById('me-strength');
+    if(strengthBox)patch.strength_type=strengthBox.querySelector('.strength-chip.active')?.dataset.strength||null;
     if(isCardio){
       const dist=document.getElementById('me-distance')?.value;
       const elev=document.getElementById('me-elevation')?.value;
@@ -7817,6 +9359,9 @@ function bindModalEditPanel(s){
       const updated=await DB.updateSession(s.id,patch);
       const idx=sessions.findIndex(x=>String(x.id)===String(s.id));
       if(idx>=0)sessions[idx]={...sessions[idx],...updated};
+      // Datum/Dauer (und ab Paket G der Kraft-Typ) gehen in die Load-Serie bzw. die
+      // Erhaltungsreize ein \u2014 ohne markSessionsDirty blieben die Kennzahlen stale.
+      markSessionsDirty();
       setSyncState('ok');
       statusEl.textContent='\u2713 Gespeichert';
       setTimeout(()=>{closeSessionModal();renderCalendar();if(activePage==='log')renderLog();},500);
@@ -11906,6 +13451,10 @@ async function showApp(user){
   let remoteCfg=null;
   [sessions,trainingProfile,templates,remoteCfg,blocks]=await Promise.all([DB.getSessions(),DB.getProfile(),DB.getTemplates().catch(()=>[]),DB.getConfig().catch(()=>null),DB.getBlocks().catch(()=>[])]);
   markSessionsDirty();
+  // Paket G: Blöcke, deren Enddatum passiert ist, beim ersten Laden austragen — sonst
+  // erst beim nächsten Kalender-Render, und die Makrobilanz auf der Log-Seite hätte den
+  // LIT-Rückstand des Blocks noch nicht gebucht.
+  settleFinishedBlocks();
   setSyncState('ok');
   if(remoteCfg){
     Object.assign(cfg,remoteCfg);
@@ -11924,14 +13473,14 @@ async function showApp(user){
   // Keine Voreintragungen mehr bei "Neue Einheit" — Datum und Dauer bleiben leer
   renderLog();
   // ── Smoother Reveal: erst zeigen, wenn Hero-Assets fertig sind ──────────────
-  // Storm-Bild + Logo-Canvas (ensureLogoFx resolved nach erstem Dither-Frame) + Fonts
+  // Pixel-Hero-Foto + Logo-Canvas (ensureLogoFx resolved nach erstem Dither-Frame) + Fonts
   // parallel abwarten (Safety-Timeout, damit der Splash nie hängen bleibt), dann Hero
   // + Blitz-Reveal frisch eintreten lassen und den Splash ausblenden.
   if(activePage==='log'){
     await Promise.race([
       Promise.all([
         ensureLogoFx().catch(()=>{}),
-        preloadImg('img/background-storm.jpg'),
+        preloadImg('assets/hero-hintergrund.jpg'),
         (document.fonts?document.fonts.ready:Promise.resolve()).catch(()=>{}),
       ]),
       new Promise(r=>setTimeout(r,3500)),
