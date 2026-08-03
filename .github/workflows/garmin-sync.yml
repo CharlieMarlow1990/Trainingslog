@@ -20,6 +20,7 @@ on:
 
 permissions:
   contents: write   # erlaubt das Zurück-Committen der garmin/-Dateien
+  issues: write     # erlaubt das Anlegen eines Issues, wenn der Sync fehlschlägt
 
 jobs:
   sync:
@@ -38,23 +39,72 @@ jobs:
         env:
           GARMIN_TOKENSTORE: ${{ secrets.GARMIN_TOKENSTORE }}
         run: |
-          if [ -z "$GARMIN_TOKENSTORE" ]; then
-            echo "::error::Secret GARMIN_TOKENSTORE fehlt. Zuerst 'Garmin Auth (einmalig)' ausführen."
-            exit 1
-          fi
           mkdir -p "$RUNNER_TEMP/garmintoken"
-          echo "$GARMIN_TOKENSTORE" | base64 -d | tar -C "$RUNNER_TEMP/garmintoken" -xzf -
+          if [ -z "$GARMIN_TOKENSTORE" ]; then
+            echo "::warning::Secret GARMIN_TOKENSTORE fehlt — es wird der Passwort-Fallback versucht."
+          else
+            echo "$GARMIN_TOKENSTORE" | base64 -d | tar -C "$RUNNER_TEMP/garmintoken" -xzf -
+          fi
+          # Fingerabdruck merken: der Sync erneuert den Token unterwegs (die Refresh-Token
+          # rotieren bei jedem Aufruf). Nur wenn er sich ändert, schreiben wir das Secret neu.
+          echo "TOKEN_HASH_BEFORE=$(find "$RUNNER_TEMP/garmintoken" -type f -exec sha256sum {} + \
+            | sort | sha256sum | cut -d' ' -f1)" >> "$GITHUB_ENV"
 
       - name: Garmin-Daten synchronisieren
         env:
           GARMIN_TOKENSTORE_DIR: ${{ runner.temp }}/garmintoken
           GARMIN_OUTDIR: garmin
+          # Fallback, falls der gespeicherte Token abgelaufen ist (siehe connect_with_token()).
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
         run: |
           ARGS="--days ${{ github.event.inputs.days || 7 }}"
           if [ -n "${{ github.event.inputs.activities_days }}" ]; then
             ARGS="$ARGS --activities-days ${{ github.event.inputs.activities_days }}"
           fi
           python garmin-ai/garmin_sync.py $ARGS
+
+      # Muss auch bei fehlgeschlagenem Sync laufen: Garmin entwertet den alten Refresh-Token,
+      # sobald er rotiert ist. Würde man den neuen hier verwerfen, wäre das Secret sofort tot.
+      #
+      # Dieser Schritt darf den Job NIE rot machen: er läuft vor dem Commit-Schritt, und ein
+      # abgelaufener GH_PAT würde sonst dafür sorgen, dass die frisch geholten Garmin-Daten
+      # gar nicht mehr committet werden. Er ist eine Optimierung — der Passwort-Fallback in
+      # connect_with_token() hält den Sync auch ohne gültiges Secret am Leben.
+      - name: Erneuerten Token zurück ins Secret schreiben
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          TOKEN_DIR: ${{ runner.temp }}/garmintoken
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::Kein GH_PAT gesetzt — Token kann nicht erneuert werden; der Sync bricht dann irgendwann wieder mit 401 ab."
+            exit 0
+          fi
+          if [ ! -d "$TOKEN_DIR" ] || [ -z "$(ls -A "$TOKEN_DIR" 2>/dev/null)" ]; then
+            echo "Kein Tokenstore vorhanden — nichts zu speichern."
+            exit 0
+          fi
+          AFTER="$(find "$TOKEN_DIR" -type f -exec sha256sum {} + | sort | sha256sum | cut -d' ' -f1)"
+          # Nur bei zwei gültigen, gleichen Fingerabdrücken überspringen. Wären beide leer
+          # (z. B. sha256sum fehlt), würden sie fälschlich als "gleich" gelten und der Token
+          # nie gespeichert — also im Zweifel lieber schreiben.
+          if [ -n "$AFTER" ] && [ "$AFTER" = "$TOKEN_HASH_BEFORE" ]; then
+            echo "Token unverändert — Secret bleibt wie es ist."
+            exit 0
+          fi
+          B64="$(tar -C "$TOKEN_DIR" -czf - . | base64 -w0)"
+          # Niemals ein leeres Secret schreiben — das würde den funktionierenden Token löschen.
+          if [ ${#B64} -lt 100 ]; then
+            echo "::warning::Token-Archiv unerwartet leer (${#B64} Zeichen) — Secret wird nicht überschrieben."
+            exit 0
+          fi
+          if gh secret set GARMIN_TOKENSTORE --repo "$GITHUB_REPOSITORY" --body "$B64"; then
+            echo "✓ Secret GARMIN_TOKENSTORE mit erneuertem Token aktualisiert."
+          else
+            echo "::warning::Secret konnte nicht geschrieben werden (GH_PAT abgelaufen?). Der Sync läuft über den Passwort-Fallback weiter — GH_PAT bitte erneuern."
+          fi
 
       - name: Änderungen committen
         run: |
@@ -66,4 +116,39 @@ jobs:
           else
             git commit -m "Garmin-Sync: $(date -u +%Y-%m-%d)"
             git push
+          fi
+
+      # Ohne das bleibt ein Ausfall tagelang unbemerkt — genau so ist der 401-Ausfall
+      # Ende Juli 2026 vier Tage lang durchgelaufen.
+      - name: Bei Fehlschlag ein Issue anlegen
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TITEL="Garmin-Sync fehlgeschlagen"
+          RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          # Suche über den Titel statt über ein Label: 'gh issue create --label' schlägt fehl,
+          # wenn das Label nicht existiert — so ist kein Vorab-Setup nötig.
+          NUMMER="$(gh issue list --state open --search "$TITEL in:title" \
+            --json number,title --jq "[.[] | select(.title == \"$TITEL\")][0].number")"
+          if [ -n "$NUMMER" ] && [ "$NUMMER" != "null" ]; then
+            gh issue comment "$NUMMER" --body "Erneut fehlgeschlagen am $(date -u +%Y-%m-%d): $RUN_URL"
+            echo "Issue #$NUMMER kommentiert."
+          else
+            gh issue create --title "$TITEL" --body "$(cat <<EOF
+          Der automatische Garmin-Sync ist fehlgeschlagen.
+
+          - Lauf: $RUN_URL
+          - Datum: $(date -u +%Y-%m-%d)
+
+          **Häufigste Ursache:** der gespeicherte Garmin-Token ist abgelaufen. Im Log steht dann
+          \`API Error 401\` bzw. \`Failed to retrieve social profile\`.
+
+          **Behebung:** Actions → "Garmin Auth (einmalig)" manuell starten. Danach "Garmin Sync"
+          mit \`days\` = Anzahl der verpassten Tage laufen lassen. Details in \`garmin-ai/README.md\`.
+
+          Dieses Issue schließen, sobald der Sync wieder grün ist.
+          EOF
+          )"
+            echo "Neues Issue angelegt."
           fi

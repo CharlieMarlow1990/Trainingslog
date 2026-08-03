@@ -51,9 +51,15 @@ jobs:
             exit 0
           fi
           B64="$(tar -C "$TOKEN_DIR" -czf - . | base64 -w0)"
-          gh secret set GARMIN_TOKENSTORE --repo "$GITHUB_REPOSITORY" --body "$B64"
-          echo "✓ Secret GARMIN_TOKENSTORE aktualisiert."
-          echo "stored=true" >> "$GITHUB_OUTPUT"
+          # Auch auf den Artefakt-Weg ausweichen, wenn GH_PAT zwar gesetzt, aber abgelaufen ist —
+          # sonst ist der frisch erzeugte Token verloren und der Lauf war umsonst.
+          if gh secret set GARMIN_TOKENSTORE --repo "$GITHUB_REPOSITORY" --body "$B64"; then
+            echo "✓ Secret GARMIN_TOKENSTORE aktualisiert."
+            echo "stored=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::GH_PAT ungültig/abgelaufen — Token wird als Artefakt bereitgestellt (manuell als Secret eintragen)."
+            echo "stored=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Token als Artefakt sichern (Fallback ohne GH_PAT)
         if: steps.store.outputs.stored == 'false'

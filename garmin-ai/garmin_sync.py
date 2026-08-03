@@ -14,11 +14,12 @@ Zwei Modi:
 
   python garmin_sync.py --days N
       Synchronisiert die letzten N Tage. Nutzt den gespeicherten Token aus
-      GARMIN_TOKENSTORE_DIR (kein Passwort/2FA nötig). Idempotent: bereits
-      vorhandene Tage werden sauber überschrieben.
+      GARMIN_TOKENSTORE_DIR. Ist der abgelaufen, wird automatisch mit
+      GARMIN_EMAIL/GARMIN_PASSWORD neu eingeloggt und der Token erneuert.
+      Idempotent: bereits vorhandene Tage werden sauber überschrieben.
 
 Umgebungsvariablen:
-  GARMIN_EMAIL, GARMIN_PASSWORD   nur für --auth
+  GARMIN_EMAIL, GARMIN_PASSWORD   für --auth und als Fallback beim Sync
   GARMIN_MFA                      optionaler 2FA-Code (nur für --auth, falls Garmin fragt)
   GARMIN_TOKENSTORE_DIR           Verzeichnis für den Token (Default: ./.garmintoken)
   GARMIN_OUTDIR                   Ausgabeordner (Default: garmin)
@@ -49,8 +50,11 @@ MONATE = ["", "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli",
 
 
 # ── Auth ────────────────────────────────────────────────────────────────────
-def do_auth():
-    """Einmaliger Login, speichert den Token. Behandelt 2FA, falls Garmin danach fragt."""
+def _credential_login():
+    """Login mit E-Mail/Passwort und speichert den frischen Token nach TOKENSTORE.
+
+    Wird von do_auth() (einmaliger Login) und als Fallback von connect_with_token()
+    genutzt, falls der gespeicherte Token abgelaufen ist."""
     email = os.environ.get("GARMIN_EMAIL")
     password = os.environ.get("GARMIN_PASSWORD")
     if not email or not password:
@@ -59,6 +63,8 @@ def do_auth():
     Garmin = _Garmin()
 
     # python-garminconnect 0.3.x: Login über self.client; 2FA via return_on_mfa + resume_login.
+    # return_on_mfa=True ist wichtig: sonst würde die Bibliothek im Workflow interaktiv
+    # nach dem 2FA-Code fragen und der Lauf bliebe hängen.
     api = Garmin(email=email, password=password, return_on_mfa=True)
     try:
         result = api.login()
@@ -72,23 +78,39 @@ def do_auth():
     state = result[0] if isinstance(result, tuple) else None
     if state == "needs_mfa":
         if not mfa:
-            sys.exit("Garmin verlangt einen 2FA-Code. Workflow erneut starten und den Code "
-                     "ins Feld 'mfa_code' eintragen.")
+            sys.exit("Garmin verlangt einen 2FA-Code. Workflow 'Garmin Auth (einmalig)' starten "
+                     "und den Code ins Feld 'mfa_code' eintragen.")
         api.resume_login(result[1], mfa)
 
     # Token speichern (0.3.x: self.client.dump schreibt die Token-Dateien ins Verzeichnis).
     os.makedirs(TOKENSTORE, exist_ok=True)
     api.client.dump(TOKENSTORE)
     print(f"✓ Login erfolgreich. Token gespeichert unter {TOKENSTORE}/")
+    return api
+
+
+def do_auth():
+    """Einmaliger Login, speichert den Token. Behandelt 2FA, falls Garmin danach fragt."""
+    _credential_login()
 
 
 def connect_with_token():
-    """Verbindet mit gespeichertem Token — ohne Passwort/2FA."""
-    if not os.path.isdir(TOKENSTORE) or not os.listdir(TOKENSTORE):
-        sys.exit(f"Kein Token unter {TOKENSTORE}. Zuerst 'garmin-auth' ausführen.")
-    api = _Garmin()()
-    api.login(TOKENSTORE)
-    return api
+    """Verbindet mit gespeichertem Token. Fällt bei abgelaufenem Token auf E-Mail/Passwort
+    zurück und legt dabei einen frischen Token ab — der Workflow schiebt den anschließend
+    zurück ins Secret, damit die Token-Kette nicht abreißt."""
+    if os.path.isdir(TOKENSTORE) and os.listdir(TOKENSTORE):
+        try:
+            api = _Garmin()()
+            api.login(TOKENSTORE)
+            return api
+        except Exception as e:  # noqa: BLE001
+            # Typisch: der gespeicherte Refresh-Token ist abgelaufen → 401 beim Profil-Abruf.
+            print(f"⚠ Gespeicherter Token nicht mehr gültig ({e}).")
+            print("  Versuche Login mit GARMIN_EMAIL/GARMIN_PASSWORD …")
+    else:
+        print(f"⚠ Kein Token unter {TOKENSTORE}. Versuche Login mit GARMIN_EMAIL/GARMIN_PASSWORD …")
+
+    return _credential_login()
 
 
 # ── Kleine, robuste Helfer ──────────────────────────────────────────────────

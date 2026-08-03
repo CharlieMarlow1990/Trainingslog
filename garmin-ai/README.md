@@ -50,9 +50,44 @@ Der Sync läuft danach **täglich** (Standard: 05:00 UTC ≈ 07:00 MESZ), siehe
 
 ---
 
-## Token abgelaufen?
-Der Login-Token gilt ~1 Jahr. Wenn der Sync mit Auth-Fehler abbricht, einfach Schritt 2
-(**Garmin Auth**) erneut ausführen.
+## Wenn der Sync fehlschlägt
+
+Bei einem Fehlschlag legt der Workflow automatisch ein Issue **„Garmin-Sync fehlgeschlagen"** an
+(bzw. kommentiert das offene) — GitHub schickt dazu eine Mail.
+
+**Symptom im Log:**
+```
+GarminConnectConnectionError: API Error 401
+GarminConnectAuthenticationError: Failed to retrieve social profile
+```
+
+**Ursache:** Der gespeicherte Garmin-Token ist abgelaufen. Er hält **keine ~1 Jahr**, sondern in
+der Praxis nur wenige Wochen: der Tokenstore enthält lediglich `di_token` (~1 h gültig) und einen
+`di_refresh_token`, und Garmin gibt bei jedem Refresh einen **neuen** Refresh-Token zurück.
+
+**Das sollte sich normalerweise von selbst erledigen** — der Sync-Workflow schreibt den erneuerten
+Token nach jedem Lauf ins Secret `GARMIN_TOKENSTORE` zurück (Schritt „Erneuerten Token zurück ins
+Secret schreiben"), und falls der Token doch einmal tot ist, loggt sich `connect_with_token()`
+automatisch mit `GARMIN_EMAIL`/`GARMIN_PASSWORD` neu ein.
+
+**Manuell eingreifen** muss man nur, wenn beides scheitert (z. B. Passwort geändert, 2FA neu
+aktiviert):
+
+1. Actions → **Garmin Auth (einmalig)** → *Run workflow* (2FA-Code nur falls Garmin danach fragt).
+2. Actions → **Garmin Sync (täglich)** → *Run workflow* mit `days` = Anzahl der verpassten Tage.
+
+### `GH_PAT` abgelaufen
+
+Zeigt das Log `failed to fetch public key: HTTP 401: Bad credentials`, ist das Secret `GH_PAT`
+abgelaufen. Der Sync **läuft dann trotzdem weiter** (Passwort-Fallback), aber der erneuerte Token
+kann nicht mehr gespeichert werden — also bitte erneuern:
+
+Ein neues [Personal Access Token](https://github.com/settings/tokens) mit `repo`-Scope erzeugen und
+unter *Settings → Secrets and variables → Actions* als `GH_PAT` hinterlegen. PATs mit Ablaufdatum
+müssen regelmäßig erneuert werden; „No expiration" erspart das.
+
+> Historie: Genau dieser Ausfall trat vom 31.07.–03.08.2026 auf, weil der rotierte Token damals
+> nur im temporären Runner-Verzeichnis landete und nie ins Secret zurückgeschrieben wurde.
 
 ## Lokal ausführen (optional)
 ```bash
