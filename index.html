@@ -575,6 +575,9 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
    der Startwert vor dem Einpassen. */
 .lh-top .lh-ascii-icon{position:absolute;right:0;top:50%;transform:translateY(-50%);z-index:-1;font-size:4px;}
 .lh-zone{font-family:var(--font-mono);font-size:.72rem;font-weight:700;letter-spacing:.05em;padding:.12rem .1rem;color:var(--paper);opacity:.72;}
+/* Paket I2: Trainingstyp. Bewusst KEIN zweiter .lh-badge — zwei gerahmte Badges
+   untereinander würden mit der Sportart konkurrieren; hier reicht eine ruhige Zeile. */
+.lh-stype{font-family:var(--font-mono);font-size:.68rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin:0;color:var(--paper);opacity:.72;}
 .lh-title{font-size:.8rem;font-style:italic;margin:0;color:var(--paper);opacity:.88;}
 .lh-meta{font-size:.75rem;margin:0;color:var(--paper);opacity:.72;}
 /* Full Bleed des gesamten Wisch-Bereichs: negativer Rand = Karten-Padding (1.4rem), dadurch
@@ -1187,6 +1190,12 @@ code{font-family:var(--font-mono);font-size:.82em;background:var(--bg);padding:.
 .emoji-pick{width:52px;text-align:center;font-size:1rem;padding:.3rem;}
 .sport-img-preview{width:34px;height:34px;border-radius:0;object-fit:cover;border:1px solid var(--border);}
 .zone-row{display:grid;grid-template-columns:1fr 60px 60px 34px;gap:.4rem;align-items:center;margin-bottom:.45rem;}
+/* Paket I — Erhaltungsfenster-Editor, gleiche Zeilenform wie .zone-row. */
+.maintain-row{display:grid;grid-template-columns:1fr 72px 2.6rem;gap:.4rem;align-items:center;margin-bottom:.45rem;}
+.maintain-label{font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.maintain-unit{font-size:.72rem;color:var(--text-faint);}
+.maintain-sub{font-size:.7rem;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:.04em;margin:.9rem 0 .4rem;}
+.maintain-sub:first-child{margin-top:0;}
 .zone-row input{font-size:.82rem;}
 .zone-color-pick{width:30px;height:30px;padding:2px;border:1px solid var(--border-strong);border-radius:0;cursor:pointer;}
 
@@ -1286,12 +1295,20 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 /* Der Klammerzusatz bleibt gemischt gesetzt — Zeitangaben wie "4:52 h" sollen
    nicht zu "4:52 H" verkapitälchen. */
 .budget-sub-label .budget-sub-scope{text-transform:none;letter-spacing:0;}
-.budget-dist{position:relative;display:flex;flex-direction:column;gap:2px;}
-.budget-dist-bar{display:flex;height:12px;border:1px solid var(--ink);overflow:hidden;}
+/* Zwei beschriftete Zeilen (Ziel über Ist). Die Beschriftungen sitzen in einer eigenen
+   Spalte NEBEN dem Balkenstapel — nicht im selben Raster: die Guide-Lines beziehen ihre
+   0–100 % auf die Balkenbreite und dürfen die Label-Spalte nicht mitzählen. */
+.budget-dist{display:flex;align-items:flex-start;gap:.45rem;}
+.budget-dist-keys{display:flex;flex-direction:column;gap:2px;flex-shrink:0;}
+.budget-dist-keys span{height:14px;line-height:14px;font-size:.62rem;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--text-faint);}
+.budget-dist-bars{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+.budget-dist-bar{display:flex;height:14px;box-sizing:border-box;border:1px solid var(--ink);overflow:hidden;}
 .budget-dist-soll{opacity:.45;}
 .budget-dist-seg{height:100%;flex-shrink:0;}
 .budget-guide{position:absolute;top:0;bottom:0;width:1px;background:var(--ink);pointer-events:none;}
 .budget-legend{display:flex;flex-wrap:wrap;gap:.2rem .8rem;font-size:.74rem;color:var(--text);margin-top:.35rem;}
+.budget-legend-val{color:var(--text-muted);font-family:var(--font-mono);font-size:.7rem;}
 .budget-legend-item{display:inline-flex;align-items:center;gap:.3rem;}
 .budget-legend-item i{width:8px;height:8px;flex-shrink:0;}
 /* Zeile 3 — HIT nach Sportart, standardmäßig eingeklappt. */
@@ -1307,12 +1324,90 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 .budget-hit-track{flex:1;height:8px;background:var(--border);}
 .budget-hit-fill{display:block;height:100%;background:var(--met-intensity);}
 .budget-hit-val{font-family:var(--font-mono);font-size:.72rem;color:var(--text-muted);white-space:nowrap;}
-/* Zeile 4 — Einheiten je Sportart. Genau zwei Zustände: absolviert / offen. */
-.budget-dot-row{display:flex;align-items:center;gap:.5rem;font-size:.78rem;margin-bottom:.28rem;}
-.budget-dot-label{flex:0 0 5.5rem;}
-.budget-dots{display:flex;flex-wrap:wrap;gap:.3rem;}
-.budget-dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0;}
-.budget-dot.done{background:var(--ink);}
+/* Zeile 4 (Paket I) — Sportarten-Übersicht: Ø/Wo 28 d, Recency, Marker, (?).
+   Feste Spalten statt flex, damit Zahlen und Marker untereinander stehen und die
+   Zeile auf 480 px nicht umbricht. Kein Ampelwort, nur zwei Marker: ! und ↓. */
+.sport-ov{display:flex;flex-direction:column;}
+/* Breitenkappung: die Label-Spalte ist 1fr und würde auf Desktop auf ~680 px wachsen —
+   dann steht die Punktreihe am rechten Bildschirmrand und die Zeile zerfällt in zwei
+   Hälften. Auf Mobil (~370 px) greift die Grenze nicht. */
+.sport-ov,.sport-ov-head,.lt-table{max-width:30rem;}
+/* Sportarten-Übersicht und Langzeitverteilung nebeneinander, sobald der Budget-Slot breit
+   genug ist. Viewport-Query statt Container-Query: der Slot sitzt in einem Scroll-Snap-
+   Flexcontainer (.hswipe), dort würde container-type Containment einführen. */
+@media(min-width:1000px){
+  .budget-cols{display:grid;grid-template-columns:1fr 1fr;gap:0 1.6rem;align-items:start;}
+  .budget-cols>.budget-col{min-width:0;}
+}
+/* Feste Spaltenbreiten (nicht auto): jede Zeile ist ein eigenes Grid, mit auto würden
+   die (?) je Zeile an anderer Stelle stehen. Die Marker-Spalte muss "! (1)" fassen.
+   Ohne Zeilentrenner — die Spaltenraster tragen die Ordnung, Linien je Zeile machen
+   den Block nur höher und unruhiger. */
+.sport-ov-head,
+.sport-ov-row{display:grid;grid-template-columns:1fr 5.2rem 3.2rem 2.8rem 1.4rem;align-items:center;
+  gap:.35rem;font-size:.78rem;padding:.2rem 0;}
+.sport-ov-head{font-size:.68rem;color:var(--text-faint);text-transform:uppercase;letter-spacing:.04em;
+  border-bottom:1px solid var(--border-strong);padding-bottom:.3rem;margin-top:.9rem;}
+.sport-ov-head .sport-ov-avg,.sport-ov-head .sport-ov-last{font-family:inherit;font-size:.62rem;}
+.sport-ov-row.sub{padding-left:.9rem;color:var(--text-muted);font-size:.74rem;}
+.sport-ov-label{display:flex;align-items:center;gap:.25rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sport-ov-avg{min-width:0;}
+.sport-ov-last{font-family:var(--font-mono);font-size:.72rem;text-align:right;white-space:nowrap;color:var(--text-muted);}
+/* Einheiten je Woche als Punktmuster. Ein Kreis je geplanter Einheit, das Ist liegt
+   darüber; die Füllung kommt als Verlauf aus dem Markup (siehe dotHTML). border-radius
+   beschneidet den Verlauf, ein 50-%-Stopp wird dadurch zum echten Halbkreis. */
+.budget-dots{display:flex;flex-wrap:wrap;align-items:center;gap:.22rem;}
+.budget-dot{--dot-done:var(--ink);--dot-open:var(--border-strong);--dot-over:var(--sig-high);
+  width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.budget-dots-more{font-family:var(--font-mono);font-size:.68rem;color:var(--text-muted);}
+/* Marker-Spalte reserviert Platz, auch wenn leer — sonst rutschen die (?) je Zeile. */
+.sport-ov-flags{display:inline-flex;align-items:center;justify-content:flex-end;gap:.12rem;}
+.sport-ov-mark{font-family:var(--font-mono);font-size:.78rem;color:var(--text-faint);white-space:nowrap;}
+.sport-ov-mark.hard{color:var(--sig-high-deep);font-weight:600;}
+.sport-ov-arrow{font-size:.72rem;color:var(--text-faint);margin-left:-.15rem;}
+.sport-ov-arrow.drift{color:var(--sig-caution-deep);}
+.sport-ov-help,.sport-ov-help-gap{width:1.15rem;height:1.15rem;flex-shrink:0;}
+.sport-ov-help{display:inline-flex;align-items:center;justify-content:center;padding:0;
+  background:none;border:1px solid var(--border);border-radius:50%;color:var(--text-faint);
+  font:inherit;font-size:.62rem;line-height:1;cursor:pointer;}
+.sport-ov-help:hover{color:var(--ink);border-color:var(--ink);background:transparent;}
+.sport-ov-chev{display:inline-flex;align-items:center;padding:0;margin-right:.1rem;background:none;
+  border:none;color:var(--text-faint);font-size:.8rem;line-height:1;cursor:pointer;}
+.sport-ov-chev i{transition:transform .12s ease;}
+.sport-ov-chev.open i{transform:rotate(90deg);}
+.sport-ov-subs{display:flex;flex-direction:column;}
+.sport-ov-subs[hidden]{display:none;}
+/* §6 — Zusammensetzung der Gesamtzeit. Anderer Nenner als die Intensitätsverteilung
+   darunter; beide Zeilen sind deshalb ausdrücklich beschriftet. */
+.budget-comp{font-size:.74rem;color:var(--text-muted);margin:-.35rem 0 .6rem;}
+/* §5 — Langzeitverteilung: 84 d gegen 28 d, Pfeil ab 3 Prozentpunkten. Die Kopfzeile
+   trägt zugleich die Abschnittsüberschrift und spart so eine eigene Zeile. */
+.lt-table{display:flex;flex-direction:column;margin-top:.9rem;}
+.lt-row{display:grid;grid-template-columns:1fr 3.4rem 3.4rem 1.2rem;align-items:center;gap:.35rem;
+  font-size:.78rem;padding:.2rem 0;}
+.lt-row.lt-head{font-size:.68rem;color:var(--text-faint);text-transform:uppercase;letter-spacing:.04em;
+  border-bottom:1px solid var(--border-strong);padding-bottom:.3rem;}
+.lt-val{font-family:var(--font-mono);font-size:.72rem;text-align:right;}
+.lt-row.lt-head .lt-val{font-family:inherit;font-size:.62rem;}
+.lt-trend{text-align:center;color:var(--text-faint);font-size:.8rem;}
+.lt-spark-cap{font-size:.68rem;color:var(--text-faint);margin:.7rem 0 .65rem;}
+/* Rechts Platz für die Beschriftung der Zielmarke; die Balken bleiben schmal, damit ein
+   12-Wochen-Verlauf in einer halbbreiten Spalte nicht zur Fläche auseinanderläuft. */
+/* Gleiche Breite wie die Tabellen darüber (max-width:30rem, sonst Spaltenbreite) — die
+   Balken wachsen mit, rechts bleibt eine Rinne für die Beschriftung der Zielmarke. */
+.lt-spark{position:relative;display:flex;align-items:flex-end;gap:2px;
+  height:32px;max-width:30rem;padding-right:2.2rem;border-bottom:1px solid var(--ink);}
+.lt-spark-bar{flex:1 1 0;min-width:0;background:var(--met-endurance-tint);
+  border-top:2px solid var(--met-endurance);min-height:2px;}
+.lt-spark-bar.empty{background:var(--border);border-top:none;height:2px !important;}
+/* Zielmarke über den Balken — gestrichelt, damit sie nicht als Balkenkante gelesen wird.
+   Die Prozentzahl hängt an der Linie statt in der Legende: dort steht sie auf der Höhe,
+   die sie meint, und drängt sich nicht neben den Titel. */
+.lt-spark-mark{position:absolute;left:0;right:0;z-index:1;border-top:1px dashed var(--ink);
+  opacity:.7;pointer-events:none;}
+.lt-spark-mark-lbl{position:absolute;right:0;z-index:1;transform:translateY(-50%);
+  font-family:var(--font-mono);font-size:.6rem;color:var(--text-faint);pointer-events:none;
+  background:var(--bg);padding-left:.2rem;}
 /* Ziellinie — ortsfest bei 71.43% (= 100% Soll auf der 140%-Skala). */
 .budget-mark{position:absolute;top:0;bottom:0;width:2px;background:var(--ink);transform:translateX(-1px);}
 .budget-vol{font-family:var(--font-mono);font-size:.74rem;color:var(--text);margin:.45rem 0 .6rem;}
@@ -1429,10 +1524,12 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 
 /* Kraft-Typ-Chips — übernehmen die Optik der Bibliotheks-Filter-Pills, damit keine
    zweite Chip-Grammatik entsteht. */
-.strength-chips{display:flex;flex-wrap:wrap;gap:.35rem;}
-.strength-chip{padding:.3rem .6rem;border:1px solid var(--border);border-radius:0;background:var(--surface);color:var(--text-muted);font-size:.72rem;cursor:pointer;white-space:nowrap;transition:all .12s;}
-.strength-chip:hover{border-color:var(--accent);color:var(--text);}
-.strength-chip.active{background:var(--text);color:var(--surface);border-color:var(--text);}
+/* Kraft-Typ (Paket G) und Trainingstyp (Paket I2) teilen sich die Optik, aber nicht
+   den Klick-Handler — daher zwei Klassen auf denselben Regeln. */
+.strength-chips,.stype-chips{display:flex;flex-wrap:wrap;gap:.35rem;}
+.strength-chip,.stype-chip{padding:.3rem .6rem;border:1px solid var(--border);border-radius:0;background:var(--surface);color:var(--text-muted);font-size:.72rem;cursor:pointer;white-space:nowrap;transition:all .12s;}
+.strength-chip:hover,.stype-chip:hover{border-color:var(--accent);color:var(--text);}
+.strength-chip.active,.stype-chip.active{background:var(--text);color:var(--surface);border-color:var(--text);}
 
 /* Info-Popover: leichtgewichtiges Read-only-Fenster bei Tap auf einen Block (außerhalb Block-Modus). */
 .block-info-backdrop{position:fixed;inset:0;background:rgba(30,30,28,.35);z-index:1099;}
@@ -1778,7 +1875,10 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
         <div class="field"><label>Zone</label><select id="t-zone"></select></div>
         <div class="field"><label>Dauer (min)</label><input type="number" id="t-duration" min="1" step="1" placeholder="60"></div>
       </div>
-      <div id="t-title-wrap" class="field" style="margin-bottom:.75rem;display:none;">
+      <!-- Paket I2: Name für jede Sportart sichtbar. Garmin schreibt hier den Aktivitätsnamen
+           hinein ("Rostock Laufen"), der vorher bei Lauf/Rad zwar angezeigt, aber nicht
+           korrigierbar war. Nur der Placeholder wechselt mit der Sportart. -->
+      <div id="t-title-wrap" class="field" style="margin-bottom:.75rem;">
         <label>Name der Einheit</label>
         <input type="text" id="t-title" placeholder="z.B. Oberkörper A, Leg Day">
       </div>
@@ -1787,6 +1887,12 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
       <div id="t-strength-wrap" class="field" style="margin-bottom:.75rem;display:none;">
         <label>Kraft-Typ</label>
         <div class="strength-chips" id="t-strength-chips"></div>
+      </div>
+      <!-- Paket I2: Trainingstyp. Vokabular je Sportart (SESSION_TYPES), rein beschreibend —
+           geht nicht in berechneWorkload ein. Bei Kraft übernimmt der Kraft-Typ darüber. -->
+      <div id="t-stype-wrap" class="field" style="margin-bottom:.75rem;display:none;">
+        <label>Trainingstyp</label>
+        <div class="stype-chips" id="t-stype-chips"></div>
       </div>
       <div class="grid" style="margin-bottom:.75rem;">
         <div class="field"><label>Ø-HF</label><input type="number" id="t-hravg" min="0" step="1" placeholder="142"></div>
@@ -2237,10 +2343,14 @@ Aktueller Fokus: Grundlagenausdauer aufbauen"></textarea>
   <!-- GitHub PAT für manuellen Garmin-Sync -->
   <div class="card">
     <h2><i class="ti ti-brand-github"></i> GitHub PAT (Garmin-Sync)</h2>
-    <p class="profile-hint">Ein <strong>Fine-grained Personal Access Token</strong>, mit dem der „Garmin"-Button oben im Log den Sync auslöst. Empfohlener Scope: <em>nur dieses Repo</em>, Berechtigung <em>Actions: Read and write</em>. Wird verschlüsselt in Supabase gespeichert und ist nur für dich zugänglich (RLS). Ohne Token bleibt der Garmin-Button deaktiviert.</p>
+    <p class="profile-hint">Ein <strong>Fine-grained Personal Access Token</strong>, mit dem der „Garmin"-Button oben im Log den Sync auslöst. Empfohlener Scope: <em>nur dieses Repo</em>, Berechtigung <em>Actions: Read and write</em>. Wird in deinem privaten Supabase-Datensatz gespeichert und ist per RLS nur für dich zugänglich. Ohne Token bleibt der Garmin-Button deaktiviert.<br><strong>Achtung:</strong> Fine-grained PATs laufen ab — lange Laufzeit wählen. Nach Ablauf meldet der Garmin-Button „Token abgelaufen". Dieses Token ist unabhängig vom Repo-Secret <code>GH_PAT</code>, das die GitHub-Action selbst benutzt; beide müssen getrennt erneuert werden.</p>
     <div class="field" style="margin-bottom:.75rem;">
       <label>Token (github_pat_…)</label>
       <input type="password" id="github-pat-input" placeholder="github_pat_..." autocomplete="off">
+    </div>
+    <div class="field" style="margin-bottom:.75rem;">
+      <label>Gültig bis (optional — für die Ablauf-Vorwarnung)</label>
+      <input type="date" id="github-pat-expiry">
     </div>
     <div class="row">
       <button class="primary" id="save-github-pat">Speichern</button>
@@ -2314,6 +2424,13 @@ Aktueller Fokus: Grundlagenausdauer aufbauen"></textarea>
     <div id="zones-profile-actions" style="display:none;margin-top:.6rem;">
       <button type="button" class="ghost" id="zones-profile-reset" style="font-size:.78rem;">Profil auf Global zurücksetzen</button>
     </div>
+  </div>
+
+  <!-- Paket I: Erhaltungsfenster je Sportart und Kraft-Fokus -->
+  <div class="card">
+    <h2>Erhaltungsfenster</h2>
+    <p class="profile-hint" style="margin-bottom:.75rem;">Tage, nach denen die Sportarten-Übersicht auf der Log-Seite einen Reiz als überfällig markiert. Leer lassen = keine Prüfung. Alle Werte sind Richtwerte, keine Studienwerte — belastbar sind sie nur für Maximalkraft.</p>
+    <div id="maintain-settings-inline"></div>
   </div>
 
   <div class="row" style="padding:0 0 1rem;">
@@ -2420,16 +2537,22 @@ const A1_COLS=['status','planned_ref','block_id'];
 // Eigene (erste) Fallback-Stufe, damit eine fehlende G-Spalte nicht gleich das
 // Legacy-Minimalschema erzwingt und dabei workload/EF-Felder mit wegwirft.
 const G_SESSION_COLS=['strength_type'];
+// Paket I2: Trainingstyp, Migration 2026-08-08-paket-i2-einheiten-typ.sql. Wieder eine
+// eigene, jetzt vorderste Stufe — aus demselben Grund wie bei Paket G: eine fehlende
+// session_type-Spalte darf nicht gleich strength_type und die Workload-Felder mitreißen.
+const I2_SESSION_COLS=['session_type'];
 const LEGACY_OPT_COLS=['srpe','workload','workload_method','avg_power_w','peak_power_w','normalized_power_w','intensity_factor','tss','planned','marker_color','ef','decoupling','analysis_window_sec'];
 function stripCols(obj,cols){const o={...obj};cols.forEach(c=>delete o[c]);return o;}
-// Fallback-Stufen (jeweils kumulativ): 1) Paket-G-Spalten weg, 2) zusätzlich
-// A1-Spalten, 3) zusätzlich hr_series (workload bleibt erhalten), 4) Legacy-Minimalschema.
+// Fallback-Stufen (jeweils kumulativ): 1) Paket-I2-Spalten weg, 2) zusätzlich Paket-G-Spalten,
+// 3) zusätzlich A1-Spalten, 4) zusätzlich hr_series (workload bleibt erhalten),
+// 5) Legacy-Minimalschema.
 function dbPayloadVariants(s,forInsert){
-  const v0=stripCols(s,G_SESSION_COLS);
+  const v00=stripCols(s,I2_SESSION_COLS);
+  const v0=stripCols(v00,G_SESSION_COLS);
   const v1=stripCols(v0,A1_COLS);
   const v2=stripCols(v1,['hr_series']);
   const v3=stripCols(v2,LEGACY_OPT_COLS);
-  return[s,v0,v1,v2,forInsert?{...v3,avg_pace:null}:v3];
+  return[s,v00,v0,v1,v2,forInsert?{...v3,avg_pace:null}:v3];
 }
 // Führt op(payload) mit progressiv reduzierten Payloads aus, bis kein
 // "column ... does not exist"-Fehler mehr auftritt. Andere Fehler (Constraints,
@@ -2683,6 +2806,23 @@ const DEFAULT_ZONES=[
 // Backwards-Compat: alte Configs ohne freitext-Flag pro Sport
 const FREITEXT=['Kraft','Kampfsport','Sonstiges'];
 
+/* ── PAKET I: Erhaltungsfenster-Defaults ─────────────────────────────────────
+   Die Fokus-Keys sind bewusst die STRENGTH_TYPES-Keys aus Paket G ('ausdauer' =
+   Kraftausdauer) — Paket I führt KEIN zweites Kraft-Attribut ein, sondern liest
+   sessions.strength_type. maintainDays sind Richtwerte, keine Studienwerte; nur
+   für Maximalkraft gibt es belastbare Erhaltungsdaten (siehe Popover-Texte). */
+const DEFAULT_STRENGTH_FOCI=[
+  {key:'max',     label:'Maximalkraft', maintainDays:10},
+  {key:'hyp',     label:'Hypertrophie', maintainDays:14},
+  {key:'ausdauer',label:'Kraftausdauer',maintainDays:7}
+];
+/* Staffelung: die zentrale Ausdauerkomponente (VO₂max, Herzzeitvolumen, Blutvolumen)
+   hält JEDES Ausdauertraining. Modalitätsgebunden ist nur das Spezifische — Laufökonomie
+   und mechanische Toleranz beim Laufen, Position/Trittfrequenz beim Rad. Deshalb ist das
+   Laufsfenster kürzer als das Radfenster. null = keine Prüfung. */
+const DEFAULT_SPORT_MAINTAIN={Lauf:5,Rad:9,Capacity:9,Kraft:null,Kampfsport:null,Sonstiges:null};
+const DEFAULT_DERIVED_WARN_DAYS=42;
+
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let sessions=[],chart1=null,chart2=null,analyticsChart=null,workloadChart=null,logWeekChart=null,weeklyTrendChart=null,weeklyChartData=[];
 // Paket F: Trainingsblöcke (Zeitspannen mit Intention), geladen via DB.getBlocks().
@@ -2882,7 +3022,8 @@ let analyticsPeriod='week',analyticsMetric='time',analyticsActiveSports=new Set(
 let analyticsBlockId=null;
 let analyticsChartScrolledOnce=false;
 let analyticsMode='time-sport-abs'; // time-sport-abs | time-zone
-let cfg={sports:JSON.parse(JSON.stringify(DEFAULT_SPORTS)),zones:JSON.parse(JSON.stringify(DEFAULT_ZONES)),sportZones:{},hrMax:192,hrRest:40,ftp:200,radMethod:'tss',calMarks:{},calImages:{}};
+let cfg={sports:JSON.parse(JSON.stringify(DEFAULT_SPORTS)),zones:JSON.parse(JSON.stringify(DEFAULT_ZONES)),sportZones:{},hrMax:192,hrRest:40,ftp:200,radMethod:'tss',calMarks:{},calImages:{},
+  strengthFoci:JSON.parse(JSON.stringify(DEFAULT_STRENGTH_FOCI)),sportMaintain:{},derivedMaintainWarnDays:DEFAULT_DERIVED_WARN_DAYS};
 // Chat-Verlauf wird in localStorage gehalten (Schutz vor Reload/Tab-Verlust auf Mobile).
 const CHAT_KEY='tlog_chat_history';
 function chatSaveHistory(){try{localStorage.setItem(CHAT_KEY,JSON.stringify(chatHistory.slice(-40)));}catch(e){}}
@@ -2921,6 +3062,11 @@ function loadCfg(){
       // Kalender-Deko: freie Markierungen (Farbe/Symbol) und Zell-Bilder
       cfg.calMarks=p.calMarks||cfg.calMarks||{};
       cfg.calImages=p.calImages||cfg.calImages||{};
+      // Paket I: Erhaltungsfenster. Alles optional — ohne gespeicherte Werte greifen
+      // die Defaults, die Log-Seite verhält sich wie vorher plus Recency-Spalte.
+      cfg.strengthFoci=p.strengthFoci||cfg.strengthFoci||JSON.parse(JSON.stringify(DEFAULT_STRENGTH_FOCI));
+      cfg.sportMaintain=p.sportMaintain||cfg.sportMaintain||{};
+      cfg.derivedMaintainWarnDays=p.derivedMaintainWarnDays!=null?p.derivedMaintainWarnDays:DEFAULT_DERIVED_WARN_DAYS;
       // Neu eingeführte Default-Sportarten ergänzen, die in alten gespeicherten
       // Configs fehlen (z.B. Capacity). 'Sonstiges' bleibt am Ende.
       DEFAULT_SPORTS.forEach(ds=>{
@@ -5216,7 +5362,9 @@ function updateNoteLabel(){
   const showExercises=isFrei||linkable;
   document.getElementById('t-note-label').textContent=showExercises?'Übungen / Training (frei)':'Notiz (optional)';
   document.getElementById('t-note').placeholder=showExercises?'z.B. Kniebeugen 4x8 80kg':'z.B. Intervalle 5x4min';
-  document.getElementById('t-title-wrap').style.display=showExercises?'':'none';
+  // Paket I2: Das Namensfeld bleibt immer sichtbar (auch bei Lauf/Rad), nur der
+  // Platzhalter wechselt — Garmin-Namen sollen überall korrigierbar sein.
+  document.getElementById('t-title').placeholder=showExercises?'z.B. Oberkörper A, Leg Day':'z.B. Hügelintervalle, Longrun Warnow';
   // Zone: bei Freitext auf '-', bei Capacity bleibt sie wählbar (HF-Zuordnung gewünscht)
   if(isFrei&&!linkable)document.getElementById('t-zone').value='-';
   document.getElementById('t-note').classList.toggle('note-expanded',linkable);
@@ -5228,13 +5376,41 @@ function updateNoteLabel(){
     const show=sport==='Kraft';
     strengthWrap.style.display=show?'':'none';
     if(!show)_qnStrengthType=null;
+    // Paket I §2.2: Vorbelegung aus der letzten Krafteinheit — ein Vorschlag, kein
+    // Zwang (der Chip bleibt ab-wählbar). Bewusst KEINE Ableitung aus HF oder Dauer:
+    // die Herzfrequenz sagt über die Last nichts.
+    else if(_qnStrengthType==null)_qnStrengthType=lastStrengthFocus();
     document.getElementById('t-strength-chips').innerHTML=strengthChipsHTML(_qnStrengthType);
+  }
+  // Paket I2: Trainingstyp. Das Vokabular hängt an der Sportart — kennt die neue Sportart
+  // den gewählten Typ nicht, wird er verworfen (sonst landete 'longrun' an einer Radfahrt).
+  // Ein Typ, den beide kennen (z.B. 'intervall'), bleibt stehen. Bewusst KEINE Vorbelegung
+  // wie beim Kraft-Typ: „letzter Typ" wäre beim Laufen fast immer der Dauerlauf und würde
+  // Intervalle still falsch etikettieren.
+  const stypeWrap=document.getElementById('t-stype-wrap');
+  if(stypeWrap){
+    const types=sessionTypesFor(sport);
+    stypeWrap.style.display=types.length?'':'none';
+    if(!types.some(t=>t.key===_qnSessionType))_qnSessionType=null;
+    document.getElementById('t-stype-chips').innerHTML=sessionTypeChipsHTML(sport,_qnSessionType);
   }
   renderNoteHistory(linkable?sport:null);
 }
 // Auswahl der Schnellerfassung. Eigene Variable statt DOM-Lesen, weil updateNoteLabel
 // die Chip-Reihe bei jedem Sportwechsel neu baut.
 let _qnStrengthType=null;
+// Paket I2: dasselbe für den Trainingstyp, aus demselben Grund.
+let _qnSessionType=null;
+// Kraft-Fokus der jüngsten absolvierten Krafteinheit (Paket I §2.2, Schritt 3 der
+// Bestimmungskette). null, wenn es keine gibt oder die letzte ungepflegt war.
+function lastStrengthFocus(){
+  let best=null;
+  sessions.forEach(s=>{
+    if(s.sport!=='Kraft'||!s.strength_type||isPlanned(s)||isSpecialEntry(s))return;
+    if(!best||s.date>best.date||(s.date===best.date&&String(s.id)>String(best.id)))best=s;
+  });
+  return best?best.strength_type:null;
+}
 // Baut die HTML-Liste der letzten Einträge derselben Sportart zum Vergleichen.
 // excludeId: aktuelle Session ausschließen (relevant beim Nachtragen in der Detailansicht).
 // Jeder Eintrag ist standardmäßig eingeklappt (nur Datum + Name sichtbar) — Klick fährt aus.
@@ -5273,6 +5449,38 @@ document.addEventListener('click',e=>{
   const next=btn.classList.contains('active')?null:btn.dataset.strength;
   box.querySelectorAll('.strength-chip').forEach(b=>b.classList.toggle('active',b.dataset.strength===next));
   if(box.id==='t-strength-chips')_qnStrengthType=next;
+});
+// Paket I2: dasselbe Muster für die Trainingstyp-Chips. Eigener Handler statt Mitbenutzung
+// des Kraft-Typ-Handlers, sonst würde ein Klick auf „Intervall" _qnStrengthType verstellen.
+document.addEventListener('click',e=>{
+  const btn=e.target.closest('.stype-chip');
+  if(!btn)return;
+  const box=btn.closest('.stype-chips');
+  if(!box)return;
+  const next=btn.classList.contains('active')?null:btn.dataset.stype;
+  box.querySelectorAll('.stype-chip').forEach(b=>b.classList.toggle('active',b.dataset.stype===next));
+  if(box.id==='t-stype-chips')_qnSessionType=next;
+});
+// Paket I2: Sportart-Icon am Feld-Label der Detailansicht mitziehen. Die <option>s selbst
+// können kein Icon tragen (Webfont in <option> wird nicht gerendert), deshalb sitzt es
+// neben dem Label und folgt hier der Auswahl.
+document.addEventListener('change',e=>{
+  const sel=e.target.closest('.ed-sport');
+  if(!sel)return;
+  const icon=sel.closest('.detail-field')?.querySelector('.ed-sport-icon');
+  if(icon)icon.innerHTML=sportIconHTML(sel.value,13);
+  // Das Trainingstyp-Vokabular hängt an der Sportart — die Chips also gleich mit
+  // umbauen, statt bis zum Speichern die Typen der alten Sportart stehen zu lassen.
+  // Ein Typ, den beide Sportarten kennen (z.B. 'intervall'), bleibt dabei gewählt.
+  const wrap=sel.closest('.entry-detail');
+  const stypeBox=wrap&&wrap.querySelector('.ed-stype');
+  if(stypeBox){
+    const cur=stypeBox.querySelector('.stype-chip.active')?.dataset.stype||null;
+    const types=sessionTypesFor(sel.value);
+    stypeBox.innerHTML=sessionTypeChipsHTML(sel.value,types.some(t=>t.key===cur)?cur:null);
+    const stypeWrap=stypeBox.closest('.ed-stype-wrap');
+    if(stypeWrap)stypeWrap.style.display=types.length?'':'none';
+  }
 });
 
 // HF-Zone Auto-Inferenz beim Tippen der Ø-HF
@@ -5542,6 +5750,7 @@ async function saveSession(){
     peak_power_w:parseInt(document.getElementById('t-peakpower').value)||null,
     normalized_power_w:null,
     strength_type:document.getElementById('t-sport').value==='Kraft'?_qnStrengthType:null,
+    session_type:_qnSessionType,
     user_id:currentUser.id,srpe:null,workload:null,workload_method:null};
   const wl=berechneWorkload(session);
   if(wl.value!=null){session.workload=wl.value;session.workload_method=wl.method;if(wl.method==='tss'){session.tss=wl.tss;session.intensity_factor=wl.intensityFactor;}}
@@ -5550,7 +5759,9 @@ async function saveSession(){
   try{
     const saved=await DB.addSession(session);sessions.unshift(saved);markSessionsDirty();setSyncState('ok');
     ['t-note','t-hravg','t-hrmax','t-distance','t-elevation','t-title','t-avgpower','t-peakpower'].forEach(id=>document.getElementById(id).value='');
-    _qnStrengthType=null;updateNoteLabel();   // Kraft-Typ mit leeren (Paket G)
+    // Kraft-Typ mit leeren (Paket G). updateNoteLabel belegt ihn danach aus der eben
+    // gespeicherten Einheit vor (Paket I §2.2) — genau die gewünschte Kette.
+    _qnStrengthType=null;_qnSessionType=null;updateNoteLabel();
     statusEl.textContent='Gespeichert <i class="ti ti-check"></i>';setTimeout(()=>{statusEl.textContent='';},2000);renderLog();
     // sRPE-Prompt wenn kein Workload automatisch berechnet
     if(saved.workload==null)openSrpeModal(saved);
@@ -5580,7 +5791,10 @@ function openDetailFocusNote(id){
 }
 function buildDetailHTML(s){
   const zonesOpts=cfg.zones.map(z=>`<option value="${z.key}"${z.key===s.zone?' selected':''}>${z.label}</option>`).join('');
-  const sportOpts=cfg.sports.map(sp=>`<option value="${sp.key}"${sp.key===s.sport?' selected':''}>${sp.icon} ${sp.label}</option>`).join('');
+  // sportIconText statt sp.icon: seit migrateSportIcons() sind die Icons Tabler-Klassennamen,
+  // und eine <option> kann weder HTML noch Webfont rendern — roh interpoliert stand hier
+  // „ti-run Lauf". Das Icon sitzt stattdessen am Feld-Label (siehe .ed-sport-icon unten).
+  const sportOpts=cfg.sports.map(sp=>`<option value="${sp.key}"${sp.key===s.sport?' selected':''}>${sportIconText(sp)} ${sp.label}</option>`).join('');
   const isFrei=isSportFreitext(s.sport);
   const wl=berechneWorkload(s);
   const methodLabel={'edwards':'Edwards-TRIMP (HF-Verlauf)','trimp':'TRIMP (&#xD8;-HF)','tss':'Leistung (TSS)','srpe':'sRPE','estimated':'Gesch&#xE4;tzt (Vergleichseinheiten)','none':'–'}[wl.method]||'–';
@@ -5641,10 +5855,12 @@ function buildDetailHTML(s){
       </div>`;
     }
   }
+  const pp=paceParts(s);
   const workloadSection=`<div class="workload-section">
     <h4>Belastung</h4>
     <div class="workload-row"><span>Workload</span><span class="workload-value">${wl.value!=null?wl.value+' Pkt':'&#x2014;'}</span></div>
     <div class="workload-row"><span>Methode</span><span>${methodLabel}</span></div>
+    ${pp?`<div class="workload-row"><span>${pp.label}</span><span class="workload-value">${pp.text}</span></div>`:''}
     ${profileHTML}
     ${modalityHTML}
     ${driftHTML}
@@ -5657,12 +5873,13 @@ function buildDetailHTML(s){
   </div>`;
   const isKraft=s.sport==='Kraft';
   const noteHistoryHTML=isKraft?`<div class="note-history-box">${buildNoteHistoryHTML('Kraft',s.id)}</div>`:'';
+  const stypes=sessionTypesFor(s.sport);
   return`<div class="detail-grid">
-    <div class="detail-field"><label>Sportart</label><select class="ed-sport" data-id="${s.id}">${sportOpts}</select></div>
+    <div class="detail-field"><label><span class="ed-sport-icon" data-id="${s.id}">${sportIconHTML(s.sport,13)}</span> Sportart</label><select class="ed-sport" data-id="${s.id}">${sportOpts}</select></div>
     <div class="detail-field"><label>Zone</label><select class="ed-zone" data-id="${s.id}">${zonesOpts}</select></div>
     <div class="detail-field"><label>Dauer (min)</label><input class="ed-dur" type="number" value="${s.duration}" min="1" data-id="${s.id}"></div>
     <div class="detail-field"><label>Datum</label><input class="ed-date" type="date" value="${s.date}" data-id="${s.id}"></div>
-    ${isFrei?`<div class="detail-field"><label>Name</label><input class="ed-title" type="text" value="${esc(s.title||'')}" data-id="${s.id}"></div>`:''}
+    <div class="detail-field"><label>Name</label><input class="ed-title" type="text" value="${esc(s.title||'')}" placeholder="${isFrei?'z.B. Oberkörper A, Leg Day':'z.B. Hügelintervalle, Longrun Warnow'}" data-id="${s.id}"></div>
     <div class="detail-field"><label>&#xD8;-HF</label><input class="ed-hravg" type="number" value="${s.hr_avg||''}" data-id="${s.id}"></div>
     <div class="detail-field"><label>Max-HF</label><input class="ed-hrmax" type="number" value="${s.hr_max||''}" data-id="${s.id}"></div>
     <div class="detail-field"><label>Distanz (km)</label><input class="ed-dist" type="number" step="0.1" value="${s.distance_km||''}" data-id="${s.id}"></div>
@@ -5674,6 +5891,9 @@ function buildDetailHTML(s){
   ${isKraft?`<div class="detail-field" style="margin-bottom:.65rem;"><label>Kraft-Typ</label>
     <div class="strength-chips ed-strength" data-id="${s.id}">${strengthChipsHTML(s.strength_type)}</div>
   </div>`:''}
+  <div class="detail-field ed-stype-wrap" style="margin-bottom:.65rem;${stypes.length?'':'display:none;'}"><label>Trainingstyp</label>
+    <div class="stype-chips ed-stype" data-id="${s.id}">${sessionTypeChipsHTML(s.sport,s.session_type)}</div>
+  </div>
   <div class="detail-field" style="margin-bottom:.65rem;"><label>${isFrei?'&#xDC;bungen':'Notiz'}</label>
     <textarea class="ed-note note-paper${isKraft?' note-expanded':''}" data-id="${s.id}" rows="${isKraft?6:2}">${esc(s.note||'')}</textarea>
     ${noteHistoryHTML}
@@ -5713,6 +5933,12 @@ async function handleSaveEdit(id){
   const strengthEl=wrap.querySelector('.ed-strength');
   if(updates.sport!=='Kraft')updates.strength_type=null;
   else if(strengthEl)updates.strength_type=strengthEl.querySelector('.strength-chip.active')?.dataset.strength||null;
+  // Paket I2: Trainingstyp — dieselbe Aufräumlogik. Kennt die (ggf. neu gewählte) Sportart
+  // den bisherigen Typ nicht, wird er geleert; sonst klebte z.B. 'longrun' an einer
+  // umgewidmeten Radfahrt und liefe als Label mit, das es dort gar nicht gibt.
+  const stypeEl=wrap.querySelector('.ed-stype');
+  const stypeVal=stypeEl?(stypeEl.querySelector('.stype-chip.active')?.dataset.stype||null):(s?s.session_type:null);
+  updates.session_type=sessionTypesFor(updates.sport).some(t=>t.key===stypeVal)?stypeVal:null;
   // Workload neu berechnen
   const merged={...s,...updates};
   const wl=berechneWorkload(merged);
@@ -6007,7 +6233,12 @@ function renderSportRose(ws,range){
 // dasselbe Thema. Ein wiederverwendbares Muster: .hswipe-Container mit
 // Scroll-Snap, Dot-Indicator darunter, einmaligem Peek-Hint (localStorage)
 // und Lazy-Rendering der Slots (onSlot beim ersten Sichtbarwerden).
-function initHSwipe(el,{key,onSlot}={}){
+// snapTop: Slots dieser Sektion sind unterschiedlich hoch (z. B. lange Einheiten-
+// Liste vs. kurzer Budget-Slot). Wer weit nach unten gescrollt hat und dann seitlich
+// wischt, landete bisher mitten im Nichts unter dem kürzeren Slot. Mit snapTop holt
+// jeder Slotwechsel den Sektionskopf wieder an den oberen Rand — der neue Bereich
+// setzt also immer oben an. Nur nach oben scrollen, nie nach unten.
+function initHSwipe(el,{key,onSlot,snapTop}={}){
   if(!el)return;
   if(el._hswipeInit)return;
   el._hswipeInit=true;
@@ -6022,8 +6253,25 @@ function initHSwipe(el,{key,onSlot}={}){
     if(!seen.has(i)){seen.add(i);if(onSlot)onSlot(i,slots[i]);}
   };
   showSlot(0);
-  let ticking=false;
+  // Anker = die Karte um den Wischbereich (samt Überschrift), damit der Kopf der
+  // Sektion mit nach oben kommt und nicht nur die nackte Slot-Kante.
+  const anchor=el.closest('.card')||el;
+  let snapped=0;
+  const maybeSnapTop=()=>{
+    const i=Math.round(el.scrollLeft/(el.clientWidth||1));
+    if(i===snapped)return;
+    snapped=i;
+    const top=anchor.getBoundingClientRect().top;
+    if(top>=-2)return; // Sektionskopf steht schon im Blick → nichts verschieben
+    window.scrollTo({top:Math.max(0,window.scrollY+top-8),behavior:'smooth'});
+  };
+  // Programmatisches Zurücksetzen (renderLog: scrollLeft=0) darf kein Snap auslösen.
+  el._hswipeSyncSnap=()=>{snapped=Math.round(el.scrollLeft/(el.clientWidth||1));};
+  let ticking=false,snapT=null;
   el.addEventListener('scroll',()=>{
+    // Erst wenn der Snap ausgelaufen ist, sonst kämpfen vertikaler und horizontaler
+    // Scroll gegeneinander (iOS-Momentum).
+    if(snapTop){clearTimeout(snapT);snapT=setTimeout(maybeSnapTop,140);}
     if(ticking)return;ticking=true;
     requestAnimationFrame(()=>{ticking=false;showSlot(Math.round(el.scrollLeft/(el.clientWidth||1)));});
   },{passive:true});
@@ -6180,6 +6428,44 @@ function strengthTypeLabel(k){const t=STRENGTH_TYPES.find(x=>x.key===k);return t
 function strengthChipsHTML(cur,idPrefix){
   return STRENGTH_TYPES.map(t=>
     `<button type="button" class="strength-chip${cur===t.key?' active':''}" data-strength="${t.key}"${idPrefix?` data-scope="${esc(idPrefix)}"`:''} title="${esc(t.hint)}">${esc(t.label)}</button>`).join('');
+}
+// Trainingstyp je Einheit (Migration 2026-08-08-paket-i2-einheiten-typ.sql). Bewusst je
+// Sportart ein eigenes Vokabular: „Sweetspot" ergibt beim Laufen so wenig Sinn wie
+// „Longrun" auf dem Rad. Kraft fehlt hier absichtlich — dort trägt strength_type (Paket G)
+// diese Rolle, beide Chip-Reihen schließen sich dadurch von selbst aus. Rein beschreibend:
+// der Typ geht NICHT in berechneWorkload ein.
+const SESSION_TYPES={
+  Lauf:[
+    {key:'dauerlauf',   label:'Dauerlauf',     hint:'gleichmäßiges Tempo, überwiegend Z1–Z2'},
+    {key:'intervall',   label:'Intervall',     hint:'harte Abschnitte mit Pausen'},
+    {key:'tempo',       label:'Tempo/Schwelle',hint:'zügig-kontinuierlich an der Schwelle'},
+    {key:'longrun',     label:'Longrun',       hint:'lange ruhige Einheit'},
+    {key:'regeneration',label:'Regeneration',  hint:'bewusst locker, Erholung'},
+    {key:'fahrtspiel',  label:'Fahrtspiel',    hint:'unstrukturierter Tempowechsel'},
+    {key:'wettkampf',   label:'Wettkampf',     hint:'Rennen oder Testwettkampf'}
+  ],
+  Rad:[
+    {key:'grundlage',   label:'Grundlage',     hint:'ruhige Ausdauerfahrt, Z1–Z2'},
+    {key:'intervall',   label:'Intervall',     hint:'harte Abschnitte mit Pausen'},
+    {key:'sweetspot',   label:'Sweetspot',     hint:'knapp unter der Schwelle, ~88–94 % FTP'},
+    {key:'berg',        label:'Bergfahrt',     hint:'Anstiege als Hauptreiz'},
+    {key:'regeneration',label:'Regeneration',  hint:'bewusst locker, Erholung'},
+    {key:'wettkampf',   label:'Wettkampf',     hint:'Rennen oder Testwettkampf'}
+  ],
+  Capacity:[
+    {key:'zirkel',label:'Zirkel',hint:'Stationen im Wechsel, durchgehend belastet'},
+    {key:'hiit',  label:'HIIT',  hint:'kurze maximale Intervalle'},
+    {key:'emom',  label:'EMOM',  hint:'jede Minute ein festes Pensum'}
+  ]
+};
+function sessionTypesFor(sport){return SESSION_TYPES[sport]||[];}
+function sessionTypeLabel(sport,key){const t=sessionTypesFor(sport).find(x=>x.key===key);return t?t.label:null;}
+// Chip-Reihe wie bei Paket G, aber mit eigenen Klassen (.stype-chips/.stype-chip) und
+// eigenem data-Attribut: der globale .strength-chip-Handler würde sonst mitfeuern und
+// _qnStrengthType verstellen. Das CSS teilen sich beide Reihen.
+function sessionTypeChipsHTML(sport,cur){
+  return sessionTypesFor(sport).map(t=>
+    `<button type="button" class="stype-chip${cur===t.key?' active':''}" data-stype="${t.key}" title="${esc(t.hint)}">${esc(t.label)}</button>`).join('');
 }
 // Verdrahtet eine Chip-Reihe. Gibt einen Getter auf den aktuellen Wert zurück.
 function bindStrengthChips(container,cur){
@@ -6559,20 +6845,399 @@ function checkFeasibility(block,template,targets){
   }
   return out;
 }
+// ── PAKET I: Erhaltungsfenster, Fokus-Recency, Kreuzanrechnung ───────────────
+// Ergänzt die Budget-Frage "wie viel und wie intensiv" um "was ist liegengeblieben".
+// Rein rechnend, kein DOM. Alles arbeitet auf `sessions` mit demselben Filter wie der
+// Rest der App (keine geplanten Einheiten, keine Sondereinträge).
+//
+// Das Kraft-Fokus-Attribut ist sessions.strength_type aus Paket G — Paket I führt
+// bewusst KEINE zweite Spalte ein. 'ausdauer' ist der Kraftausdauer-Fokus.
+
+// Wer hält wen? Faktoren mit zwei verschiedenen Bedeutungen (Spec §2.3):
+//   1.0 — die Uhr wird zurückgesetzt, als wäre eine dedizierte Einheit absolviert
+//   0.5 — nur das Fenster wird um 50 % verlängert, die Uhr läuft weiter
+// Ohne diese Unterscheidung würde eine einzige schwere Einheit rechnerisch alle drei
+// Foki gleichzeitig zurücksetzen. Capacity → Hypertrophie fehlt bewusst: Muskelmasse
+// wird über mechanische Spannung gehalten, das erreicht ein Zirkel mit niedriger Last
+// bei vorhandenem Kraftniveau nicht.
+const STRENGTH_MAINTAINS={
+  max:      {hyp:1.0, ausdauer:0.5},
+  hyp:      {max:0.5, ausdauer:0.5},
+  ausdauer: {hyp:0.5},
+  capacity: {ausdauer:1.0}    // Sportart Capacity, kein Fokus
+};
+function strengthFoci(){return (cfg.strengthFoci&&cfg.strengthFoci.length)?cfg.strengthFoci:DEFAULT_STRENGTH_FOCI;}
+function focusLabel(k){
+  const f=strengthFoci().find(x=>x.key===k);
+  return f?f.label:(strengthTypeLabel(k)||k);
+}
+function focusMaintainDays(k){
+  const f=strengthFoci().find(x=>x.key===k);
+  return f&&f.maintainDays!=null?f.maintainDays:null;
+}
+// Auflösungskette wie bei isSportZoneBased: gesetzter Wert gewinnt, sonst der Default
+// der bekannten Sportart, sonst null (= keine Prüfung) für selbst angelegte Sportarten.
+function sportMaintainDays(key){
+  const m=cfg.sportMaintain||{};
+  if(Object.prototype.hasOwnProperty.call(m,key))return m[key];
+  return Object.prototype.hasOwnProperty.call(DEFAULT_SPORT_MAINTAIN,key)?DEFAULT_SPORT_MAINTAIN[key]:null;
+}
+function derivedWarnDays(){return cfg.derivedMaintainWarnDays!=null?cfg.derivedMaintainWarnDays:DEFAULT_DERIVED_WARN_DAYS;}
+
+// Ganze Tage seit der letzten absolvierten Einheit, die `pred` erfüllt. null = nie.
+function daysSinceMatch(pred,endIso){
+  const hi=endIso||toISODate(new Date());
+  let last=null;
+  sessions.forEach(s=>{
+    if(isPlanned(s)||isSpecialEntry(s))return;
+    if(!s.date||s.date>hi)return;
+    if(!pred(s))return;
+    if(!last||s.date>last)last=s.date;
+  });
+  return last?daysBetweenIso(last,hi):null;
+}
+function daysSinceSport(sportKey,endIso){return daysSinceMatch(s=>s.sport===sportKey,endIso);}
+function daysSinceFocus(focusKey,endIso){return daysSinceMatch(s=>s.sport==='Kraft'&&s.strength_type===focusKey,endIso);}
+// Ohne diese Zeile liest sich "Rad vor 7 Tagen" wie ein Ausdauerdefizit, obwohl der
+// zentrale Reiz über Lauf/Capacity längst gesetzt wurde.
+function daysSinceEndurance(endIso){return daysSinceMatch(s=>isSportZoneBased(s.sport),endIso);}
+
+// Effektive Recency eines Kraft-Fokus inkl. Kreuzanrechnung.
+//   direct      — Tage seit der letzten DEDIZIERTEN Einheit dieses Fokus (null = nie)
+//   days        — Tage seit dem letzten anrechenbaren Reiz (1.0-Quellen zählen mit)
+//   source      — Key der fremden 1.0-Quelle, falls sie näher liegt als die dedizierte
+//   windowBonus — Summe der 0.5-Quellen, die das Fenster verlängern (Uhr läuft weiter)
+function effectiveDaysSince(focusKey,endIso){
+  const direct=daysSinceFocus(focusKey,endIso);
+  let days=direct,source=null,windowBonus=0;
+  const win=focusMaintainDays(focusKey);
+  Object.keys(STRENGTH_MAINTAINS).forEach(srcKey=>{
+    const f=STRENGTH_MAINTAINS[srcKey][focusKey];
+    if(!f)return;
+    const d=srcKey==='capacity'?daysSinceSport('Capacity',endIso):daysSinceFocus(srcKey,endIso);
+    if(d==null)return;
+    if(f===1.0){
+      if(days==null||d<days){days=d;source=srcKey;}
+    }else{
+      // Verlängert nur, solange die Quelle selbst noch im Fenster liegt — eine drei
+      // Monate alte Hypertrophie-Einheit soll das Maximalkraft-Fenster nicht dehnen.
+      if(win==null||d<=win)windowBonus+=f;
+    }
+  });
+  return{days,source,direct,windowBonus};
+}
+// Zweistufig, damit die Warnung an der Fenstergrenze nicht flackert.
+function maintainStatus(days,windowDays,bonus){
+  if(windowDays==null||days==null)return'none';
+  const w=windowDays*(1+(bonus||0));
+  if(days<=w)return'open';
+  if(days<=w*1.5)return'over_soft';
+  return'over_hard';
+}
+// Dauerhaft abgeleitete Erhaltung ist Stagnation auf dem Niveau des Fremdreizes: der
+// Reiz besteht formal, die Last bleibt bei dem, was die fremde Quelle vorgibt.
+function isDerivedDrift(r){
+  if(!r.source)return false;
+  return r.direct==null||r.direct>derivedWarnDays();
+}
+// Quelle als Klartext für Popover und Marker-Titel.
+function maintainSourceLabel(srcKey){return srcKey==='capacity'?'Capacity':focusLabel(srcKey);}
+
+// ── PAKET I: feste Vergleichsfenster ─────────────────────────────────────────
+// 28 d und 84 d, bewusst UNABHÄNGIG davon, ob das Budget-Panel gerade einen Block
+// zeigt: Erhaltung ist ein rollierendes Recency-Konzept und darf bei Blockstart nicht
+// auf null springen. Memoisiert an _sessionsRev, weil renderBudgetPanel bei jedem
+// Log-Render läuft und computeBudgetActuals nicht billig ist.
+const MAINTAIN_WINDOW_DAYS=28;
+let _paketIWinCache=null;
+function paketIWindows(){
+  const todayIso=toISODate(new Date());
+  if(_paketIWinCache&&_paketIWinCache.rev===_sessionsRev&&_paketIWinCache.iso===todayIso)return _paketIWinCache;
+  const today=new Date();today.setHours(0,0,0,0);
+  const mk=days=>{const s=new Date(today);s.setDate(s.getDate()-(days-1));return computeBudgetActuals(s,today);};
+  _paketIWinCache={rev:_sessionsRev,iso:todayIso,a28:mk(MAINTAIN_WINDOW_DAYS),a84:mk(MACRO_WINDOW_DAYS)};
+  return _paketIWinCache;
+}
+
+// ── PAKET I: Sportarten-Übersicht (ersetzt das Punktmuster) ──────────────────
+// Drei Spalten plus Marker: Ø/Wo über 28 d, Tage seit der letzten Einheit, Warn-/
+// Herkunftsmarker. Bewusst KEIN Ampelwort — "Erhalt/Aufbau/Abbau" suggeriert eine
+// Sicherheit, die die Datengrundlage nicht hergibt; "Abbau" bleibt ohne Leistungs-
+// messung Vermutung.
+const FOCUS_ROWS_OPEN_KEY='tlog_focus_rows_open';
+function halfRound(v){return Math.round((v||0)*2)/2;}
+// Ganze Werte ohne ",0" — "von 3 Einheiten" statt "von 3,0 Einheiten"; nur der halbe
+// Rest bekommt eine Nachkommastelle.
+function fmtAvgWeek(v){return halfRound(v).toLocaleString('de-DE',{maximumFractionDigits:1});}
+
+// Ø/Wo als Punktreihe statt als Zahl — auf einen Blick ablesbar, ob die Frequenz steht.
+//
+// ÜBERLAGERUNG, nicht Nebeneinander: das ZIEL gibt die Kreis-Slots vor (ein Kreis je
+// geplanter Einheit), das IST liegt schwarz darüber. Ein Ziel von 1,5 bei 0,5 absolvierten
+// Einheiten ergibt damit einen grauen Vollkreis mit schwarzer linker Hälfte plus einen
+// grauen Halbkreis — und nicht drei getrennte Formen.
+//   schwarz  geplant UND absolviert
+//   grau     geplant, noch offen
+//   rot      über das geplante Maß hinaus
+// Ohne gesetztes Ziel gibt es kein "über Plan": dann sind alle Kreise schwarz.
+//
+// Je Slot reicht EIN Element: über/offen schließen sich im selben Slot gegenseitig aus,
+// der Zustand ist also ein Links-nach-rechts-Verlauf schwarz → (grau|rot) → transparent.
+// Der Verlauf wird von border-radius:50% beschnitten, ein 50-%-Stopp ergibt dadurch einen
+// echten Halbkreis — kein Ring, keine Extra-Elemente.
+const DOT_MAX=12;   // Kappung, damit eine Ausreißerwoche die Zeile nicht sprengt
+const clamp01=v=>Math.max(0,Math.min(1,v));
+function dotHTML(done,open,over){
+  const a=done*100,b=(done+open+over)*100;
+  const rest=open>0?'var(--dot-open)':'var(--dot-over)';
+  const stops=[];
+  if(done>0)stops.push(`var(--dot-done) 0 ${a}%`);
+  if(open>0||over>0)stops.push(`${rest} ${a}% ${b}%`);
+  stops.push(`transparent ${b}% 100%`);
+  return`<span class="budget-dot" data-done="${done}" data-open="${open}" data-over="${over}"`
+    +` style="background:linear-gradient(90deg,${stops.join(',')});"></span>`;
+}
+function dotsCellHTML(ist,ziel,label){
+  const i=halfRound(ist),z=ziel!=null?halfRound(ziel):null;
+  const title=`${label}: Ø ${fmtAvgWeek(i)}${z!=null?' von '+fmtAvgWeek(z):''} Einheiten/Woche`;
+  const slots=Math.ceil(Math.max(i,z!=null?z:0));
+  if(slots<=0)return`<span class="budget-dots" title="${esc(title)}"></span>`;
+  // Bei sehr vielen Einheiten die Reihe kappen und die Zahl dazuschreiben — 20 Kreise
+  // sind kein Muster mehr, sondern eine Wand.
+  const shown=Math.min(slots,DOT_MAX);
+  let out='';
+  for(let n=1;n<=shown;n++){
+    const istN=clamp01(i-(n-1));
+    // Ohne Ziel ist jede absolvierte Einheit "im Plan" — sonst wäre alles rot.
+    const tgtN=z!=null?clamp01(z-(n-1)):istN;
+    out+=dotHTML(Math.min(tgtN,istN),Math.max(0,tgtN-istN),Math.max(0,istN-tgtN));
+  }
+  if(slots>shown)out+=`<span class="budget-dots-more">${fmtAvgWeek(i)}</span>`;
+  return`<span class="budget-dots" title="${esc(title)}">${out}</span>`;
+}
+function fmtDaysSince(d){return d==null?'&#8211;':d+'&nbsp;d';}
+function ovMarkHTML(status,count){
+  if(status!=='over_soft'&&status!=='over_hard')return'';
+  const cls=status==='over_hard'?' hard':'';
+  return`<span class="sport-ov-mark${cls}" title="Erhaltungsfenster &#252;berschritten">!${count>0?'&nbsp;('+count+')':''}</span>`;
+}
+function ovArrowHTML(r){
+  if(!r||!r.source)return'';
+  const drift=isDerivedDrift(r);
+  return`<span class="sport-ov-arrow${drift?' drift':''}" title="Erhaltung aus fremder Quelle: ${esc(maintainSourceLabel(r.source))}${drift?' — keine dedizierte Einheit im Warnzeitraum':''}">&#8595;</span>`;
+}
+function ovHelpHTML(kind,key){
+  return`<button type="button" class="sport-ov-help" data-ov-kind="${kind}" data-ov-key="${esc(key||'')}" aria-label="Erl&#228;uterung">?</button>`;
+}
+// Fünf feste Spalten. Marker und Herkunftspfeil teilen sich eine Zelle, damit die (?)
+// in jeder Zeile an derselben Stelle steht — auch wenn kein Marker gesetzt ist.
+function ovRowHTML(o){
+  return`<div class="sport-ov-row${o.sub?' sub':''}">
+    <span class="sport-ov-label">${o.chevron||''}${esc(o.label)}</span>
+    <span class="sport-ov-avg">${o.avg==null?'&#8211;':o.avg}</span>
+    <span class="sport-ov-last">${o.last}</span>
+    <span class="sport-ov-flags">${o.arrow||''}${o.mark||''}</span>
+    ${o.help||'<span class="sport-ov-help-gap"></span>'}
+  </div>`;
+}
+function renderSportOverviewHTML(sportTarget){
+  const a=paketIWindows().a28;
+  const foci=strengthFoci();
+  // Fokus-Status vorab: die Kraft-Zeile muss die Warnung ihrer Unterzeilen kennen,
+  // sonst versteckt sich der Abbau hinter dem eingeklappten Chevron.
+  const focusRows=foci.map(f=>{
+    const r=effectiveDaysSince(f.key);
+    return{f,r,status:maintainStatus(r.days,f.maintainDays,r.windowBonus)};
+  });
+  const warnCount=focusRows.filter(x=>x.status==='over_soft'||x.status==='over_hard').length;
+  const worst=focusRows.some(x=>x.status==='over_hard')?'over_hard':(warnCount?'over_soft':'none');
+
+  const keys=cfg.sports.map(s=>s.key)
+    .filter(k=>(sportTarget[k]&&sportTarget[k].count!=null)||(a.sportCount[k]||0)>0.05||sportMaintainDays(k)!=null)
+    .sort((x,y)=>{
+      const tx=sportTarget[x]&&sportTarget[x].count!=null?0:1;
+      const ty=sportTarget[y]&&sportTarget[y].count!=null?0:1;
+      return tx-ty||(a.sportCount[y]||0)-(a.sportCount[x]||0);
+    });
+
+  const rows=keys.map(k=>{
+    const ziel=sportTarget[k]&&sportTarget[k].count!=null?sportTarget[k].count:null;
+    const avg=dotsCellHTML(a.sportCount[k],ziel,sportCfg(k).label||k);
+    const days=daysSinceSport(k);
+    const isKraft=k==='Kraft';
+    // Bei Kraft schlägt die schlimmste Unterzeilen-Warnung durch, sonst gilt das
+    // Sportart-Fenster selbst.
+    const status=isKraft?worst:maintainStatus(days,sportMaintainDays(k));
+    const open=isKraft&&localStorage.getItem(FOCUS_ROWS_OPEN_KEY)==='1';
+    const chevron=isKraft&&focusRows.length
+      ?`<button type="button" class="sport-ov-chev${open?' open':''}" id="sport-ov-focus-toggle" aria-expanded="${open}" aria-label="Kraft-Foki"><i class="ti ti-chevron-right"></i></button>`
+      :'';
+    let html=ovRowHTML({label:sportCfg(k).label||k,avg,last:fmtDaysSince(days),
+      mark:ovMarkHTML(status,isKraft?warnCount:0),chevron,help:ovHelpHTML('sport',k)});
+    if(isKraft&&focusRows.length){
+      const subs=focusRows.map(({f,r,status:st})=>ovRowHTML({
+        label:f.label,sub:true,
+        avg:dotsCellHTML(countFocusPerWeek(f.key,a),null,f.label),
+        last:fmtDaysSince(r.days),arrow:ovArrowHTML(r),
+        mark:ovMarkHTML(st,0),help:ovHelpHTML('focus',f.key)
+      })).join('');
+      // "nicht zugeordnet" nur, wenn es im Fenster tatsächlich ungepflegte Einheiten
+      // gibt — Bestandsdaten werden ausgewiesen, nicht auf 'max' verteilt.
+      const unassigned=countFocusPerWeek(null,a);
+      const unrow=unassigned>0.05?ovRowHTML({label:'nicht zugeordnet',sub:true,
+        avg:dotsCellHTML(unassigned,null,'nicht zugeordnet'),last:'&#8211;'}):'';
+      html+=`<div class="sport-ov-subs" id="sport-ov-focus-body" ${open?'':'hidden'}>${subs}${unrow}</div>`;
+    }
+    return html;
+  }).join('');
+
+  // Ausdauer gesamt: Summe der Einheiten aller zonenbasierten Sportarten, gegen die
+  // Summe ihrer Ziele. Ohne diese Zeile liest sich "Rad vor 7 Tagen" wie ein Defizit.
+  const endur=daysSinceEndurance();
+  let endurIst=0,endurZiel=null;
+  cfg.sports.forEach(s=>{
+    if(!isSportZoneBased(s.key))return;
+    endurIst+=a.sportCount[s.key]||0;
+    const z=sportTarget[s.key]&&sportTarget[s.key].count;
+    if(z!=null)endurZiel=(endurZiel||0)+z;
+  });
+  const head=ovRowHTML({label:'Ausdauer (gesamt)',avg:dotsCellHTML(endurIst,endurZiel,'Ausdauer gesamt'),
+    last:fmtDaysSince(endur),help:ovHelpHTML('endurance','')});
+  return`<div class="budget-col"><div class="sport-ov-head">
+      <span class="sport-ov-label">Sportarten</span>
+      <span class="sport-ov-avg">&#216;/Wo 28&#160;d</span>
+      <span class="sport-ov-last">Zuletzt</span>
+      <span class="sport-ov-flags"></span><span class="sport-ov-help-gap"></span>
+    </div>
+    <div class="sport-ov">${head}${rows}</div></div>`;
+}
+// Kraft-Einheiten je Woche im 28-d-Fenster, aufgeschlüsselt nach Fokus. focusKey=null
+// zählt die ungepflegten. Nutzt dasselbe Wochenmaß wie computeBudgetActuals (a.weeks),
+// damit die Unterzeilen mit der Kraft-Zeile darüber aufgehen.
+function countFocusPerWeek(focusKey,a){
+  const today=new Date();today.setHours(0,0,0,0);
+  const hi=toISODate(today);
+  const lo=addDaysIso(hi,-(MAINTAIN_WINDOW_DAYS-1));
+  let n=0;
+  sessions.forEach(s=>{
+    if(s.sport!=='Kraft'||isPlanned(s)||isSpecialEntry(s))return;
+    if(!s.date||s.date<lo||s.date>hi)return;
+    if(focusKey==null?!s.strength_type:s.strength_type===focusKey)n++;
+  });
+  return n/a.weeks;
+}
+
+// ── PAKET I: Zusammensetzung der Gesamtzeit (§6) ─────────────────────────────
+// Legendenzeile unter dem Ziel-Balken. Sie macht den Unterschied der beiden Nenner
+// lesbar: die Gesamtzeit enthält Kraft, die Intensitätsverteilung darunter nicht.
+// Ausdauer = alle zonenbasierten Sportarten außer Capacity; Capacity steht eigens,
+// weil ihre Einordnung (zoneBased:true) überrascht; alles Übrige einzeln benannt.
+function totalCompositionHTML(a){
+  const parts=[];
+  let endur=0;
+  cfg.sports.forEach(s=>{
+    const m=a.sportMin[s.key]||0;
+    if(isSportZoneBased(s.key)&&s.key!=='Capacity')endur+=m;
+  });
+  if(endur>0.5)parts.push(`Ausdauer ${fmtMin(Math.round(endur))}`);
+  // Capacity direkt hinter Ausdauer, davor die übrigen (Kraft/Kampfsport/…): die beiden
+  // zonenbasierten Gruppen stehen so beieinander und der Rest schließt an.
+  const rest=cfg.sports.filter(s=>(a.sportMin[s.key]||0)>0.5&&!(isSportZoneBased(s.key)&&s.key!=='Capacity'));
+  rest.sort((x,y)=>(x.key==='Capacity'?0:1)-(y.key==='Capacity'?0:1));
+  rest.forEach(s=>parts.push(`${esc(s.label||s.key)} ${fmtMin(Math.round(a.sportMin[s.key]))}`));
+  return parts.length?`<div class="budget-comp">${parts.join(' &#183; ')}</div>`:'';
+}
+
+// ── PAKET I: Langzeitverteilung (§5) ─────────────────────────────────────────
+// Eine einzelne Prozentzahl sagt nicht, ob die Verteilung driftet. Die Gegenüber-
+// stellung 84 d ↔ 28 d zeigt die Richtung ohne zusätzliche Grafik. Spaltenreihenfolge
+// chronologisch von links nach rechts: erst das lange Fundament, dann das jüngste
+// Fenster — der Pfeil rechts liest sich damit als Bewegung in Leserichtung.
+const LONGTERM_ARROW_PP=3;      // Pfeil erst ab 3 Prozentpunkten Abweichung
+const LONGTERM_SPARK_WEEKS=12;
+function renderLongTermHTML(){
+  const{a28,a84}=paketIWindows();
+  if(!(a28.zoneTotalMin>0)&&!(a84.zoneTotalMin>0))return'';
+  const pct=(w,zk)=>w.zoneTotalMin>0?w.zoneMin[zk]/w.zoneTotalMin*100:null;
+  const rows=ZONE_KEYS.map(zk=>{
+    const p28=pct(a28,zk),p84=pct(a84,zk);
+    let arrow='';
+    if(p28!=null&&p84!=null&&Math.abs(p28-p84)>=LONGTERM_ARROW_PP)
+      arrow=p28>p84?'<span class="lt-arrow" title="steigend">&#8599;</span>':'<span class="lt-arrow" title="fallend">&#8600;</span>';
+    return`<div class="lt-row">
+      <span class="lt-label">${zk}</span>
+      <span class="lt-val">${p84!=null?Math.round(p84)+'&#8239;%':'&#8211;'}</span>
+      <span class="lt-val">${p28!=null?Math.round(p28)+'&#8239;%':'&#8211;'}</span>
+      <span class="lt-trend">${arrow}</span>
+    </div>`;
+  }).join('');
+  const spark=litSparkWeeks();
+  const litTarget=budgetTargetsFromCfg().zone_targets?.LIT?.pct;
+  const markPos=litTarget!=null?Math.max(0,Math.min(100,litTarget)).toFixed(1):null;
+  const bars=spark.map(w=>{
+    const h=w.pct==null?0:Math.max(3,w.pct);
+    const t=w.pct==null?`KW ab ${w.iso}: keine zugeordnete Zeit`:`KW ab ${w.iso}: LIT ${Math.round(w.pct)} %`;
+    return`<span class="lt-spark-bar${w.pct==null?' empty':''}" style="height:${h.toFixed(1)}%;" title="${t}"></span>`;
+  }).join('');
+  return`<div class="budget-col"><div class="lt-table">
+      <div class="lt-row lt-head"><span class="lt-label">Langzeitverteilung</span><span class="lt-val">84&#160;Tage</span><span class="lt-val">28&#160;Tage</span><span class="lt-trend"></span></div>
+      ${rows}
+    </div>
+    <div class="lt-spark-cap">LIT-Anteil je Woche</div>
+    <div class="lt-spark">${bars}${markPos!=null?`<span class="lt-spark-mark" style="bottom:${markPos}%;"></span>`
+      +`<span class="lt-spark-mark-lbl" style="bottom:${markPos}%;" title="LIT-Ziel">${litTarget}&#8239;%</span>`:''}</div></div>`;
+}
+// LIT-Anteil je Kalenderwoche (Mo–So) über die letzten 12 Wochen. Einmalig aus EINER
+// Tagesreihe aggregiert statt zwölf computeBudgetActuals-Aufrufe — der Renderer läuft
+// bei jedem Log-Render. Zonenlogik identisch zu computeBudgetActuals: nur zonenbasierte
+// Sportarten, nur gepflegte Zonen Z1–Z5, Zuordnung einheitenweise.
+function litSparkWeeks(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const monday=new Date(today);
+  monday.setDate(monday.getDate()-((monday.getDay()+6)%7));   // Mo dieser Woche
+  const start=new Date(monday);start.setDate(start.getDate()-7*(LONGTERM_SPARK_WEEKS-1));
+  const series=buildDailyLoadSeries({start,end:today});
+  const buckets=Array.from({length:LONGTERM_SPARK_WEEKS},(_,i)=>{
+    const d=new Date(start);d.setDate(d.getDate()+i*7);
+    return{iso:toISODate(d),lit:0,tot:0};
+  });
+  series.forEach(day=>{
+    const idx=Math.floor(daysBetweenIso(toISODate(start),day.iso)/7);
+    const b=buckets[idx];
+    if(!b)return;
+    day.sessions.forEach(s=>{
+      if(isPlanned(s)||isSpecialEntry(s))return;
+      if(!isSportZoneBased(s.sport))return;
+      if(!/^Z[1-5]$/.test(s.zone||''))return;
+      const m=s.duration||0;
+      b.tot+=m;
+      if(parseInt(s.zone[1])<=2)b.lit+=m;
+    });
+  });
+  return buckets.map(b=>({iso:b.iso,pct:b.tot>0?b.lit/b.tot*100:null}));
+}
+
 // Skala von Zeile 1: der Balken reicht bis 140 % des Solls, damit eine
 // Überschreitung Platz hat und die Ziellinie ortsfest bleibt (früher wurde auf das
 // Ist reskaliert — dann stand der Balken immer voll und die Ziellinie wanderte).
 const BUDGET_BAR_SCALE=1.4;
 const ZONE_KEYS=['LIT','MIT','HIT'];
-const ZONE_VARS={LIT:'--zone-2',MIT:'--zone-3',HIT:'--zone-4'};
+// MIT bewusst neutral statt in der Blau-Familie: LIT (blau) und HIT (lila) sind die
+// beiden Pole, die die Polarisierung ausmachen — MIT ist der Bereich dazwischen und
+// soll sich nicht als dritte Intensitätsaussage lesen.
+const ZONE_VARS={LIT:'--zone-2',MIT:'--zone-none',HIT:'--zone-4'};
 const HIT_ROW_OPEN_KEY='tlog_budget_hit_open';
 
-// Gemeinsame Darstellung für Block- und globales Budget, vier Zeilen:
-//   1 Gesamtvolumen (alle Sportarten) gegen das Wochenzeit-Ziel
+// Gemeinsame Darstellung für Block- und globales Budget:
+//   1 Gesamtvolumen (alle Sportarten) gegen das Wochenzeit-Ziel + Zusammensetzung
 //   2 Intensitätsverteilung Ist/Soll — nur zonenbasierte Sportarten
 //   3 HIT nach Sportart (eingeklappt) — Anteil am gesamten HIT-Volumen
-//   4 Einheiten je Sportart als Punktmuster (Ø/Woche gerundet gegen Ziel-Anzahl)
+//   4 Sportarten-Übersicht (Paket I): Ø/Wo 28 d, Recency, Erhaltungsfenster
 //   5 Erhaltungsreize (Paket G) — nur bei Vorlagenblöcken mit floors
+//   6 Langzeitverteilung (Paket I): 28 d gegen 84 d + LIT-Sparkline
+// Zeile 1/2 haben BEWUSST verschiedene Nenner (Gesamtzeit vs. nur zonenbasierte Zeit)
+// und sind beide beschriftet: flösse Kraft in die LIT/MIT/HIT-Prozente ein, wäre die
+// 80-%-Marke bedeutungslos.
 // editFn hängt den Stift in die Kopfzeile — beim Block führt er ins Block-Sheet,
 // sonst ins Budget-Ziel-Sheet. `block` ist optional und nur für Zeile 5 nötig
 // (Fensterklemmung auf starts_on).
@@ -6592,7 +7257,8 @@ function renderBudgetPanel(el,a,targets,headSuffix,editFn,block){
       ${overPct>0?`<div class="budget-over" style="width:${overPct.toFixed(1)}%;"></div>`:''}
       <div class="budget-mark" style="left:${(100/BUDGET_BAR_SCALE).toFixed(2)}%;" title="Ziel ${fmtMin(targetMin)} h"></div>
     </div>
-    <div class="budget-vol">${fmtMin(Math.round(a.totalMin))} h / Ziel ${fmtMin(targetMin)} h (${volPct}%)</div>`;
+    <div class="budget-vol">${fmtMin(Math.round(a.totalMin))} h / Ziel ${fmtMin(targetMin)} h (${volPct}%)</div>
+    ${totalCompositionHTML(a)}`;
 
   // ── Zeile 2: Intensitätsverteilung (nur zonenbasierte Sportarten) ─────────
   const totZone=a.zoneTotalMin||0;
@@ -6618,14 +7284,26 @@ function renderBudgetPanel(el,a,targets,headSuffix,editFn,block){
         if(!guides.some(g=>Math.abs(g-cum)<0.05))guides.push(cum);
       });
     }
+    // Ist und Soll in EINER Klammer je Zone statt zwei getrennter Zahlenreihen.
     const legend=ZONE_KEYS.filter(zk=>zonePct(zk)>0||(zoneTarget[zk]&&zoneTarget[zk].pct!=null))
-      .map(zk=>`<span class="budget-legend-item"><i style="background:var(${ZONE_VARS[zk]});"></i>${zk} ${Math.round(zonePct(zk))}%${zoneTarget[zk]&&zoneTarget[zk].pct!=null?` <span class="budget-target">/ ${zoneTarget[zk].pct}%</span>`:''}</span>`).join('');
+      .map(zk=>{
+        const soll=zoneTarget[zk]&&zoneTarget[zk].pct!=null?` / ${zoneTarget[zk].pct}&#8239;%`:'';
+        return`<span class="budget-legend-item"><i style="background:var(${ZONE_VARS[zk]});"></i>${zk} <span class="budget-legend-val">(${Math.round(zonePct(zk))}&#8239;%${soll})</span></span>`;
+      }).join('');
+    // Der Bereich wird namentlich ausgewiesen: dass Capacity mitzählt (zoneBased:true)
+    // überrascht auf den ersten Blick und muss ablesbar sein, nicht erschlossen werden.
+    const zoneScope=cfg.sports.filter(s=>isSportZoneBased(s.key)).map(s=>s.label||s.key).join(', ');
+    // Beide Balken tragen ihre Rolle als Label — ohne sie ist nicht entscheidbar,
+    // welcher der beiden das Ziel ist. ZIEL oben, IST darunter (Soll vor Haben).
     distRow=`
-      <div class="budget-sub-label">Intensit&#xE4;tsverteilung <span class="budget-sub-scope">&#8212; Ausdauer (${fmtMin(Math.round(totZone))} von ${fmtMin(Math.round(a.totalMin))} h)</span></div>
+      <div class="budget-sub-label">Intensit&#xE4;tsverteilung <span class="budget-sub-scope" title="${fmtMin(Math.round(totZone))} h von ${fmtMin(Math.round(a.totalMin))} h Gesamtzeit sind einer Zone zugeordnet">&#8212; ${esc(zoneScope)} &#183; ${fmtMin(Math.round(totZone))}/${fmtMin(Math.round(a.totalMin))}&#8239;h</span></div>
       <div class="budget-dist">
-        <div class="budget-dist-bar" title="Ist">${distSegs(zonePct)}</div>
-        ${zoneSollSum>0?`<div class="budget-dist-bar budget-dist-soll" title="Soll">${distSegs(zk=>((zoneTarget[zk]&&zoneTarget[zk].pct)||0)/zoneSollSum*100)}</div>`:''}
-        ${guides.map(g=>`<div class="budget-guide" style="left:${g.toFixed(1)}%;"></div>`).join('')}
+        <div class="budget-dist-keys">${zoneSollSum>0?'<span>Ziel</span>':''}<span>Ist</span></div>
+        <div class="budget-dist-bars">
+          ${zoneSollSum>0?`<div class="budget-dist-bar budget-dist-soll" title="Ziel">${distSegs(zk=>((zoneTarget[zk]&&zoneTarget[zk].pct)||0)/zoneSollSum*100)}</div>`:''}
+          <div class="budget-dist-bar" title="Ist">${distSegs(zonePct)}</div>
+          ${guides.map(g=>`<div class="budget-guide" style="left:${g.toFixed(1)}%;"></div>`).join('')}
+        </div>
       </div>
       <div class="budget-legend">${legend}</div>`;
   }
@@ -6652,25 +7330,10 @@ function renderBudgetPanel(el,a,targets,headSuffix,editFn,block){
       ${hitRows||'<div class="budget-target">Kein HIT im Zeitraum.</div>'}
     </div>`;
 
-  // ── Zeile 4: Einheiten je Sportart als Punktmuster ────────────────────────
-  const dotKeys=cfg.sports.map(s=>s.key)
-    .filter(k=>(sportTarget[k]&&sportTarget[k].count!=null)||Math.round(a.sportCount[k]||0)>0)
-    .sort((x,y)=>{
-      const tx=sportTarget[x]&&sportTarget[x].count!=null?0:1;
-      const ty=sportTarget[y]&&sportTarget[y].count!=null?0:1;
-      return tx-ty||(a.sportCount[y]||0)-(a.sportCount[x]||0);
-    });
-  const dotRows=dotKeys.map(k=>{
-    const ist=Math.round(a.sportCount[k]||0);
-    const ziel=sportTarget[k]&&sportTarget[k].count!=null?sportTarget[k].count:null;
-    const total=Math.max(ziel||0,ist);
-    const dots=Array.from({length:total},(_,i)=>`<span class="budget-dot${i<ist?' done':''}"></span>`).join('');
-    return`<div class="budget-dot-row" title="${esc(sportCfg(k).label||k)}: &#216; ${ist}${ziel!=null?' von '+ziel:''} Einheiten/Woche">
-      <span class="budget-dot-label">${esc(sportCfg(k).label||k)}</span>
-      <span class="budget-dots">${dots}</span>
-    </div>`;
-  }).join('');
-  const dotRow=dotRows?`<div class="budget-sub-label">Einheiten je Sportart (&#216;/Woche)</div>${dotRows}`:'';
+  // ── Zeile 4 (Paket I): Sportarten-Übersicht mit Recency ───────────────────
+  // Ersetzt das frühere Punktmuster; der Ziel-Count aus sport_targets steht jetzt in
+  // der Ø/Wo-Spalte ("3,0 / 4"). Rechnet immer über 28 d, auch im Block-Panel.
+  const dotRow=renderSportOverviewHTML(sportTarget);
 
   // Zonen-Counts aus dem Ziel-Editor bleiben als kompakte Textzeile erhalten.
   const zoneCountParts=ZONE_KEYS.filter(zk=>zoneTarget[zk]&&zoneTarget[zk].count!=null)
@@ -6682,10 +7345,14 @@ function renderBudgetPanel(el,a,targets,headSuffix,editFn,block){
   // rendern dieses Panel damit unverändert.
   const floorRow=renderFloorRowHTML(targets,block);
 
+  // ── Zeile 6 (Paket I): Langzeitverteilung ─────────────────────────────────
+  const longTermRow=renderLongTermHTML();
+
   el.innerHTML=`
     <div class="budget-head">Budget <span class="budget-head-sub">${headSuffix}</span>
       <button type="button" class="budget-edit" id="budget-edit" title="Ziel bearbeiten" aria-label="Ziel bearbeiten"><i class="ti ti-adjustments-horizontal"></i></button></div>
-    ${volRow}${distRow}${hitRow}${dotRow}${countLine}${floorRow}`;
+    ${volRow}${distRow}${countLine}${hitRow}${floorRow}
+    <div class="budget-cols">${dotRow}${longTermRow}</div>`;
   document.getElementById('budget-edit').addEventListener('click',editFn);
   const toggle=document.getElementById('budget-hit-toggle');
   toggle.addEventListener('click',()=>{
@@ -6695,6 +7362,24 @@ function renderBudgetPanel(el,a,targets,headSuffix,editFn,block){
     toggle.classList.toggle('open',open);
     toggle.setAttribute('aria-expanded',String(open));
     localStorage.setItem(HIT_ROW_OPEN_KEY,open?'1':'0');
+  });
+  bindSportOverview(el);
+}
+// Chevron der Kraft-Unterzeilen und die (?)-Popover. Getrennt von renderBudgetPanel,
+// damit die Übersicht später auch anderswo eingehängt werden kann.
+function bindSportOverview(el){
+  const chev=el.querySelector('#sport-ov-focus-toggle');
+  if(chev)chev.addEventListener('click',()=>{
+    const body=el.querySelector('#sport-ov-focus-body');
+    if(!body)return;
+    const open=body.hasAttribute('hidden');
+    if(open)body.removeAttribute('hidden');else body.setAttribute('hidden','');
+    chev.classList.toggle('open',open);
+    chev.setAttribute('aria-expanded',String(open));
+    localStorage.setItem(FOCUS_ROWS_OPEN_KEY,open?'1':'0');
+  });
+  el.querySelectorAll('.sport-ov-help').forEach(btn=>{
+    btn.addEventListener('click',()=>openMaintainInfoPopover(btn.dataset.ovKind,btn.dataset.ovKey));
   });
 }
 function renderLogBudgetSlotDefault(el){
@@ -6770,12 +7455,29 @@ function renderLogNextSlot(){
   }).join('');
 }
 
-// Meta-Fetzen (HF/Distanz/Höhenmeter) einer Einheit — von der Listenzeile und der Hero-Kachel
-// gemeinsam genutzt, damit beide dieselben Angaben in derselben Reihenfolge zeigen.
+// Pace (min/km) bzw. Ø-Geschwindigkeit (km/h) — immer aus Distanz/Dauer abgeleitet und
+// bewusst NICHT persistiert: korrigiert man später die Distanz oder die Dauer, stimmt der
+// Wert automatisch mit. Die (historische) Spalte avg_pace bleibt deshalb ungenutzt.
+// Rad zeigt km/h, alles andere mit Distanz min/km — so fallen auch benutzerdefinierte
+// Distanz-Sportarten auf eine sinnvolle Einheit, während Kraft/Kampfsport mangels
+// Distanz ohnehin durch die Nullprüfung fallen.
+function paceParts(s){
+  const km=parseFloat(s.distance_km),min=parseFloat(s.duration);
+  if(!(km>0)||!(min>0))return null;
+  if(s.sport==='Rad'){
+    return{label:'Ø Geschwindigkeit',text:(Math.round(km/(min/60)*10)/10).toString().replace('.',',')+' km/h'};
+  }
+  const secPerKm=Math.round(min*60/km);
+  return{label:'Pace',text:Math.floor(secPerKm/60)+':'+String(secPerKm%60).padStart(2,'0')+' /km'};
+}
+// Meta-Fetzen (HF/Distanz/Pace/Höhenmeter) einer Einheit — von der Listenzeile und der
+// Hero-Kachel gemeinsam genutzt, damit beide dieselben Angaben in derselben Reihenfolge zeigen.
 function sessionMetaParts(s){
   const meta=[];
   if(s.hr_avg||s.hr_max)meta.push('Ø '+(s.hr_avg?s.hr_avg:'')+(s.hr_avg&&s.hr_max?' / ':'')+(s.hr_max?'Max '+s.hr_max:''));
   if(s.distance_km)meta.push(s.distance_km+' km');
+  const pp=paceParts(s);
+  if(pp)meta.push(pp.text);
   if(s.elevation_m)meta.push('&#x2191; '+s.elevation_m+' m');
   return meta;
 }
@@ -6811,11 +7513,11 @@ function renderLog(){
 
   // Paket B2: Slots 2+3 und Swipe-Mechanik der Sektion "Aktuelle Einheiten"
   const logHswipe=document.getElementById('log-hswipe');
-  initHSwipe(logHswipe,{key:'log-einheiten'});
+  initHSwipe(logHswipe,{key:'log-einheiten',snapTop:true});
   // Beim (Neu-)Laden/Anzeigen der Log-Seite immer den ersten Slot (aktuelle Einheiten)
   // zeigen, nicht die zuletzt gewischte Position (Budget/Geplante) — der .hswipe-Container
   // bleibt beim Seitenwechsel im DOM und behielte sonst seinen scrollLeft.
-  if(logHswipe)logHswipe.scrollLeft=0;
+  if(logHswipe){logHswipe.scrollLeft=0;logHswipe._hswipeSyncSnap?.();}
   renderLogBudgetSlot();
   renderLogNextSlot();
 
@@ -6835,6 +7537,7 @@ function renderLog(){
       const hDate=hd.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
       const zc=zoneCfg(hero.zone,hero.sport);
       const heroMeta=sessionMetaParts(hero);
+      const heroStype=sessionTypeLabel(hero.sport,hero.session_type);
       // Aufbau spiegelt die Listeneinträge 1:1 (entry-left: Datum über Dauer + Zone daneben,
       // entry-right: Badge, Titel, Meta) — die Dauer bleibt als ASCII-Zahl die eine laute
       // Poster-Geste, das ASCII-Sportbild sitzt rechts unter dem Badge.
@@ -6846,6 +7549,7 @@ function renderLog(){
           `</div>`+
           `<div class="lh-right">`+
             `<span class="lh-badge">${sportIconHTML(hero.sport,15)} ${esc(hero.sport)}</span>`+
+            (heroStype?`<p class="lh-stype">${esc(heroStype)}</p>`:'')+
             (hero.title?`<p class="lh-title">${esc(hero.title)}</p>`:'')+
             (heroMeta.length?`<p class="lh-meta">${heroMeta.join(' &#183; ')}</p>`:'')+
           `</div>`+
@@ -6878,6 +7582,8 @@ function renderLog(){
     const sc=sportCfg(s.sport),zc=zoneCfg(s.zone,s.sport);
     const meta=sessionMetaParts(s);
     const titleStr=s.title?`<p class="entry-title">${esc(s.title)}</p>`:'';
+    const stypeLbl=sessionTypeLabel(s.sport,s.session_type);
+    const stypeBadge=stypeLbl?`<span class="pill" style="background:transparent;color:var(--text-muted);border:1px solid var(--border);">${esc(stypeLbl)}</span>`:'';
     const needsDetail=s.sport==='Kraft'&&(!s.note||!s.note.trim())&&!planned;
     const detailBadge=needsDetail?`<span class="pill detail-missing-badge" onclick="event.stopPropagation();openDetailFocusNote('${s.id}')" style="background:#fef3e2;color:#92680a;cursor:pointer;"><i class="ti ti-pencil"></i> Details fehlen</span>`:'';
     const plannedBadge=planned?`<span class="pill" style="background:transparent;color:#9d92be;border:1px dashed #9d92be99;"><i class="ti ti-calendar-event"></i> Geplant</span>`:'';
@@ -6893,6 +7599,7 @@ function renderLog(){
         </div>
         <div class="entry-right">
           <span class="entry-badge" style="background:${sc.color}22;color:${sc.color};">${sportIconHTML(s.sport,15)} ${s.sport}</span>
+          ${stypeBadge}
           ${plannedBadge}
           ${detailBadge}
           ${titleStr}
@@ -7659,7 +8366,7 @@ function blockGoalRowHTML(attr,key,label,color,target,bands){
   const t=target||{};
   const row=`<div class="block-goal-row"><span class="bg-swatch" style="background:${esc(color)};"></span><span class="bg-label">${esc(label)}</span>
     <input type="number" min="0" max="100" class="block-goal-pct" data-${attr}="${esc(key)}" placeholder="%" value="${t.pct!=null?t.pct:''}">
-    <input type="number" min="0" class="block-goal-count" data-${attr}="${esc(key)}" placeholder="#/Wo" value="${t.count!=null?t.count:''}">
+    <input type="number" min="0" step="${attr==='sport'?'0.5':'1'}" class="block-goal-count" data-${attr}="${esc(key)}" placeholder="#/Wo" value="${t.count!=null?t.count:''}">
   </div>`;
   if(!bands)return row;
   const scales=['pct','count'].filter(f=>bands[f]).map(f=>doseBandHTML(bands[f],t[f],f==='pct'?'%':'#/Wo',color)).join('');
@@ -8141,7 +8848,11 @@ function collectGoalMap(attr){
     const key=inp.dataset[attr];
     const pct=inp.value!==''?Math.round(parseFloat(inp.value)):null;
     const countEl=document.querySelector(`.block-goal-count[data-${attr}="${CSS.escape(key)}"]`);
-    const count=countEl&&countEl.value!==''?Math.round(parseFloat(countEl.value)):null;
+    // Sport-Ziele in halben Einheiten (1,5 Krafteinheiten je Woche sind ein sinnvolles
+    // Ziel und erscheinen in der Übersicht als Halbkreis). Zonen-Counts bleiben ganz.
+    const count=countEl&&countEl.value!==''
+      ?(attr==='sport'?halfRound(parseFloat(countEl.value)):Math.round(parseFloat(countEl.value)))
+      :null;
     if(pct!=null||count!=null){
       map[key]={};
       if(pct!=null)map[key].pct=pct;
@@ -8274,6 +8985,121 @@ function openBlockInfoPopover(block){
   document.body.appendChild(bd);document.body.appendChild(pop);
   bd.addEventListener('click',closeBlockInfoPopover);
   document.getElementById('block-info-edit').addEventListener('click',()=>{closeBlockInfoPopover();openBlockModal(block);});
+}
+
+// ── PAKET I: Erhaltungsfenster-Popover (§4.4) ────────────────────────────────
+// Gleiche Grammatik wie das Block-Info-Popover: drei bis vier Zeilen, dann ein Button.
+// Die Begründung steht hier und NICHT im Code der Statusrechnung — sie erklärt, warum
+// das Laufsfenster kürzer ist als das Radfenster, ohne die Tabelle mit Text zu füllen.
+const MAINTAIN_RATIONALE={
+  Lauf:'Betrifft die laufspezifische mechanische Toleranz und &#xD6;konomie. Die zentrale Ausdauerkomponente wird auch durch Rad- und Capacity-Einheiten gehalten.',
+  Rad:'&#xDC;berwiegend zentrale Anpassung, wenig modalit&#xE4;tsspezifische Struktur &#8212; deshalb l&#xE4;nger als beim Laufen.',
+  Capacity:'Metabolische Belastung bei m&#xE4;&#xDF;iger Last. Setzt den Kraftausdauer-Reiz vollst&#xE4;ndig, z&#xE4;hlt aber nur zur H&#xE4;lfte auf Volumenziele.'
+};
+const FOCUS_RATIONALE={
+  max:'Maximalkraft wird &#xFC;ber die relative Last gehalten, nicht &#xFC;ber Volumen &#8212; eine Einheit pro Woche mit einem Satz je &#xDC;bung gen&#xFC;gt.',
+  hyp:'Schwere Lasten halten Muskelmasse mit. Capacity-Einheiten z&#xE4;hlen hier nicht: Muskelmasse wird &#xFC;ber mechanische Spannung gehalten.',
+  ausdauer:'Wird von Capacity vollst&#xE4;ndig gehalten, von Maximalkraft und Hypertrophie zur H&#xE4;lfte.'
+};
+// "vor 1 Tagen" liest sich falsch — Singular im Dativ ("vor 1 Tag") und im Nominativ
+// ("Erhaltungsfenster 1 Tag") getrennt.
+function dTage(n){return n===1?'1 Tag':n+' Tage';}
+function dTagen(n){return n===1?'1 Tag':n+' Tagen';}
+function trendLineHTML(sportKey){
+  const{a28,a84}=paketIWindows();
+  const m28=a28.sportMin[sportKey]||0,m84=a84.sportMin[sportKey]||0;
+  if(m84<=0&&m28<=0)return'';
+  // Minuten, nicht Einheiten: steigende Frequenz bei sinkendem Umfang ist kein Aufbau.
+  if(m84<=0)return'<div class="block-info-line">Umfang 28&#160;d gegen 84&#160;d: neu im Programm.</div>';
+  const delta=(m28-m84)/m84*100;
+  const txt=Math.abs(delta)<15?'stabil':(delta>0?'+':'&#8722;')+Math.round(Math.abs(delta))+'&#8239;%';
+  return`<div class="block-info-line">Umfang 28&#160;d gegen 84&#160;d: ${txt}</div>`;
+}
+function openMaintainInfoPopover(kind,key){
+  closeBlockInfoPopover();
+  const bd=document.createElement('div');bd.className='block-info-backdrop';bd.id='block-info-backdrop';
+  const pop=document.createElement('div');pop.className='block-info-pop';pop.id='block-info-pop';
+  let title='',lines=[],editable=false;
+  if(kind==='endurance'){
+    const d=daysSinceEndurance();
+    title='Ausdauerreiz gesamt';
+    lines.push('&#xDC;ber alle Sportarten, die in der Intensit&#xE4;tsverteilung mitz&#xE4;hlen. VO&#8322;max, Herzzeitvolumen und Blutvolumen werden von jedem Ausdauertraining gehalten &#8212; modalit&#xE4;tsgebunden ist nur das Spezifische.');
+    lines.push(`Zuletzt ${d==null?'noch nie':'vor '+dTagen(d)}.`);
+  }else if(kind==='sport'){
+    const win=sportMaintainDays(key),d=daysSinceSport(key);
+    const st=maintainStatus(d,win);
+    title=esc(sportCfg(key).label||key);
+    lines.push(win!=null?`Erhaltungsfenster ${dTage(win)}.`:'Kein Erhaltungsfenster gesetzt &#8212; keine Pr&#xFC;fung.');
+    if(MAINTAIN_RATIONALE[key])lines.push(MAINTAIN_RATIONALE[key]);
+    lines.push(`Zuletzt ${d==null?'noch nie':'vor '+dTagen(d)}${win!=null?' &#183; '+(st==='open'?'offen':'Fenster &#xFC;berschritten'):''}`);
+    lines.push(trendLineHTML(key));
+    if(win!=null)lines.push('<em>Richtwert, kein Studienwert.</em>');
+    editable=true;
+  }else if(kind==='focus'){
+    const win=focusMaintainDays(key),r=effectiveDaysSince(key);
+    const st=maintainStatus(r.days,win,r.windowBonus);
+    title=esc(focusLabel(key));
+    lines.push(win!=null?`Erhaltungsfenster ${dTage(win)}${r.windowBonus>0?` (aktuell auf ${dTage(Math.round(win*(1+r.windowBonus)))} verl&#xE4;ngert)`:''}.`:'Kein Erhaltungsfenster gesetzt &#8212; keine Pr&#xFC;fung.');
+    if(FOCUS_RATIONALE[key])lines.push(FOCUS_RATIONALE[key]);
+    lines.push(r.days==null
+      ?'Noch keine Einheit erfasst.'
+      :`Zuletzt vor ${dTagen(r.days)}${r.source?' &#8212; &#xFC;ber '+esc(maintainSourceLabel(r.source))+' gehalten':''}${win!=null?' &#183; '+(st==='open'?'offen':'Fenster &#xFC;berschritten'):''}`);
+    // Nur zeigen, wenn sie sich von der abgeleiteten unterscheidet — sonst stünde
+    // dieselbe Zahl zweimal untereinander.
+    if(r.source){
+      lines.push(r.direct==null
+        ?`Keine dedizierte Einheit erfasst.`
+        :(r.direct!==r.days?`Letzte dedizierte Einheit vor ${dTagen(r.direct)}.`:''));
+      if(isDerivedDrift(r))lines.push('<em>Dauerhaft abgeleitet: der Reiz besteht, die Last bleibt bei dem, was die fremde Quelle vorgibt.</em>');
+    }
+    if(win!=null)lines.push('<em>Richtwert, kein Studienwert.</em>');
+    editable=true;
+  }
+  pop.innerHTML=`<h4>${title}</h4>
+    ${lines.filter(Boolean).map(l=>l.startsWith('<div')?l:`<div class="block-info-line">${l}</div>`).join('')}
+    ${editable?'<div class="block-info-actions"><button type="button" id="maintain-edit">Fenster anpassen</button></div>':''}`;
+  document.body.appendChild(bd);document.body.appendChild(pop);
+  bd.addEventListener('click',closeBlockInfoPopover);
+  document.getElementById('maintain-edit')?.addEventListener('click',()=>{
+    closeBlockInfoPopover();openMaintainWindowSheet(kind,key);
+  });
+}
+// Minimales Sheet nach dem Muster von openBudgetGoalModal: ein Zahlenfeld, leer =
+// keine Prüfung. Schreibt direkt in cfg.sportMaintain bzw. cfg.strengthFoci.
+function openMaintainWindowSheet(kind,key){
+  closeBlockModal();
+  const cur=kind==='focus'?focusMaintainDays(key):sportMaintainDays(key);
+  const label=kind==='focus'?focusLabel(key):(sportCfg(key).label||key);
+  const bd=document.createElement('div');bd.className='ghost-sheet-backdrop';bd.id='block-sheet-backdrop';
+  const sheet=document.createElement('div');sheet.className='block-sheet';sheet.id='block-sheet';
+  sheet.innerHTML=`
+    <p class="ghost-sheet-title">Erhaltungsfenster &#183; ${esc(label)}</p>
+    <p class="block-goal-hint">Tage, nach denen die App den Reiz als &#xFC;berf&#xE4;llig markiert. Leer lassen = keine Pr&#xFC;fung. Richtwert, kein Studienwert.</p>
+    <input type="number" min="1" max="365" id="maintain-days" placeholder="z.B. 7" value="${cur!=null?cur:''}" style="width:100%;">
+    <div class="block-sheet-actions">
+      <div></div>
+      <div style="display:flex;gap:.5rem;">
+        <button type="button" id="block-cancel">Abbrechen</button>
+        <button type="button" id="maintain-save" class="block-btn-save">Speichern</button>
+      </div>
+    </div>`;
+  document.body.appendChild(bd);document.body.appendChild(sheet);
+  requestAnimationFrame(()=>{bd.style.opacity='1';sheet.classList.add('open');});
+  bd.addEventListener('pointerdown',closeBlockModal);
+  document.getElementById('block-cancel').addEventListener('click',closeBlockModal);
+  document.getElementById('maintain-save').addEventListener('click',()=>{
+    const raw=document.getElementById('maintain-days').value.trim();
+    const v=raw===''?null:Math.max(1,parseInt(raw,10)||1);
+    if(kind==='focus'){
+      const foci=cfg.strengthFoci||(cfg.strengthFoci=JSON.parse(JSON.stringify(DEFAULT_STRENGTH_FOCI)));
+      const f=foci.find(x=>x.key===key);
+      if(f)f.maintainDays=v;
+    }else{
+      cfg.sportMaintain=cfg.sportMaintain||{};
+      cfg.sportMaintain[key]=v;
+    }
+    saveCfg();closeBlockModal();renderLogBudgetSlot();
+  });
 }
 
 // Block-Modus umschalten (nur Quartal/Jahr sinnvoll). Schließt den Gestalten-Modus.
@@ -9141,6 +9967,12 @@ function openSessionModal(id){
   if(wlModal.value!=null)rows.push(`<div class="modal-row"><span class="ml">Workload</span><span class="mv workload-badge"><i class="ti ti-bolt"></i> ${Math.round(wlModal.value)} Pkt</span></div>`);
   else if(!isSportFreitext(s.sport)&&!s.hr_avg)rows.push(`<div class="modal-row"><span class="ml">Workload</span><span class="mv" style="color:var(--text-faint);">sRPE ausstehend</span></div>`);
   if(s.distance_km)rows.push(`<div class="modal-row"><span class="ml">Distanz</span><span class="mv">${s.distance_km} km</span></div>`);
+  // Paket I2: dieselben abgeleiteten/erfassten Angaben wie in der Log-Detailansicht,
+  // damit Kalender und Log dieselbe Einheit nicht unterschiedlich beschreiben.
+  const ppModal=paceParts(s);
+  if(ppModal)rows.push(`<div class="modal-row"><span class="ml">${ppModal.label}</span><span class="mv">${ppModal.text}</span></div>`);
+  const stypeModal=sessionTypeLabel(s.sport,s.session_type);
+  if(stypeModal)rows.push(`<div class="modal-row"><span class="ml">Trainingstyp</span><span class="mv">${esc(stypeModal)}</span></div>`);
   if(s.elevation_m)rows.push(`<div class="modal-row"><span class="ml">Höhenmeter</span><span class="mv"><i class="ti ti-arrow-up"></i> ${s.elevation_m} m</span></div>`);
   if(s.hr_avg)rows.push(`<div class="modal-row"><span class="ml">Ø-HF</span><span class="mv">${s.hr_avg} bpm</span></div>`);
   if(s.hr_max)rows.push(`<div class="modal-row"><span class="ml">Max-HF</span><span class="mv">${s.hr_max} bpm</span></div>`);
@@ -11685,33 +12517,73 @@ window.addEventListener('resize',()=>{clearTimeout(_lhFitTimer);_lhFitTimer=setT
 // bis fertig; danach lädt Sessions neu.
 const GARMIN_SYNC_REPO='CharlieMarlow1990/Trainingslog';
 const GARMIN_SYNC_WORKFLOW='garmin-sync.yml';
+const PAT_EXPIRY_KEY='tlog_github_pat_expiry';
 let cachedGithubPat=null;
+
+// GitHub antwortet bei Token-Problemen nur mit nackten Statuscodes ("401") — die sagen
+// aber genau, was zu tun ist. 401 = Token tot (neues PAT nötig), 403 = Rechte/Rate-Limit,
+// 404 = Token sieht das Repo nicht. Diese Unterscheidung gehört in den Klartext.
+async function githubFehlertext(resp){
+  let detail='';
+  try{const j=await resp.json();detail=j?.message||'';}catch(e){}
+  const zusatz=detail?' ('+detail+')':'';
+  switch(resp.status){
+    case 401:return'GitHub-Token ungültig oder abgelaufen — bitte in den Einstellungen ein neues Fine-grained PAT hinterlegen.';
+    case 403:return'Zugriff verweigert — Rate-Limit oder fehlende Berechtigung „Actions: Read and write"'+zusatz+'.';
+    case 404:return'Repo oder Workflow nicht gefunden — hat das Token Zugriff auf '+GARMIN_SYNC_REPO+'?';
+    case 422:return'Workflow konnte nicht gestartet werden — Branch „main" oder Inputs stimmen nicht'+zusatz+'.';
+    default:return'GitHub-Fehler '+resp.status+zusatz+'.';
+  }
+}
+// Ablaufdatum wird beim Speichern von Hand eingetragen: GitHub schickt es zwar im Header
+// github-authentication-token-expiration, listet ihn aber nicht in Access-Control-Expose-Headers
+// — aus dem Browser ist er damit nicht lesbar. Liegt nur lokal, reine Anzeige-Info.
+function patExpiryInfo(){
+  const raw=localStorage.getItem(PAT_EXPIRY_KEY);if(!raw)return null;
+  const d=new Date(raw);if(isNaN(d))return null;
+  const tage=Math.floor((d-Date.now())/86400000);
+  return{datum:d.toLocaleDateString('de-DE'),tage};
+}
 async function refreshGarminSyncButton(){
   const btn=document.getElementById('log-garmin-sync');if(!btn)return;
   try{cachedGithubPat=await DB.getGithubPat();}catch(e){cachedGithubPat=null;}
   btn.disabled=!cachedGithubPat;
   btn.title=cachedGithubPat?'Manuellen Garmin-Sync jetzt starten':'PAT in Einstellungen eintragen, um zu aktivieren.';
+  // Vorwarnung, solange das Token noch lebt — sonst fällt der Ablauf erst beim 401 auf.
+  const exp=cachedGithubPat?patExpiryInfo():null;
+  if(exp&&exp.tage<14){
+    const text=exp.tage<0?'GitHub-Token ist am '+exp.datum+' abgelaufen — neues PAT in den Einstellungen hinterlegen.'
+      :'GitHub-Token läuft am '+exp.datum+' ab.';
+    btn.title=text;
+    const stat=document.getElementById('log-sync-status');
+    if(stat&&!stat.textContent)stat.textContent=text;
+  }
 }
 async function triggerGarminSync(){
   const btn=document.getElementById('log-garmin-sync');
   const stat=document.getElementById('log-sync-status');
   if(!btn||!cachedGithubPat)return;
+  let fehlgeschlagen=false;
   btn.disabled=true;btn.classList.add('syncing');stat.textContent='Sync gestartet …';
   try{
-    // Aktuelle letzte Run-Nummer merken, damit Polling den neuen Run erkennt.
+    // Aktuelle letzte Run-Nummer merken, damit Polling den neuen Run erkennt. Der Aufruf
+    // dient zugleich als Token-Check: ein totes PAT soll hier auffallen, bevor irgendetwas
+    // ausgelöst wird — nur echte Netzwerkfehler werden geschluckt.
     let lastKnownId=null;
+    let r0=null;
     try{
-      const r0=await fetch(`https://api.github.com/repos/${GARMIN_SYNC_REPO}/actions/workflows/${GARMIN_SYNC_WORKFLOW}/runs?per_page=1`,
+      r0=await fetch(`https://api.github.com/repos/${GARMIN_SYNC_REPO}/actions/workflows/${GARMIN_SYNC_WORKFLOW}/runs?per_page=1`,
         {headers:{Authorization:`Bearer ${cachedGithubPat}`,Accept:'application/vnd.github+json'}});
-      if(r0.ok){const j=await r0.json();lastKnownId=j.workflow_runs?.[0]?.id||null;}
     }catch(e){}
+    if(r0&&!r0.ok&&[401,403,404].includes(r0.status)){throw new Error(await githubFehlertext(r0));}
+    if(r0&&r0.ok){try{const j=await r0.json();lastKnownId=j.workflow_runs?.[0]?.id||null;}catch(e){}}
     // Workflow triggern
     const resp=await fetch(`https://api.github.com/repos/${GARMIN_SYNC_REPO}/actions/workflows/${GARMIN_SYNC_WORKFLOW}/dispatches`,{
       method:'POST',
       headers:{Authorization:`Bearer ${cachedGithubPat}`,Accept:'application/vnd.github+json','Content-Type':'application/json'},
       body:JSON.stringify({ref:'main',inputs:{days:'3'}})
     });
-    if(!resp.ok){throw new Error('GitHub API '+resp.status);}
+    if(!resp.ok){throw new Error(await githubFehlertext(resp));}
     stat.textContent='Läuft im Hintergrund …';
     // Bis zu 3 Minuten auf einen neuen Run mit Status !== 'completed' warten
     const start=Date.now();
@@ -11740,10 +12612,12 @@ async function triggerGarminSync(){
       }catch(e){}
     }
   }catch(e){
-    stat.textContent='Fehler: '+(e.message||e);
+    fehlgeschlagen=true;
+    stat.textContent=e.message||String(e);
   }finally{
     btn.classList.remove('syncing');btn.disabled=!cachedGithubPat;
-    setTimeout(()=>{if(stat)stat.textContent='';},8000);
+    // Fehlertexte sind Handlungsanweisungen — die müssen lange genug lesbar bleiben.
+    setTimeout(()=>{if(stat)stat.textContent='';},fehlgeschlagen?20000:8000);
   }
 }
 document.getElementById('log-garmin-sync')?.addEventListener('click',triggerGarminSync);
@@ -11766,6 +12640,23 @@ function sportSettingsHTML(){
     </div>`;
   }).join('');
   return rows+`<button class="add-sport-btn" id="add-sport-btn">+ Sportart hinzufügen</button>`;
+}
+// Paket I: Erhaltungsfenster je Sportart und Kraft-Fokus. Die Fokus-Keys sind fix
+// (sie hängen an sessions.strength_type), nur Fenster und Label sind editierbar.
+function maintainSettingsHTML(){
+  const row=(kind,key,label,val,ph)=>`<div class="maintain-row">
+    <span class="maintain-label">${esc(label)}</span>
+    <input type="number" class="maintain-days-inline" data-kind="${kind}" data-key="${esc(key)}"
+      min="1" max="365" value="${val!=null?val:''}" placeholder="${ph}">
+    <span class="maintain-unit">Tage</span>
+  </div>`;
+  const sports=cfg.sports.map(s=>row('sport',s.key,s.label||s.key,sportMaintainDays(s.key),'—')).join('');
+  const foci=strengthFoci().map(f=>row('focus',f.key,f.label,f.maintainDays,'—')).join('');
+  return`<div class="maintain-sub">Sportarten</div>${sports}
+    <div class="maintain-sub">Kraft-Foki</div>${foci}
+    <div class="maintain-sub">Abgeleitete Erhaltung</div>
+    <p class="profile-hint" style="margin:.1rem 0 .5rem;">Wird ein Fokus nur über eine fremde Quelle gehalten (Pfeil ↓ in der Übersicht) und liegt die letzte dedizierte Einheit länger zurück als dieser Wert, wird der Pfeil eingefärbt.</p>
+    ${row('warn','','Warnschwelle',derivedWarnDays(),'42')}`;
 }
 // Aktuell im Editor sichtbares Zonen-Profil: 'global' oder Sportart-Key ('Lauf'/'Rad').
 let currentZoneProfile='global';
@@ -11818,6 +12709,27 @@ function renderSettingsInline(){
   }
   document.getElementById('sport-settings-inline').innerHTML=sportSettingsHTML();
   document.getElementById('zone-settings-inline').innerHTML=zoneSettingsHTML();
+  const maintainBox=document.getElementById('maintain-settings-inline');
+  if(maintainBox){
+    maintainBox.innerHTML=maintainSettingsHTML();
+    // Sofort schreiben statt auf "Einstellungen speichern" zu warten: die Werte hängen
+    // an keinem anderen Feld und der Effekt ist auf der Log-Seite direkt sichtbar.
+    maintainBox.querySelectorAll('.maintain-days-inline').forEach(inp=>inp.addEventListener('change',()=>{
+      const raw=inp.value.trim();
+      const v=raw===''?null:Math.max(1,parseInt(raw,10)||1);
+      if(v!=null)inp.value=v;
+      if(inp.dataset.kind==='focus'){
+        const f=(cfg.strengthFoci||[]).find(x=>x.key===inp.dataset.key);
+        if(f)f.maintainDays=v;
+      }else if(inp.dataset.kind==='warn'){
+        cfg.derivedMaintainWarnDays=v!=null?v:DEFAULT_DERIVED_WARN_DAYS;
+      }else{
+        cfg.sportMaintain=cfg.sportMaintain||{};
+        cfg.sportMaintain[inp.dataset.key]=v;
+      }
+      saveCfg();renderLog();
+    }));
+  }
 
   // ── API-Key Buttons ─────────────────────────────────────────────────────────
   document.getElementById('save-api-key').onclick=()=>{
@@ -11854,20 +12766,35 @@ function renderSettingsInline(){
     // Aktueller Status als Platzhalter (Token selbst wird nicht mehr angezeigt)
     DB.getGithubPat().then(t=>{
       patInput.placeholder=t?'Token gespeichert (****'+(t.slice(-4))+')':'github_pat_...';
+      const exp=t?patExpiryInfo():null;
+      if(exp)patStatus.textContent=exp.tage<0?'Abgelaufen am '+exp.datum:'Gültig bis '+exp.datum;
     }).catch(()=>{patInput.placeholder='github_pat_...';});
     patInput.value='';
+    const patExpiryInput=document.getElementById('github-pat-expiry');
+    if(patExpiryInput)patExpiryInput.value=(localStorage.getItem(PAT_EXPIRY_KEY)||'').slice(0,10);
     document.getElementById('save-github-pat').onclick=async()=>{
       const val=(patInput.value||'').trim();
       if(!val){patStatus.textContent='Bitte Token eingeben';return;}
-      patStatus.textContent='Speichere …';
+      patStatus.textContent='Prüfe Token …';
       try{
+        // Erst gegen GitHub prüfen: ein abgelaufenes Token soll gar nicht erst das
+        // funktionierende überschreiben. /repos ist der billigste Aufruf, den jedes
+        // Token mit Repo-Zugriff darf.
+        const check=await fetch(`https://api.github.com/repos/${GARMIN_SYNC_REPO}`,
+          {headers:{Authorization:`Bearer ${val}`,Accept:'application/vnd.github+json'}});
+        if(!check.ok){patStatus.textContent=await githubFehlertext(check);return;}
+        patStatus.textContent='Speichere …';
         await DB.saveGithubPat(val);
+        const ablauf=(patExpiryInput?.value||'').trim();
+        if(ablauf)localStorage.setItem(PAT_EXPIRY_KEY,ablauf);
+        else localStorage.removeItem(PAT_EXPIRY_KEY);
         patInput.value='';
         patInput.placeholder='Token gespeichert (****'+val.slice(-4)+')';
         cachedGithubPat=val;
         await refreshGarminSyncButton();
-        patStatus.textContent='Gespeichert ✓';
-        setTimeout(()=>{patStatus.textContent='';},2500);
+        const exp=patExpiryInfo();
+        patStatus.textContent='Gespeichert ✓'+(exp?' — gültig bis '+exp.datum:'');
+        setTimeout(()=>{patStatus.textContent='';},6000);
       }catch(e){patStatus.textContent='Fehler: '+(e.message||e);}
     };
     document.getElementById('clear-github-pat').onclick=async()=>{
@@ -11875,7 +12802,9 @@ function renderSettingsInline(){
       try{
         await DB.deleteGithubPat();
         cachedGithubPat=null;
+        localStorage.removeItem(PAT_EXPIRY_KEY);
         patInput.value='';patInput.placeholder='github_pat_...';
+        if(patExpiryInput)patExpiryInput.value='';
         await refreshGarminSyncButton();
         patStatus.textContent='Entfernt';
         setTimeout(()=>{patStatus.textContent='';},2000);
@@ -12019,7 +12948,8 @@ document.getElementById('save-settings-inline').addEventListener('click',()=>{
 });
 document.getElementById('reset-settings-inline').addEventListener('click',()=>{
   if(!confirm('Einstellungen zurücksetzen?'))return;
-  cfg={sports:JSON.parse(JSON.stringify(DEFAULT_SPORTS)),zones:JSON.parse(JSON.stringify(DEFAULT_ZONES))};
+  cfg={sports:JSON.parse(JSON.stringify(DEFAULT_SPORTS)),zones:JSON.parse(JSON.stringify(DEFAULT_ZONES)),
+    strengthFoci:JSON.parse(JSON.stringify(DEFAULT_STRENGTH_FOCI)),sportMaintain:{},derivedMaintainWarnDays:DEFAULT_DERIVED_WARN_DAYS};
   saveCfg();populateSelects();renderSettingsInline();renderLog();
 });
 
