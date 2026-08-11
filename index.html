@@ -423,23 +423,19 @@ label{font-size:.76rem;color:var(--text-muted);font-weight:500;}
 input,select,textarea{border:1px solid var(--border-strong);border-radius:var(--radius);padding:.48rem .6rem;background:var(--surface);color:var(--text);width:100%;font-family:var(--font-sans);font-size:.9rem;}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light);}
 textarea{resize:vertical;min-height:3rem;}
-textarea.note-expanded{min-height:9rem;}
-/* Mobil: Notiz-/Anmerkungsfelder in der Detailansicht komfortabel groß, und iOS-Zoom
-   beim Fokussieren unterbinden (Felder <16px lösen einen Auto-Zoom aus, der den Viewport
-   verschiebt und den Fokus aus dem Feld reißen kann). */
+/* Mobil: iOS-Zoom beim Fokussieren unterbinden (Felder <16px lösen einen Auto-Zoom aus, der
+   den Viewport verschiebt und den Fokus aus dem Feld reißen kann). Die Startgrößen der
+   Notizfelder stehen weiter unten bei .note-paper (Kaskade!). */
 @media(max-width:600px){
-  .ed-note{min-height:6.5rem;}
-  .ed-note.note-expanded,textarea.note-expanded{min-height:11rem;}
-  .ed-feedback{min-height:5rem;}
   input,select,textarea{font-size:16px;}
 }
 /* Whiteboard-Notizfeld: Board-Foto-Hintergrund (heller Scrim für Lesbarkeit) +
    eckiger, handgezeichnet wirkender Rahmen. Getippter Text bleibt in klarer
    Grotesk-Schrift (bewusst KEIN Handschrift-Font). Größe: großer Start, wächst per
-   JS (wbNoteAutoGrow) bis max-height und scrollt dann; manuelles Ziehen bleibt. */
+   JS (noteAutoGrow) bis max-height und scrollt dann; manuelles Ziehen bleibt. */
 textarea.wb-note{
   width:100%;
-  min-height:150px;
+  /* min-height steht weiter unten nach .note-paper (Kaskade). */
   max-height:min(42vh,360px);
   overflow-y:auto;
   resize:vertical;
@@ -458,21 +454,30 @@ textarea.wb-note:focus{
   box-shadow:0 0 0 3px var(--met-endurance-tint);
 }
 textarea.wb-note::placeholder{color:var(--text-faint);opacity:.85;}
-/* Notiz-Papier: Karopapier-Foto (img/notiz.jpg) als Hintergrund für alle mehrzeiligen
-   Freitextfelder. Off-White-Scrim darüber macht es matter/weniger gesättigt; kein Rahmen.
+/* Notiz-Papier: Karopapier-Foto als Hintergrund für alle mehrzeiligen Freitextfelder.
+   Off-White-Scrim darüber macht es matter/weniger gesättigt; kein Rahmen.
    Steht bewusst NACH .wb-note, damit bg/border bei gleicher Spezifität überschrieben
    werden, Layout-Eigenschaften (.wb-note etc.) aber erhalten bleiben. */
 textarea.note-paper{
-  background-image:linear-gradient(rgba(247,246,241,.52),rgba(247,246,241,.52)),url("img/notiz.jpg");
+  /* img/notiz-tile.webp ist eine vertikal NAHTLOS kachelbare Ableitung von img/notiz.jpg
+     (Streifen über 21 Rasterzellen à 46px, Helligkeitsdrift flachgezogen, Kreuzblende mit
+     einer um 11 Zellen gerollten Kopie → Rasterlinien bleiben deckungsgleich).
+     Das Original war 100%/no-repeat und damit nach ca. Feldbreite×2,1 aufgebraucht — darunter
+     kam die Feld-Füllfarbe als weißer Bruch durch. */
+  background-image:linear-gradient(rgba(247,246,241,.52),rgba(247,246,241,.52)),url("img/notiz-tile.webp");
   /* Papier scrollt mit dem Text mit (Text an den Hintergrund geheftet): background-attachment
      local verankert beide Ebenen am Inhalt statt am Rahmen. Volle Breite, natürliche Höhe,
-     damit das große, hohe Notiz-Bild beim Scrollen weiter aufgedeckt wird statt zu stauchen. */
+     repeat-y → das Karo läuft bei beliebig langem Text durch. */
   background-attachment:local,local;
   background-size:100% auto,100% auto;
   background-position:top left,top left;
-  background-repeat:no-repeat,no-repeat;
+  background-repeat:repeat-y,repeat-y;
+  /* Fallback, falls das Bild nicht lädt: Papierton statt --surface (#ebecf3, wirkt weiß). */
+  background-color:var(--chart-surface);
   border:none;
   color:var(--ink);
+  /* Notizfelder starten großzügig und wachsen per noteAutoGrow mit dem Inhalt mit. */
+  min-height:9rem;
 }
 textarea.note-paper:focus{
   outline:none;
@@ -480,6 +485,11 @@ textarea.note-paper:focus{
   box-shadow:0 0 0 3px var(--met-endurance-tint);
 }
 textarea.note-paper::placeholder{color:var(--text-faint);opacity:.85;}
+/* Startgrößen der Notizfelder — bewusst NACH .note-paper/.wb-note, damit sie bei gleicher
+   Spezifität gewinnen. Die endgültige Höhe macht ohnehin noteAutoGrow; das hier ist nur die
+   Höhe des leeren Feldes. */
+textarea.wb-note{min-height:150px;}
+textarea.note-expanded{min-height:11rem;}
 /* §2: keine eigene vertikale Scrollachse mehr — die Historie fließt im Seitenscroll mit. */
 .note-history-box{margin-top:.55rem;border-top:1px solid var(--border-strong);}
 .note-history-box .nh-head{font-size:.68rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;padding:.5rem .7rem .25rem;}
@@ -931,8 +941,12 @@ button.ghost:hover{color:var(--text);background:transparent;border-color:transpa
 .modal-edit-form{border-top:1px solid var(--border);margin-top:.6rem;padding-top:.6rem;display:flex;flex-direction:column;gap:.5rem;animation:wdFadeIn .15s ease;}
 .modal-edit-row{display:flex;flex-direction:column;gap:.2rem;}
 .modal-edit-row label{font-size:.7rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;}
-.modal-edit-row input,.modal-edit-row textarea{padding:.45rem .55rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:.85rem;font-family:inherit;width:100%;}
-.modal-edit-row textarea{resize:vertical;min-height:60px;line-height:1.4;}
+/* :not(.note-paper) — sonst überschreibt dieses spätere Shorthand (gleiche Spezifität)
+   das Karopapier von #me-note komplett. */
+.modal-edit-row input,.modal-edit-row textarea:not(.note-paper){padding:.45rem .55rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:.85rem;font-family:inherit;width:100%;}
+.modal-edit-row textarea.note-paper{padding:.45rem .55rem;border-radius:var(--radius);font-size:.85rem;font-family:inherit;width:100%;}
+.modal-edit-row textarea{resize:vertical;line-height:1.4;}
+.modal-edit-row textarea:not(.note-paper){min-height:60px;}
 .modal-profile{margin-top:.6rem;padding-top:.5rem;border-top:1px solid var(--border);}
 .modal-profile-label{font-size:.7rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.35rem;}
 .modal-profile-bar{display:flex;height:14px;border-radius:0;overflow:hidden;background:var(--bg);}
@@ -1272,10 +1286,18 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 @keyframes hswipePeek{0%{transform:translateX(0);}35%{transform:translateX(-12px);}100%{transform:translateX(0);}}
 .hswipe-peek>*:first-child{animation:hswipePeek .7s ease .4s 1;}
 .hswipe{align-items:flex-start;}
-/* EF-Hswipe (Aerobe Effizienz): feste Caption-Höhe je Slot, damit die erste Chart-Box in
-   allen drei Perspektiven auf derselben Höhe beginnt — sonst „springt" der Chart beim
-   seitlichen Wischen, weil die Slot-Texte unterschiedlich viele Zeilen umbrechen. */
-.ef-slot-note{font-size:.72rem;color:var(--text-muted);margin:0 0 .6rem;min-height:4.4rem;}
+/* EF-Hswipe (Aerobe Effizienz): alle drei Slots teilen dasselbe Skelett
+   (Titelzeile → Sport-Kopf → Chart-Box → Kurzlegende) mit festen Zeilenhöhen, damit die
+   erste Chart-Box in jeder Perspektive auf derselben Höhe beginnt und der Chart beim
+   seitlichen Wischen nicht springt. Die langen Erklärtexte liegen im Info-Dropdown der
+   Karte, nicht mehr in den Slots. */
+#ef-hswipe{align-items:stretch;}
+#ef-hswipe>.hswipe-slot{display:flex;flex-direction:column;}
+.ef-slot-title{font-size:.72rem;color:var(--text-faint);margin:0 0 .5rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ef-chart-head{font-size:.72rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:.4rem;min-height:1.15rem;margin:0 0 .25rem;}
+.ef-chart-head+.ef-chart-head,.ef-chart-legend+.ef-chart-head{margin-top:1rem;}
+.ef-chart-legend{font-size:.72rem;color:var(--text-muted);margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;min-height:1.5rem;}
+.ef-chart-fill{flex:1 1 auto;min-height:200px;}
 /* B2: Budget-Slot + Nächste-Einheiten-Slot */
 .budget-head{display:flex;align-items:baseline;gap:.4rem;font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin:.4rem 0 .6rem;padding-bottom:.3rem;border-bottom:1px solid var(--border);}
 .budget-head-sub{font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-faint);}
@@ -1697,6 +1719,17 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
 .collapse-chevron{font-size:.95rem;color:var(--text-muted);transition:transform .22s ease;flex-shrink:0;}
 .collapse-chevron.open{transform:rotate(180deg);}
 .card-body{padding:0 0 1rem;}
+/* Chart-Erklärungen: einheitliches Info-Dropdown für jede Chart-Karte. Native <details>,
+   damit kein JS-Toggle nötig ist; zugeklappt als Default, damit die Karten ruhig bleiben.
+   Enthält nur Text — Auf-/Zuklappen ändert keine Chart-Breite, also kein Re-Render. */
+.chart-info{margin:0 0 .9rem;border-bottom:0.5px solid var(--border);}
+.chart-info>summary{list-style:none;display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--text-muted);cursor:pointer;padding:.15rem 0 .5rem;}
+.chart-info>summary::-webkit-details-marker{display:none;}
+.chart-info-chev{margin-left:auto;font-size:.75rem;transition:transform .22s ease;}
+.chart-info[open] .chart-info-chev{transform:rotate(180deg);}
+.chart-info-body{font-size:.74rem;color:var(--text-muted);padding:.1rem 0 .7rem;}
+.chart-info-body p{margin:0 0 .5rem;}
+.chart-info-body p:last-child{margin-bottom:0;}
 .zc-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.85rem;padding-bottom:.5rem;border-bottom:0.5px solid var(--border);}
 .zc-h h2{font-weight:600;font-size:1.05rem;letter-spacing:-.01em;margin:0;color:var(--text);}
 .zc-week{font-style:italic;font-size:.78rem;color:var(--text-muted);}
@@ -1972,7 +2005,10 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
            Von der Auswertung hierher verlagert, damit der Regenerationsbedarf und seine Treiber
            zusammen an einem Ort sichtbar sind. -->
       <div id="monotony-detail" style="display:none;margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--border);">
-        <p style="font-size:.72rem;color:var(--text-muted);margin:0 0 .6rem;">Monotonie misst die Gleichförmigkeit der Belastung innerhalb der Woche. Hohe Monotonie bei hoher Last erhöht das Übertrainingsrisiko — Variation (harte und leichte Tage) ist erwünscht. Basis: alle Tage inkl. Ruhetage.</p>
+        <details class="chart-info">
+          <summary><i class="ti ti-info-circle"></i> Was zeigt der Chart?<i class="ti ti-chevron-down chart-info-chev"></i></summary>
+          <div class="chart-info-body"><p>Monotonie misst die Gleichförmigkeit der Belastung innerhalb der Woche. Hohe Monotonie bei hoher Last erhöht das Übertrainingsrisiko — Variation (harte und leichte Tage) ist erwünscht. Basis: alle Tage inkl. Ruhetage.</p></div>
+        </details>
         <div class="metrics metrics-3" id="monotony-cards" style="margin-bottom:.8rem;"></div>
         <div class="workload-chart-box chart-dark" style="height:200px;"><canvas id="monotony-chart"></canvas></div>
         <div id="monotony-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
@@ -2080,7 +2116,10 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
   </div>
   <div class="card">
     <h2><i class="ti ti-chart-area"></i> Verteilung über Zeit</h2>
-    <p style="font-size:.74rem;color:var(--text-muted);margin:0 0 1rem;">Entwicklung deiner Trainingsverteilung über 16 Wochen — scroll horizontal, um weiter zurückzugehen.</p>
+    <details class="chart-info">
+      <summary><i class="ti ti-info-circle"></i> Was zeigt der Chart?<i class="ti ti-chevron-down chart-info-chev"></i></summary>
+      <div class="chart-info-body"><p>Entwicklung deiner Trainingsverteilung über 16 Wochen — scroll horizontal, um weiter zurückzugehen.</p></div>
+    </details>
     <div class="analytics-tabs" id="analytics-mode-tabs">
       <button class="active" data-mode="time-sport-abs">Zeit · Sportart</button>
       <button data-mode="time-zone">Zeit · Zonen</button>
@@ -2114,7 +2153,10 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
     </div>
   <div class="card" style="margin-top:1rem;">
       <h2><i class="ti ti-activity"></i> Workload-Progression</h2>
-      <p style="font-size:.74rem;color:var(--text-muted);margin:0 0 1rem;">4 W / 8 W: einzelne Einheiten im Vergleich zum lokalen Ø. 3 M / 6 M: kumulierte Wochenlast im Vergleich zum 3-Wochen-Ø. Klick auf einen Wochenpunkt öffnet den Tagesverlauf.</p>
+      <details class="chart-info">
+        <summary><i class="ti ti-info-circle"></i> Was zeigt der Chart?<i class="ti ti-chevron-down chart-info-chev"></i></summary>
+        <div class="chart-info-body"><p>4 W / 8 W: einzelne Einheiten im Vergleich zum lokalen Ø. 3 M / 6 M: kumulierte Wochenlast im Vergleich zum 3-Wochen-Ø. Klick auf einen Wochenpunkt öffnet den Tagesverlauf.</p></div>
+      </details>
       <div class="tile-flow" id="acwr-cards"></div>
       <div class="tab-bar" id="acwr-weeks-tabs" style="margin:.6rem 0;">
         <button class="active" data-weeks="4">4 W</button>
@@ -2130,40 +2172,50 @@ body.cal-dnd-active{user-select:none;-webkit-user-select:none;cursor:grabbing;}
     </div>
     <div class="card" style="margin-top:1rem;">
       <h2><i class="ti ti-heart-rate-monitor"></i> Aerobe Effizienz</h2>
-      <p style="font-size:.74rem;color:var(--text-muted);margin:0 0 1rem;">EF (Leistung bzw. Tempo je Herzschlag) über die Zeit für Grundlageneinheiten &ge;30 min. Steigende EF bei stabilem Decoupling = wachsende aerobe Fitness. Decoupling (rechte Achse, invertiert) = HF-Drift 1. vs. 2. Hälfte. Zeitfenster folgt der Workload-Progression. Basis: nur Trainingseinheiten (Ruhetage ohne Einfluss).</p>
-      <!-- Paket B3: drei horizontale Perspektiven — EF über Zeit / EF gegen Load / Rad+Lauf indexiert -->
+      <details class="chart-info">
+        <summary><i class="ti ti-info-circle"></i> Was zeigt der Chart?<i class="ti ti-chevron-down chart-info-chev"></i></summary>
+        <div class="chart-info-body">
+          <p>EF (Leistung bzw. Tempo je Herzschlag) über die Zeit für Grundlageneinheiten &ge;30 min. Steigende EF bei stabilem Decoupling = wachsende aerobe Fitness. Decoupling (rechte Achse, invertiert) = HF-Drift 1. vs. 2. Hälfte. Zeitfenster folgt der Workload-Progression. Basis: nur Trainingseinheiten (Ruhetage ohne Einfluss).</p>
+          <p><strong>1 · EF über Zeit:</strong> je Sportart mit Median-Band (±MAD). Punktgröße = Dauer. Decoupling rechts, invertiert (0&nbsp;% oben). Graue Striche am Achsenfuß = nicht qualifizierte Einheiten.</p>
+          <p><strong>2 · EF gegen Load:</strong> EF gegen den 7-Tage-Load am Tag der Einheit — klärt, ob ein EF-Rückgang ermüdungsgetrieben ist oder Streuung. Gleiches Zeitfenster wie Perspektive&nbsp;1. Basis: Trainingstage.</p>
+          <p><strong>3 · Index-Vergleich:</strong> Rad und Lauf übereinander, je auf den ersten Wert des Fensters normalisiert (Index&nbsp;100). Basis: Trainingstage.</p>
+        </div>
+      </details>
+      <!-- Paket B3: drei horizontale Perspektiven — EF über Zeit / EF gegen Load / Rad+Lauf indexiert.
+           Alle drei Slots teilen dasselbe Skelett (Titel → Kopf → Box → Legende), siehe .ef-* im CSS. -->
       <div class="hswipe" id="ef-hswipe">
         <div class="hswipe-slot">
-          <p class="ef-slot-note">EF über die Zeit, je Sportart mit Median-Band (±MAD). Decoupling rechts, invertiert.</p>
-          <div style="margin-bottom:.4rem;">
-            <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;"><i class="ti ti-run"></i> Lauf <span id="ef-verdict-run" style="font-weight:400;"></span></div>
-            <div class="workload-chart-box wlc-paper" id="ef-chart-run-box" style="height:190px;"><svg id="ef-chart-run-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
-            <div id="ef-legend-run" style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
-          </div>
-          <div style="margin-top:1.1rem;">
-            <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;"><i class="ti ti-bike"></i> Rad <span id="ef-verdict-bike" style="font-weight:400;"></span></div>
-            <div class="workload-chart-box wlc-paper" id="ef-chart-bike-box" style="height:190px;"><svg id="ef-chart-bike-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
-            <div id="ef-legend-bike" style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
-          </div>
+          <p class="ef-slot-title">1 &#183; EF über Zeit</p>
+          <div class="ef-chart-head"><i class="ti ti-run"></i> Lauf <span id="ef-verdict-run" style="font-weight:400;"></span></div>
+          <div class="workload-chart-box wlc-paper" id="ef-chart-run-box" style="height:190px;"><svg id="ef-chart-run-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
+          <div class="ef-chart-legend" id="ef-legend-run"></div>
+          <div class="ef-chart-head"><i class="ti ti-bike"></i> Rad <span id="ef-verdict-bike" style="font-weight:400;"></span></div>
+          <div class="workload-chart-box wlc-paper" id="ef-chart-bike-box" style="height:190px;"><svg id="ef-chart-bike-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
+          <div class="ef-chart-legend" id="ef-legend-bike"></div>
         </div>
         <div class="hswipe-slot">
-          <p class="ef-slot-note">EF gegen 7-Tage-Load am Tag der Einheit — klärt, ob ein EF-Rückgang ermüdungsgetrieben ist oder Streuung. Gleiches Zeitfenster wie Slot 1. Basis: Trainingstage.</p>
-          <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);margin-bottom:.25rem;"><i class="ti ti-run"></i> Lauf</div>
-          <div class="workload-chart-box wlc-paper" id="ef-load-run-box" style="height:170px;"><svg id="ef-load-run-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
-          <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);margin:1rem 0 .25rem;"><i class="ti ti-bike"></i> Rad</div>
-          <div class="workload-chart-box wlc-paper" id="ef-load-bike-box" style="height:170px;"><svg id="ef-load-bike-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
+          <p class="ef-slot-title">2 &#183; EF gegen Load</p>
+          <div class="ef-chart-head"><i class="ti ti-run"></i> Lauf</div>
+          <div class="workload-chart-box wlc-paper" id="ef-load-run-box" style="height:190px;"><svg id="ef-load-run-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
+          <div class="ef-chart-legend" id="ef-load-legend-run"></div>
+          <div class="ef-chart-head"><i class="ti ti-bike"></i> Rad</div>
+          <div class="workload-chart-box wlc-paper" id="ef-load-bike-box" style="height:190px;"><svg id="ef-load-bike-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
+          <div class="ef-chart-legend" id="ef-load-legend-bike"></div>
         </div>
         <div class="hswipe-slot">
-          <p class="ef-slot-note">Rad und Lauf übereinander, je auf den ersten Wert des Fensters normalisiert (Index 100). Basis: Trainingstage.</p>
-          <div style="font-size:.72rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;"><i class="ti ti-chart-line"></i> Index-Vergleich</div>
-          <div class="workload-chart-box wlc-paper" id="ef-index-box" style="height:340px;"><svg id="ef-index-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
-          <div id="ef-index-legend" style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.9rem;justify-content:center;"></div>
+          <p class="ef-slot-title">3 &#183; Index-Vergleich</p>
+          <div class="ef-chart-head"><i class="ti ti-chart-line"></i> Rad + Lauf indexiert</div>
+          <div class="workload-chart-box wlc-paper ef-chart-fill" id="ef-index-box"><svg id="ef-index-svg" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"></svg></div>
+          <div class="ef-chart-legend" id="ef-index-legend"></div>
         </div>
       </div>
     </div>
     <div class="card" style="margin-top:1rem;">
       <h2><i class="ti ti-chart-line"></i> Aufschlüsselung nach Kategorie</h2>
-      <p style="font-size:.74rem;color:var(--text-muted);margin:0 0 1rem;">Entwicklung einzelner Kategorien über die Zeit — Metrik(en) auswählen und Zeitraum wechseln.</p>
+      <details class="chart-info">
+        <summary><i class="ti ti-info-circle"></i> Was zeigt der Chart?<i class="ti ti-chevron-down chart-info-chev"></i></summary>
+        <div class="chart-info-body"><p>Entwicklung einzelner Kategorien über die Zeit — Metrik(en) auswählen und Zeitraum wechseln.</p></div>
+      </details>
       <div class="sport-filter" id="breakdown-metric-filter"></div>
       <div class="tab-bar" id="breakdown-weeks-tabs" style="margin:.6rem 0;">
         <button class="active" data-weeks="4">4 W</button>
@@ -4092,14 +4144,29 @@ document.getElementById('srpe-save').addEventListener('click',async()=>{
 });
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
-// Whiteboard-Notizfeld: Höhe an den Inhalt anpassen, gedeckelt durch die
-// CSS-max-height (danach internes Scrollen). resize:vertical bleibt nutzbar.
-function wbNoteAutoGrow(el){
+// Notizfelder: Höhe an den Inhalt anpassen. Gedeckelt nur, wenn das Feld eine CSS-max-height
+// hat (.wb-note → danach internes Scrollen); ohne max-height wächst das Feld unbegrenzt mit,
+// damit lange Notizen keine zweite Scrollachse im Feld erzeugen (§2). resize:vertical bleibt
+// nutzbar.
+function noteAutoGrow(el){
   if(!el)return;
   el.style.height='auto';
-  const max=parseFloat(getComputedStyle(el).maxHeight)||360;
+  // Nicht gerendert (Seite/Modal ausgeblendet): scrollHeight ist 0 — dann die Höhe der
+  // CSS-min-height überlassen statt das Feld auf 0px zu klemmen.
+  if(!el.scrollHeight){el.style.height='';return;}
+  const mh=getComputedStyle(el).maxHeight;
+  const max=(mh&&mh!=='none')?parseFloat(mh):Infinity;
   el.style.height=Math.min(el.scrollHeight,max)+'px';
 }
+// Alle Notizfelder unterhalb von root auf ihre Inhaltshöhe bringen (nach dem Rendern /
+// Befüllen aufrufen — beim reinen Tippen erledigt das der delegierte input-Listener).
+function noteAutoGrowAll(root){
+  (root||document).querySelectorAll('textarea.note-paper').forEach(noteAutoGrow);
+}
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t&&t.tagName==='TEXTAREA'&&t.classList.contains('note-paper'))noteAutoGrow(t);
+});
 function toISODate(d){const off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10);}
 function startOfWeek(d){const date=new Date(d),day=(date.getDay()+6)%7;date.setDate(date.getDate()-day);date.setHours(0,0,0,0);return date;}
 function fmtDate(d){return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});}
@@ -4507,12 +4574,11 @@ function initQuickNote(){
     document.getElementById('qn-planned').checked=!!draft.planned;
   }
   qnUpdateHistory();
-  wbNoteAutoGrow(document.getElementById('qn-note')); // Starthöhe an geladenen Draft anpassen
+  noteAutoGrow(document.getElementById('qn-note')); // Starthöhe an geladenen Draft anpassen
   // Auto-Save bei jeder Eingabe + Schätzung aktualisieren
   ['qn-date','qn-sport','qn-title','qn-duration','qn-note','qn-srpe','qn-zone'].forEach(id=>{
     const el=document.getElementById(id);
     el.addEventListener('input',()=>{qnSaveDraft();qnUpdateEstimate();});
-    if(id==='qn-note')el.addEventListener('input',()=>wbNoteAutoGrow(el));
     if(id==='qn-sport')el.addEventListener('change',qnUpdateHistory);
     if(id==='qn-zone')el.addEventListener('change',qnUpdateEstimate);
   });
@@ -4527,7 +4593,7 @@ document.getElementById('qn-clear-btn').addEventListener('click',()=>{
   if(!confirm('Notiz leeren?'))return;
   ['qn-title','qn-duration','qn-note','qn-srpe'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('qn-planned').checked=false;
-  qnClearDraft();qnUpdateHistory();wbNoteAutoGrow(document.getElementById('qn-note'));
+  qnClearDraft();qnUpdateHistory();noteAutoGrow(document.getElementById('qn-note'));
 });
 
 document.getElementById('qn-save-btn').addEventListener('click',async()=>{
@@ -4565,7 +4631,7 @@ document.getElementById('qn-save-btn').addEventListener('click',async()=>{
     qnClearDraft();
     ['qn-title','qn-duration','qn-note','qn-srpe'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('qn-planned').checked=false;
-    wbNoteAutoGrow(document.getElementById('qn-note'));
+    noteAutoGrow(document.getElementById('qn-note'));
     setSyncState('ok');
     statusEl.textContent=planned?'\u2713 Als Plan gespeichert'+(workloadMethod==='estimated'?' (Workload gesch\u00e4tzt)':''):'\u2713 Gespeichert — HF-Daten sp\u00e4ter per FIT-Upload erg\u00e4nzen';
     qnUpdateHistory();renderLog();
@@ -4838,6 +4904,7 @@ function showPage(key){
   if(key==='analytics')renderAnalytics();
   if(key==='settings-page')renderSettingsInline();
   if(key==='library')renderLibrary();
+  noteAutoGrowAll(el); // Notizfelder der jetzt sichtbaren Seite auf Inhaltshöhe bringen
   requestAnimationFrame(armReveals); // Bänder erst nach dem Render der Seite scharfstellen
 }
 // Hamburger-Menü: öffnen/schließen; Seitenwahl schließt es und navigiert.
@@ -5222,7 +5289,7 @@ function useTemplateInQuickNote(t){
   if(sportEl){sportEl.value=sport;qnUpdateHistory();}
   if(titleEl)titleEl.value=t.title||'';
   if(durEl&&t.duration_min)durEl.value=t.duration_min;
-  if(noteEl){noteEl.value=t.content||'';wbNoteAutoGrow(noteEl);}
+  if(noteEl){noteEl.value=t.content||'';noteAutoGrow(noteEl);}
   qnSaveDraft();
   closeTemplateModal();
   showPage('log');
@@ -5777,13 +5844,20 @@ document.getElementById('t-next').addEventListener('click',()=>goToWeek(1));
 // Wochenvergleich ⇄ Zonenverteilung sind jetzt horizontal wischbare hswipe-Slots
 // (siehe renderLog). Kein Pfeil-/Punkt-Umschalter mehr.
 
-function toggleDetail(id){const el=document.getElementById('detail-'+id);if(el)el.classList.toggle('open');}
+function toggleDetail(id){
+  const el=document.getElementById('detail-'+id);
+  if(!el)return;
+  el.classList.toggle('open');
+  // Erst jetzt sind die Notizfelder gerendert und haben eine messbare scrollHeight.
+  if(el.classList.contains('open'))noteAutoGrowAll(el);
+}
 // Öffnet das Detail einer Session und springt direkt ins Notizfeld —
 // für importierte Kraft-Einheiten, denen noch Übungsdetails fehlen.
 function openDetailFocusNote(id){
   const el=document.getElementById('detail-'+id);
   if(!el)return;
   el.classList.add('open');
+  noteAutoGrowAll(el);
   setTimeout(()=>{
     const ta=el.querySelector('.ed-note');
     if(ta){ta.focus();ta.scrollIntoView({behavior:'smooth',block:'center'});}
@@ -9780,7 +9854,7 @@ function openCalPlanModal(iso,prefill){
         <button id="cp-close" style="padding:.55rem .9rem;"><i class="ti ti-x"></i></button>
       </div>`:`
       <div class="field" style="margin-bottom:.6rem;"><label>Kategorie</label><select id="cp-category">${catOpts}</select></div>
-      <textarea id="cp-special-note" class="note-paper" placeholder="Notiz (optional)" style="width:100%;height:80px;padding:.5rem .6rem;border-radius:var(--radius);color:var(--text);font-size:.85rem;resize:vertical;"></textarea>
+      <textarea id="cp-special-note" class="note-paper" placeholder="Notiz (optional)" style="width:100%;padding:.5rem .6rem;border-radius:var(--radius);color:var(--text);font-size:.85rem;resize:vertical;"></textarea>
       <div style="display:flex;gap:.5rem;margin-top:.7rem;">
         <button class="primary" id="cp-save-special" style="flex:1;"><i class="ti ti-alert-circle"></i> Eintragen</button>
         <button id="cp-close" style="padding:.55rem .9rem;"><i class="ti ti-x"></i></button>
@@ -9830,7 +9904,7 @@ function openCalPlanModal(iso,prefill){
         if(map.title!=null)document.getElementById('cp-title').value=map.title;
         if(map.duration)document.getElementById('cp-duration').value=map.duration;
         if(map.note!=null)document.getElementById('cp-note').value=map.note;
-        cpUpdateHistory();cpEstimate();wbNoteAutoGrow(document.getElementById('cp-note'));
+        cpUpdateHistory();cpEstimate();noteAutoGrow(document.getElementById('cp-note'));
       });
       document.getElementById('cp-sport').addEventListener('change',cpUpdateHistory);
       function cpEstimate(){
@@ -9851,9 +9925,9 @@ function openCalPlanModal(iso,prefill){
       });
       cpUpdateHistory();
       cpEstimate();
-      // Whiteboard-Notiz: mitwachsende Höhe (auch für Prefill/Vorlagen-Inhalt)
-      const cpNoteEl=document.getElementById('cp-note');
-      if(cpNoteEl){cpNoteEl.addEventListener('input',()=>wbNoteAutoGrow(cpNoteEl));wbNoteAutoGrow(cpNoteEl);}
+      // Notizfelder des Panels auf ihre Inhaltshöhe bringen (Prefill/Vorlagen-Inhalt);
+      // das Mitwachsen beim Tippen macht der delegierte input-Listener.
+      noteAutoGrowAll(modal);
 
       document.getElementById('cp-save').addEventListener('click',async()=>{
         const sport=document.getElementById('cp-sport').value;
@@ -10068,6 +10142,7 @@ function openSessionModal(id){
       <button class="primary" id="modal-edit-btn">Bearbeiten <i class="ti ti-chevron-down" style="font-size:.75em;"></i></button>
     </div>`;
   document.getElementById('session-modal').classList.add('open');
+  noteAutoGrowAll(document.getElementById('session-modal-content'));
   document.getElementById('modal-close-btn').addEventListener('click',closeSessionModal);
   bindFeedbackHandler(s);
   if(planned){
@@ -10101,6 +10176,7 @@ function openSessionModal(id){
       panel.style.display='';
       btn.innerHTML='Bearbeiten <i class="ti ti-chevron-up" style="font-size:.75em;"></i>';
       bindModalEditPanel(s);
+      noteAutoGrowAll(panel);
     }else{
       panel.style.display='none';
       panel.innerHTML='';
@@ -10825,6 +10901,53 @@ function bandFillDef(id){
     +`</linearGradient>`;
 }
 
+// ── Gemeinsame Datums-X-Achse für die SVG-Charts ────────────────────────────
+// Die Schrittweite folgt der verfügbaren Breite, sonst kleben die Labels bei 3 M / 6 M
+// ineinander (13 Datumsangaben auf ~270 px). Lange Fenster (>8 Wochen) bekommen deshalb
+// Monatsnamen statt Datumsangaben — dasselbe Format, das der Wochenmodus der
+// Workload-Progression schon nutzt. Randlabels werden am Achsenrand verankert, damit
+// nichts über padL/padR hinausläuft.
+// xAt: Tagesindex → x-Pixel · xEnd: rechte Achsenkante (W-padR) · y: Baseline der Labels.
+function svgDateAxisLabels({windowDays,displayStart,xAt,innerW,padL,xEnd,y,axF,axC}){
+  const monthMode=windowDays>56;
+  let ticks=[];
+  if(monthMode){
+    // Ticks auf den Monatsersten im Fenster (der erste Tick kann vor displayStart liegen
+    // → wird über die Bereichsprüfung verworfen).
+    const d=new Date(displayStart.getFullYear(),displayStart.getMonth(),1);
+    while(true){
+      const di=Math.round((d-displayStart)/86400000);
+      if(di>=windowDays)break;
+      if(di>=0){
+        const lbl=d.toLocaleDateString('de-DE',{month:'short'})
+          +(d.getMonth()===0?' '+String(d.getFullYear()%100).padStart(2,'0'):'');
+        ticks.push({di,label:lbl});
+      }
+      d.setMonth(d.getMonth()+1);
+    }
+  }else{
+    // Kleinste 7-Tage-Stufe wählen, deren Labels noch nebeneinander passen. Das Raster
+    // läuft vom Fensterende rückwärts, damit das rechte Label immer der letzte Tag ist.
+    // 46 px Budget je Label = ~26 px Textbreite („28.7.") + Luft.
+    const step=[7,14,28].find(s=>(Math.floor((windowDays-1)/s)+1)*46<=innerW)||28;
+    for(let i=windowDays-1;i>=0;i-=step){
+      const d=new Date(displayStart);d.setDate(d.getDate()+i);
+      ticks.unshift({di:i,label:d.getDate()+'.'+(d.getMonth()+1)+'.'});
+    }
+  }
+  // Sicherheitsnetz für schmale Boxen: jeden zweiten Tick verwerfen, bis der Abstand
+  // reicht — vom Fensterende her, damit das rechte Label stehen bleibt.
+  const minGap=monthMode?38:42;
+  while(ticks.length>2&&Math.abs(xAt(ticks[1].di)-xAt(ticks[0].di))<minGap){
+    ticks=ticks.filter((_,i,a)=>(a.length-1-i)%2===0);
+  }
+  return ticks.map(t=>{
+    const x=xAt(t.di);
+    const anchor=x<padL+14?'start':(x>xEnd-14?'end':'middle');
+    return '<text x="'+x.toFixed(1)+'" y="'+y+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="'+anchor+'">'+t.label+'</text>';
+  }).join('');
+}
+
 // ── AEROBE-EFFIZIENZ-CHART (EF-Punkte + Median-Band, Decoupling invertiert) ──
 // Zwei getrennte SVGs (Lauf / Rad), gleiches X-Zeitfenster wie die Workload-Progression.
 // EF (aggregat) als Punkte auf linker Achse + Rolling-Median-Band; Decoupling (HF-Drift)
@@ -10839,8 +10962,8 @@ function renderEfSlot(i){
     renderEfChartFor('Lauf','ef-chart-run-svg','ef-chart-run-box','ef-verdict-run','ef-legend-run');
     renderEfChartFor('Rad','ef-chart-bike-svg','ef-chart-bike-box','ef-verdict-bike','ef-legend-bike');
   }else if(i===1){
-    renderEfLoadChartFor('Lauf','ef-load-run-svg','ef-load-run-box');
-    renderEfLoadChartFor('Rad','ef-load-bike-svg','ef-load-bike-box');
+    renderEfLoadChartFor('Lauf','ef-load-run-svg','ef-load-run-box','ef-load-legend-run');
+    renderEfLoadChartFor('Rad','ef-load-bike-svg','ef-load-bike-box','ef-load-legend-bike');
   }else if(i===2){
     renderEfIndexChart();
   }
@@ -10857,9 +10980,10 @@ function efWindow(){
   return{windowDays,today,displayStart,startIso:toISODate(displayStart),endIso:toISODate(today)};
 }
 // B3 Slot 2: EF (y) gegen 7-Tage-Load am Tag der Einheit (x) — Ermüdung vs. Streuung.
-function renderEfLoadChartFor(sport,svgId,boxId){
+function renderEfLoadChartFor(sport,svgId,boxId,legendId){
   const svg=document.getElementById(svgId);
   if(!svg)return;
+  const legendEl=legendId?document.getElementById(legendId):null;
   const box=document.getElementById(boxId);
   const W=(box&&box.clientWidth)||svg.clientWidth||360;
   const H=(box&&box.clientHeight)||svg.clientHeight||170;
@@ -10869,6 +10993,7 @@ function renderEfLoadChartFor(sport,svgId,boxId){
   const pts=computeEfTrend(sport).qualified.filter(q=>q.date>=startIso&&q.date<=endIso);
   if(pts.length===0){
     svg.innerHTML='<text x="50%" y="50%" text-anchor="middle" fill="'+cssVar('--text-faint')+'" font-family="'+axF+'" font-size="12">Keine qualifizierten Einheiten im Zeitraum</text>';
+    if(legendEl)legendEl.innerHTML='';
     return;
   }
   // 7-Tage-Load je Tag des Fensters (inkl. 6 Tage Vorlauf)
@@ -10895,14 +11020,19 @@ function renderEfLoadChartFor(sport,svgId,boxId){
   }).join('');
   const xLabels=Array.from({length:4},(_,i)=>{
     const v=Math.round(xMax*(i/3)),x=xAt(v);
-    return'<text x="'+x.toFixed(1)+'" y="'+(H-6)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="middle">'+v+'</text>';
+    const anchor=i===0?'start':(i===3?'end':'middle');
+    return'<text x="'+x.toFixed(1)+'" y="'+(H-6)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="'+anchor+'">'+v+'</text>';
   }).join('');
   const dots=data.map(p=>{
     const tip=p.date+' · 7T-Load '+p.load+' · EF '+p.ef.toFixed(2);
     return'<circle cx="'+xAt(p.load).toFixed(1)+'" cy="'+yAt(p.ef).toFixed(1)+'" r="'+efDotRadius(p.dur).toFixed(1)+'" fill="'+dotFill+'" opacity="0.85" style="cursor:pointer;" data-sid="'+(p.id||'')+'" onclick="wlcDotClick(this)"><title>'+tip+'</title></circle>';
   }).join('');
-  svg.innerHTML=yLabels+xLabels+dots+
-    '<text x="'+(W-padR)+'" y="'+(H-6)+'" font-family="'+axF+'" font-size="8" fill="'+cssVar('--text-faint')+'" text-anchor="end">7T-Load &#8594;</text>';
+  svg.innerHTML=yLabels+xLabels+dots;
+  // Achsenbenennung steht in der Legende statt im SVG — dort kollidierte sie mit dem
+  // rechten X-Label.
+  if(legendEl)legendEl.innerHTML=
+    '<span style="color:var(--text);">Dauer = Punktgröße</span>'+
+    '<span style="color:var(--text-muted);">x = 7-Tage-Load</span>';
 }
 // B3 Slot 3: Rad und Lauf übereinander, je auf den ersten Fensterwert normalisiert.
 function renderEfIndexChart(){
@@ -10941,11 +11071,7 @@ function renderEfIndexChart(){
   }).join('');
   const base=yAt(100);
   const baseLine='<line x1="'+padL+'" y1="'+base.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+base.toFixed(1)+'" stroke="'+axC+'" stroke-width="0.7" stroke-dasharray="3 3" opacity="0.6"/>';
-  let xLabels='';const step=windowDays<=28?7:14;
-  for(let i=0;i<windowDays;i+=step){
-    const d=new Date(displayStart);d.setDate(d.getDate()+i);
-    xLabels+='<text x="'+xAt(i).toFixed(1)+'" y="'+(H-6)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="middle">'+d.getDate()+'.'+(d.getMonth()+1)+'.</text>';
-  }
+  const xLabels=svgDateAxisLabels({windowDays,displayStart,xAt,innerW,padL,xEnd:W-padR,y:H-6,axF,axC});
   const lines=seriesBySport.map(s=>{
     const poly=s.pts.map(p=>xAt(dayIdx(p.date)).toFixed(1)+','+yAt(p.idx).toFixed(1)).join(' ');
     const dots=s.pts.map(p=>'<circle cx="'+xAt(dayIdx(p.date)).toFixed(1)+'" cy="'+yAt(p.idx).toFixed(1)+'" r="2.6" fill="'+s.color+'"><title>'+p.date+' · Index '+p.idx.toFixed(1)+'</title></circle>').join('');
@@ -11011,10 +11137,8 @@ function renderEfChartFor(sport,svgId,boxId,verdictId,legendId){
     return '<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y.toFixed(1)+'" stroke="'+decoColor+'" stroke-width="0.7" stroke-dasharray="'+dash+'" opacity="0.5"/>'+
            '<text x="'+(W-padR+4)+'" y="'+(y+3).toFixed(1)+'" font-family="'+axF+'" font-size="8" fill="'+decoColor+'" text-anchor="start">'+pct+'%</text>';};
   const refLines=refLine(5,'2 2')+refLine(10,'4 2');
-  // X-Achsen-Datumslabels
-  let xLabels='';const step=windowDays<=28?7:14;
-  for(let i=0;i<windowDays;i+=step){const d=new Date(displayStart);d.setDate(d.getDate()+i);
-    xLabels+='<text x="'+xAt(i).toFixed(1)+'" y="'+(H-7)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="middle">'+d.getDate()+'.'+(d.getMonth()+1)+'.</text>';}
+  // X-Achsen-Datumslabels (Dichte/Format aus der Breite — siehe svgDateAxisLabels)
+  const xLabels=svgDateAxisLabels({windowDays,displayStart,xAt,innerW,padL,xEnd:W-padR,y:H-7,axF,axC});
   // ── Median-Band (nur ab EF_MIN_QUALIFIED) ──
   let bandPath='';
   if(trend.band&&bandInWin.length>1){
@@ -11047,14 +11171,15 @@ function renderEfChartFor(sport,svgId,boxId,verdictId,legendId){
   // ── Graue Ticks für nicht-qualifizierte Sessions ──
   const excMarks=excluded.map(s=>{
     const x=xAt(dayIdx(s.date)).toFixed(1),y=(padT+innerH-2).toFixed(1);
-    return '<line x1="'+x+'" y1="'+y+'" x2="'+x+'" y2="'+(padT+innerH-9)+'" stroke="'+cssVar('--text-faint')+'" stroke-width="1.4" opacity="0.55"><title>'+s.date+' · nicht qualifiziert (kein Grundlagen-Fenster ≥45min)</title></line>';
+    return '<line x1="'+x+'" y1="'+y+'" x2="'+x+'" y2="'+(padT+innerH-9)+'" stroke="'+cssVar('--text-faint')+'" stroke-width="1.4" opacity="0.55"><title>'+s.date+' · nicht qualifiziert (kein Grundlagen-Fenster ≥30 min)</title></line>';
   }).join('');
   svg.innerHTML=commonDefs+yLabels+refLines+xLabels+bp+decoLineEl+decoDots+efDots+excMarks;
+  // Kurzlegende: immer dieselben drei Chips, damit sie in jeder Box gleich hoch bleibt
+  // (ein Umbruch würde den Chart darunter verschieben). Langform im Info-Dropdown.
   if(legendEl)legendEl.innerHTML=
-    '<span style="color:var(--text);">EF · Punktgröße = Dauer</span>'+
-    (trend.band?'<span style="color:var(--acwr-low);">Median ±MAD</span>':'<span style="color:var(--text-muted);">Baseline im Aufbau</span>')+
-    '<span style="color:'+decoColor+';">Decoupling (rechts, 0% oben)</span>'+
-    (excluded.length?'<span style="color:var(--text-faint);">ausgeschlossen</span>':'');
+    '<span style="color:var(--text);">Dauer = Punktgröße</span>'+
+    (trend.band?'<span style="color:var(--acwr-low);">±MAD</span>':'<span style="color:var(--text-muted);">Baseline im Aufbau</span>')+
+    '<span style="color:'+decoColor+';">Decoupling</span>';
 }
 
 function renderWorkloadChart(){
@@ -11134,14 +11259,9 @@ function renderWorkloadChart(){
       return '<text x="'+(padL-5)+'" y="'+(y+3)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="end">'+v+'</text>'+
              '<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="rgba(44,44,42,0.07)" stroke-width="0.5"/>';
     }).join('');
-    let xLabels='';
-    const step=windowDays<=28?7:14;
-    for(let i=0;i<windowDays;i+=step){
-      const d=new Date(displayStart);d.setDate(d.getDate()+i);
-      xLabels+='<text x="'+xAt(i).toFixed(1)+'" y="'+(H-7)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="middle">'+d.getDate()+'.'+(d.getMonth()+1)+'.</text>';
-    }
-    const ld=new Date(today);
-    xLabels+='<text x="'+xAt(windowDays-1).toFixed(1)+'" y="'+(H-7)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="end">'+ld.getDate()+'.'+(ld.getMonth()+1)+'.</text>';
+    // Dichte/Format aus der Breite — siehe svgDateAxisLabels; das letzte Label verankert
+    // der Helper selbst am rechten Achsenrand.
+    const xLabels=svgDateAxisLabels({windowDays,displayStart,xAt,innerW,padL,xEnd:W-padR,y:H-7,axF,axC});
     const bp=bandPath?'<path d="'+bandPath+'" fill="'+bandFill+'" filter="url(#wlc-fineblur)"/>':'';
     // Krankheit/Verletzung/Sonstiges: rote Marker am Fuß der Achse, unabhängig von Workload-Werten.
     const dispSpecial=specialSessions().filter(s=>s.date>=toISODate(displayStart)&&s.date<=toISODate(today));
@@ -11227,13 +11347,12 @@ function renderWorkloadChart(){
     return '<text x="'+(padL-5)+'" y="'+(y+3)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="end">'+v+'</text>'+
            '<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="rgba(44,44,42,0.07)" stroke-width="0.5"/>';
   }).join('');
-  let xLabels='';
-  weeks.forEach((w,i)=>{
-    if(w.start.getDate()<=7){
-      const label=w.start.toLocaleDateString('de-DE',{month:'short'});
-      xLabels+='<text x="'+xAt(i).toFixed(1)+'" y="'+(H-7)+'" font-family="'+axF+'" font-size="9" fill="'+axC+'" text-anchor="middle">'+label+'</text>';
-    }
-  });
+  // Monatslabels über denselben Helper wie die Tages-Charts — die X-Skala läuft hier über
+  // Wochenindizes, deshalb wird der Tagesindex auf die zugehörige Woche abgebildet.
+  const xLabels=svgDateAxisLabels({
+    windowDays:nW*7,displayStart:weeks.length?weeks[0].start:displayStart,
+    xAt:di=>xAt(Math.min(nW-1,Math.floor(di/7))),
+    innerW,padL,xEnd:W-padR,y:H-7,axF,axC});
   const bp=bandPath?'<path d="'+bandPath+'" fill="'+bandFill+'" filter="url(#wlc-fineblur)"/>':'';
   svg.innerHTML=commonDefs+yLabels+xLabels+bp+dots;
   if(legendEl)legendEl.innerHTML=
@@ -13076,6 +13195,7 @@ function showGpxPreview(p){
   if(p.avgPower)document.getElementById('t-avgpower').value=p.avgPower;
   if(p.peakPower)document.getElementById('t-peakpower').value=p.peakPower;
   if(p.name)document.getElementById('t-note').value=p.name;updateNoteLabel();
+  noteAutoGrow(document.getElementById('t-note'));
   // Zone aus Ø-HF inferieren (nach updateNoteLabel, weil das bei Freitext auf '-' setzt)
   if(p.hrAvg&&!isSportFreitext(p.sport)){
     const inferred=inferZone(p.hrAvg,p.sport);
@@ -14396,6 +14516,7 @@ async function showApp(user){
     DB.saveConfig(cfg).catch(e=>console.warn('saveConfig bootstrap:',e));
   }
   document.getElementById('profile-content').value=trainingProfile;
+  noteAutoGrow(document.getElementById('profile-content'));
   populateSelects();updateNoteLabel();
   initQuickNote();
   // Sync-Button-Status aus Supabase-PAT ableiten
