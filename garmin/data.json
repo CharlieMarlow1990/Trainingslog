@@ -1692,6 +1692,32 @@
     },
     "2026-08-15": {
       "sleep": {
+        "score": 61,
+        "durationH": 7.2,
+        "deepH": 1.4,
+        "remH": 0.6,
+        "awakeH": 0.9
+      },
+      "hrv": {
+        "lastNightAvg": 80,
+        "status": "BALANCED"
+      },
+      "restingHR": 43.0,
+      "bodyBattery": {
+        "high": 82,
+        "low": 16
+      },
+      "stress": {
+        "avg": 16
+      },
+      "steps": 67,
+      "trainingReadiness": {
+        "score": 54,
+        "level": "MODERATE"
+      }
+    },
+    "2026-08-16": {
+      "sleep": {
         "score": null,
         "durationH": null,
         "deepH": null,
@@ -1702,15 +1728,15 @@
         "lastNightAvg": null,
         "status": null
       },
-      "restingHR": 45.0,
+      "restingHR": null,
       "bodyBattery": {
-        "high": 25,
-        "low": 16
+        "high": null,
+        "low": null
       },
       "stress": {
-        "avg": 25
+        "avg": null
       },
-      "steps": 25,
+      "steps": null,
       "trainingReadiness": {
         "score": null,
         "level": null
@@ -550557,5 +550583,5 @@
       "normPowerW": null
     }
   ],
-  "generated": "2026-08-15T05:29:13+00:00"
+  "generated": "2026-08-16T05:32:11+00:00"
 }
