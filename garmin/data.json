@@ -2937,6 +2937,32 @@
         "score": null,
         "level": null
       }
+    },
+    "2026-10-02": {
+      "sleep": {
+        "score": null,
+        "durationH": null,
+        "deepH": null,
+        "remH": null,
+        "awakeH": null
+      },
+      "hrv": {
+        "lastNightAvg": null,
+        "status": null
+      },
+      "restingHR": null,
+      "bodyBattery": {
+        "high": null,
+        "low": null
+      },
+      "stress": {
+        "avg": null
+      },
+      "steps": null,
+      "trainingReadiness": {
+        "score": null,
+        "level": null
+      }
     }
   },
   "workouts": [
@@ -662003,5 +662029,5 @@
       "normPowerW": null
     }
   ],
-  "generated": "2026-10-01T11:27:50+00:00"
+  "generated": "2026-10-02T10:57:59+00:00"
 }
