@@ -3395,12 +3395,12 @@
       "restingHR": 42.0,
       "bodyBattery": {
         "high": 97,
-        "low": 30
+        "low": 14
       },
       "stress": {
-        "avg": 31
+        "avg": 39
       },
-      "steps": 14064,
+      "steps": 18662,
       "trainingReadiness": {
         "score": 80,
         "level": "HIGH"
@@ -732771,5 +732771,5 @@
       "normPowerW": null
     }
   ],
-  "generated": "2026-10-19T12:09:52+00:00"
+  "generated": "2026-10-19T18:22:09+00:00"
 }
