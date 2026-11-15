@@ -4032,80 +4032,80 @@
     },
     "2026-11-13": {
       "sleep": {
-        "score": null,
-        "durationH": null,
-        "deepH": null,
-        "remH": null,
-        "awakeH": null
+        "score": 79,
+        "durationH": 8.1,
+        "deepH": 1.4,
+        "remH": 1.0,
+        "awakeH": 0.9
       },
       "hrv": {
-        "lastNightAvg": null,
-        "status": null
+        "lastNightAvg": 85,
+        "status": "BALANCED"
       },
-      "restingHR": null,
+      "restingHR": 43.0,
       "bodyBattery": {
         "high": null,
         "low": null
       },
       "stress": {
-        "avg": null
+        "avg": 25
       },
-      "steps": null,
+      "steps": 8639,
       "trainingReadiness": {
-        "score": null,
-        "level": null
+        "score": 88,
+        "level": "HIGH"
       }
     },
     "2026-11-14": {
       "sleep": {
-        "score": null,
-        "durationH": null,
-        "deepH": null,
-        "remH": null,
-        "awakeH": null
+        "score": 47,
+        "durationH": 4.6,
+        "deepH": 0.9,
+        "remH": 0.1,
+        "awakeH": 1.2
       },
       "hrv": {
-        "lastNightAvg": null,
-        "status": null
+        "lastNightAvg": 81,
+        "status": "BALANCED"
       },
-      "restingHR": null,
+      "restingHR": 42.0,
       "bodyBattery": {
-        "high": null,
-        "low": null
+        "high": 77,
+        "low": 5
       },
       "stress": {
-        "avg": null
+        "avg": 46
       },
-      "steps": null,
+      "steps": 15402,
       "trainingReadiness": {
-        "score": null,
-        "level": null
+        "score": 54,
+        "level": "MODERATE"
       }
     },
     "2026-11-15": {
       "sleep": {
-        "score": null,
-        "durationH": null,
-        "deepH": null,
-        "remH": null,
-        "awakeH": null
+        "score": 53,
+        "durationH": 4.8,
+        "deepH": 0.7,
+        "remH": 0.2,
+        "awakeH": 0.4
       },
       "hrv": {
-        "lastNightAvg": null,
-        "status": null
+        "lastNightAvg": 82,
+        "status": "BALANCED"
       },
-      "restingHR": null,
+      "restingHR": 43.0,
       "bodyBattery": {
-        "high": null,
-        "low": null
+        "high": 42,
+        "low": 5
       },
       "stress": {
-        "avg": null
+        "avg": 27
       },
-      "steps": null,
+      "steps": 5069,
       "trainingReadiness": {
-        "score": null,
-        "level": null
+        "score": 24,
+        "level": "POOR"
       }
     }
   },
@@ -815549,5 +815549,5 @@
       "normPowerW": null
     }
   ],
-  "generated": "2026-11-15T06:36:21+00:00"
+  "generated": "2026-11-15T06:37:36+00:00"
 }
